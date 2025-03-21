@@ -2,12 +2,13 @@
 // Created by auser on 3/21/25.
 //
 
-#include "Instance.h"
+#include "Device.h"
 
 #include <stdexcept>
 #include <iostream>
 #include <unordered_set>
 #include <cstring>
+#include <map>
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -45,19 +46,20 @@ static void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT&
     createInfo.pfnUserCallback = debugCallback;
 }
 
-Instance::Instance() {
+Device::Device(): physicalDevice(VK_NULL_HANDLE) {
     createInstance();
     setupDebugMessenger();
+    pickPhysicalDevice();
 }
 
-Instance::~Instance() {
+Device::~Device() {
     if (enableValidationLayers) {
         DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
     }
     vkDestroyInstance( instance, nullptr );
 }
 
-void Instance::createInstance() {
+void Device::createInstance() {
     if (enableValidationLayers && !checkValidationLayerSupport()) {
         throw std::runtime_error("Validation layers requested, but not available!");
     }
@@ -96,7 +98,73 @@ void Instance::createInstance() {
     hasGflwRequiredInstanceExtensions();
 }
 
-std::vector<const char *> Instance::getRequiredExtensions() {
+
+bool Device::isDeviceSuitable( VkPhysicalDevice device ) {
+//    VkPhysicalDeviceProperties deviceProperties;
+//    vkGetPhysicalDeviceProperties(device, &deviceProperties);
+//    VkPhysicalDeviceFeatures deviceFeatures;
+//    vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+    QueueFamilyIndices indices = findQueueFamilies(device);
+
+    return indices.isComplete();
+}
+
+void Device::pickPhysicalDevice() {
+    uint32_t deviceCount = 0;
+    vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+    if (deviceCount == 0) {
+        throw std::runtime_error("failed to find GPUs with Vulkan support!");
+    }
+    std::vector<VkPhysicalDevice> devices(deviceCount);
+    vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+
+    std::cout << "Available devices:" << std::endl;
+    for (const auto& device : devices) {
+        VkPhysicalDeviceProperties deviceProperties;
+        vkGetPhysicalDeviceProperties(device, &deviceProperties);
+        std::cout << "    " << deviceProperties.deviceName << std::endl;
+    }
+
+    for (const auto& device : devices) {
+        if ( !isDeviceSuitable( device ) ) continue;
+        physicalDevice = device;
+        break;
+    }
+
+    if ( physicalDevice == VK_NULL_HANDLE ) {
+        throw std::runtime_error("Failed to find a suitable GPU!");
+    }
+
+    VkPhysicalDeviceProperties deviceProperties;
+    vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
+    std::cout << "Picked physical device:\n    " << deviceProperties.deviceName <<  std::endl;
+}
+
+void Device::createLogicalDevice() {
+
+}
+
+QueueFamilyIndices Device::findQueueFamilies( VkPhysicalDevice device ) {
+    QueueFamilyIndices indices;
+    std::optional<uint32_t> graphicsFamily;
+
+    uint32_t queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+    int i = 0;
+    for (const auto& queueFamily : queueFamilies) {
+        if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+            indices.graphicsFamily = i;
+        }
+        if ( indices.isComplete() ) break;
+        ++i;
+    }
+    return indices;
+}
+
+std::vector<const char *> Device::getRequiredExtensions() {
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -107,7 +175,7 @@ std::vector<const char *> Instance::getRequiredExtensions() {
     return extensions;
 }
 
-void Instance::hasGflwRequiredInstanceExtensions() {
+void Device::hasGflwRequiredInstanceExtensions() {
     uint32_t extensionCount = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
     std::vector<VkExtensionProperties> extensions(extensionCount);
@@ -130,7 +198,7 @@ void Instance::hasGflwRequiredInstanceExtensions() {
     }
 }
 
-bool Instance::checkValidationLayerSupport() {
+bool Device::checkValidationLayerSupport() {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -155,7 +223,7 @@ bool Instance::checkValidationLayerSupport() {
     return true;
 }
 
-void Instance::setupDebugMessenger() {
+void Device::setupDebugMessenger() {
     if (!enableValidationLayers) return;
     VkDebugUtilsMessengerCreateInfoEXT createInfo{};
     populateDebugMessengerCreateInfo( createInfo );

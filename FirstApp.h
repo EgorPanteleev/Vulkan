@@ -5,7 +5,7 @@
 #define FIRSTAPP_H
 
 #include "Window.h"
-#include "Instance.h"
+#include "Device.h"
 
 #include <vector>
 
@@ -26,8 +26,8 @@ private:
 
     void cleanup();
 
-    Window window; // glfw window
-    Instance instance; // instance is a connection between app and vulkan
+    Window window; /// glfw window
+    Device device;
 };
 
 

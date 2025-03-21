@@ -10,7 +10,7 @@
 #include <stdexcept>
 #include <iostream>
 
-FirstApp::FirstApp(): window( WIDTH, HEIGHT, NAME ), instance() {
+FirstApp::FirstApp(): window( WIDTH, HEIGHT, NAME ), device() {
 }
 
 void FirstApp::run() {
