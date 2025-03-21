@@ -7,7 +7,10 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-FirstApp::FirstApp(): window( WIDTH, HEIGHT, NAME ) {
+#include <stdexcept>
+#include <iostream>
+
+FirstApp::FirstApp(): window( WIDTH, HEIGHT, NAME ), instance() {
 }
 
 void FirstApp::run() {
@@ -17,7 +20,6 @@ void FirstApp::run() {
 }
 
 void FirstApp::initVulkan() {
-
 }
 
 void FirstApp::mainLoop() {
@@ -27,5 +29,4 @@ void FirstApp::mainLoop() {
 }
 
 void FirstApp::cleanup() {
-
 }
