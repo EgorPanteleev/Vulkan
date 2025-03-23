@@ -10,24 +10,29 @@
 #include "FrameBuffers.h"
 #include "SwapChain.h"
 #include "GraphicsPipeline.h"
+#include "SyncObjects.h"
 
 class CommandBuffer {
 public:
     CommandBuffer( Device& device, SwapChain& swapChain, RenderPass& renderPass,
-                   FrameBuffers& frameBuffers, GraphicsPipeline& graphicsPipeline );
+                   FrameBuffers& frameBuffers, GraphicsPipeline& graphicsPipeline, SyncObjects& syncObjects );
 
     ~CommandBuffer();
 
+    VkCommandBuffer operator()() { return commandBuffer; }
+
+    void recordCommandBuffer( VkCommandBuffer buffer, uint32_t imageIndex );
+
+    VkResult submitCommandBuffer( VkCommandBuffer buffer, uint32_t *imageIndex );
 private:
     void createCommandBuffer();
-
-    void recordCommandBuffer( VkCommandBuffer buffer, uint32_t imageInde );
 
     Device& device;
     SwapChain& swapChain;
     RenderPass& renderPass;
     FrameBuffers& frameBuffers;
     GraphicsPipeline& graphicsPipeline;
+    SyncObjects& syncObjects;
 
     VkCommandBuffer commandBuffer;
 };

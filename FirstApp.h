@@ -11,6 +11,7 @@
 #include "RenderPass.h"
 #include "FrameBuffers.h"
 #include "CommandBuffer.h"
+#include "SyncObjects.h"
 
 #include <vector>
 #include <memory>
@@ -32,8 +33,11 @@ private:
 
     void cleanup();
 
+    void drawFrame();
+
     Window window; /// glfw window
     Device device;
+    SyncObjects syncObjects;
     std::unique_ptr<SwapChain> swapChain;
     RenderPass renderPass;
     std::unique_ptr<GraphicsPipeline> graphicsPipeline;

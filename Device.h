@@ -42,6 +42,10 @@ public:
 
     VkCommandPool getCommandPool() { return commandPool; }
 
+    VkQueue getGraphicsQueue() { return graphicsQueue; }
+
+    VkQueue getPresentQueue() { return presentQueue; }
+
 private:
     void createInstance();
 

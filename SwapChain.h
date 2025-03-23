@@ -10,18 +10,24 @@
 
 #include "Window.h"
 #include "Device.h"
+#include "SyncObjects.h"
 
 class SwapChain {
 public:
-    SwapChain( Window& window, Device& device );
+    SwapChain( Window& window, Device& device, SyncObjects& syncObjects );
 
     ~SwapChain();
+
+    VkSwapchainKHR operator()() { return swapChain; }
 
     VkFormat getImageFormat() { return swapChainImageFormat; }
 
     VkExtent2D getExtent() { return swapChainExtent; }
 
     std::vector<VkImageView>& getImageViews() { return swapChainImageViews; }
+
+    VkResult acquireNextImage( uint32_t *imageIndex );
+
 private:
 
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
@@ -32,6 +38,7 @@ private:
 
     Window& window;
     Device& device;
+    SyncObjects& syncObjects;
     VkSwapchainKHR swapChain;
     std::vector<VkImage> swapChainImages;
     VkFormat swapChainImageFormat;

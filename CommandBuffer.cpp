@@ -7,14 +7,17 @@
 #include <stdexcept>
 
 CommandBuffer::CommandBuffer( Device& device, SwapChain& swapChain, RenderPass& renderPass,
-                              FrameBuffers& frameBuffers, GraphicsPipeline& graphicsPipeline ):
+                              FrameBuffers& frameBuffers, GraphicsPipeline& graphicsPipeline,
+                              SyncObjects& syncObjects ):
                               device( device ), swapChain( swapChain ), renderPass( renderPass ),
-                              frameBuffers( frameBuffers ), graphicsPipeline( graphicsPipeline ) {
+                              frameBuffers( frameBuffers ), graphicsPipeline( graphicsPipeline ),
+                              syncObjects( syncObjects ) {
     createCommandBuffer();
 }
 
 CommandBuffer::~CommandBuffer() {
-
+    vkQueueWaitIdle(device.getGraphicsQueue());
+    vkFreeCommandBuffers(device.getLogicalDevice(), device.getCommandPool(), 1, &commandBuffer);
 }
 
 void CommandBuffer::createCommandBuffer() {
@@ -73,4 +76,37 @@ void CommandBuffer::recordCommandBuffer( VkCommandBuffer buffer, uint32_t imageI
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
         throw std::runtime_error("Failed to record command buffer!");
     }
+}
+
+VkResult CommandBuffer::submitCommandBuffer( VkCommandBuffer buffer, uint32_t *imageIndex ) {
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+    VkSemaphore waitSemaphores[] = { syncObjects.getImageAvailableSemaphore() };
+    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitDstStageMask = waitStages;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+    VkSemaphore signalSemaphores[] = { syncObjects.getRenderFinishedSemaphore() };
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = signalSemaphores;
+
+    if (vkQueueSubmit( device.getGraphicsQueue(), 1, &submitInfo, syncObjects.getInFlightFence() ) != VK_SUCCESS) {
+        throw std::runtime_error("failed to submit draw command buffer!");
+    }
+
+    VkPresentInfoKHR presentInfo{};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = signalSemaphores;
+    VkSwapchainKHR swapChains[] = { swapChain() };
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = swapChains;
+    presentInfo.pImageIndices = imageIndex;
+    presentInfo.pResults = nullptr; // Optional
+    auto result = vkQueuePresentKHR( device.getPresentQueue(), &presentInfo );
+    return result;
 }

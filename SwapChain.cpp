@@ -5,7 +5,8 @@
 #include "SwapChain.h"
 #include <iostream>
 
-SwapChain::SwapChain( Window& window, Device& device ): window( window ), device( device ) {
+SwapChain::SwapChain( Window& window, Device& device, SyncObjects& syncObjects ):
+                      window( window ), device( device ), syncObjects( syncObjects ) {
     createSwapChain();
     createImageViews();
 }
@@ -135,4 +136,15 @@ void SwapChain::createImageViews() {
             throw std::runtime_error("Failed to create image views!");
         }
     }
+}
+
+VkResult SwapChain::acquireNextImage( uint32_t *imageIndex ) {
+    auto logicalDevice = device.getLogicalDevice();
+    vkWaitForFences( logicalDevice, 1, &syncObjects.getInFlightFence(), VK_TRUE, UINT64_MAX );
+    vkResetFences( logicalDevice, 1, &syncObjects.getInFlightFence() );
+
+    VkResult result = vkAcquireNextImageKHR( logicalDevice, swapChain, UINT64_MAX,
+                                             syncObjects.getImageAvailableSemaphore(), VK_NULL_HANDLE, imageIndex );
+
+    return result;
 }
