@@ -34,6 +34,7 @@ public:
                       const std::string& vertShaderPath, const std::string& fragShaderPath );
     ~GraphicsPipeline();
 
+    VkPipeline operator()() { return graphicsPipeline; }
 private:
 
     void createGraphicsPipeline( const std::string& vertShaderPath, const std::string& fragShaderPath );

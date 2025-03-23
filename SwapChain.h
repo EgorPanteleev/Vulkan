@@ -20,6 +20,8 @@ public:
     VkFormat getImageFormat() { return swapChainImageFormat; }
 
     VkExtent2D getExtent() { return swapChainExtent; }
+
+    std::vector<VkImageView>& getImageViews() { return swapChainImageViews; }
 private:
 
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);

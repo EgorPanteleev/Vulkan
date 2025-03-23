@@ -9,6 +9,8 @@
 #include "SwapChain.h"
 #include "GraphicsPipeline.h"
 #include "RenderPass.h"
+#include "FrameBuffers.h"
+#include "CommandBuffer.h"
 
 #include <vector>
 #include <memory>
@@ -35,7 +37,8 @@ private:
     std::unique_ptr<SwapChain> swapChain;
     RenderPass renderPass;
     std::unique_ptr<GraphicsPipeline> graphicsPipeline;
-
+    FrameBuffers frameBuffers;
+    CommandBuffer commandBuffer;
 };
 
 

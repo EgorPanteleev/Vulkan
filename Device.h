@@ -40,6 +40,8 @@ public:
 
     VkDevice getLogicalDevice() { return logicalDevice; }
 
+    VkCommandPool getCommandPool() { return commandPool; }
+
 private:
     void createInstance();
 
@@ -65,6 +67,8 @@ private:
 
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 
+    void createCommandPool();
+
     const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
     const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 #ifdef NDEBUG
@@ -81,6 +85,7 @@ private:
     VkSurfaceKHR surface; /// connection between vulkan and os window
     VkQueue graphicsQueue; /// graphics queue
     VkQueue presentQueue; /// present queue
+    VkCommandPool commandPool;
 };
 
 

@@ -17,7 +17,9 @@ FirstApp::FirstApp(): window( WIDTH, HEIGHT, NAME ),
                       graphicsPipeline( std::make_unique<GraphicsPipeline>(
                               device, *swapChain, renderPass,
                               "/home/auser/dev/src/Vulkan/CompiledShaders/shader.vert.spv",
-                              "/home/auser/dev/src/Vulkan/CompiledShaders/shader.frag.spv" ) ) {
+                              "/home/auser/dev/src/Vulkan/CompiledShaders/shader.frag.spv" ) ),
+                      frameBuffers( device, *swapChain, renderPass ),
+                      commandBuffer( device, *swapChain, renderPass, frameBuffers, *graphicsPipeline ) {
 
 }
 
