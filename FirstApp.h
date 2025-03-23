@@ -6,8 +6,12 @@
 
 #include "Window.h"
 #include "Device.h"
+#include "SwapChain.h"
+#include "GraphicsPipeline.h"
+#include "RenderPass.h"
 
 #include <vector>
+#include <memory>
 
 class FirstApp {
 public:
@@ -28,6 +32,10 @@ private:
 
     Window window; /// glfw window
     Device device;
+    std::unique_ptr<SwapChain> swapChain;
+    std::unique_ptr<GraphicsPipeline> graphicsPipeline;
+    RenderPass renderPass;
+
 };
 
 

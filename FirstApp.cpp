@@ -10,7 +10,15 @@
 #include <stdexcept>
 #include <iostream>
 
-FirstApp::FirstApp(): window( WIDTH, HEIGHT, NAME ), device() {
+FirstApp::FirstApp(): window( WIDTH, HEIGHT, NAME ),
+                      device( window ),
+                      swapChain( std::make_unique<SwapChain>( window, device ) ),
+                      renderPass( device, swapChain->getImageFormat() ),
+                      graphicsPipeline( std::make_unique<GraphicsPipeline>(
+                              device, *swapChain, renderPass,
+                              "/home/auser/dev/src/Vulkan/CompiledShaders/shader.vert.spv",
+                              "/home/auser/dev/src/Vulkan/CompiledShaders/shader.frag.spv" ) ) {
+
 }
 
 void FirstApp::run() {

@@ -21,4 +21,4 @@ add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
 
 target_link_libraries( VulkanApp ${PROJECT_NAME} ${Libs} )
 
-#add_subdirectory( Shaders )
+add_subdirectory( Shaders )

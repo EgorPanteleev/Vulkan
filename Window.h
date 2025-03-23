@@ -15,6 +15,10 @@ public:
     Window( int w, int h, const std::string& name );
     ~Window();
 
+    void createWindowSurface( VkInstance instance, VkSurfaceKHR& surface );
+
+    void getFrameBufferSize( int& width, int& height );
+
     [[nodiscard]] bool shouldClose() const {  return glfwWindowShouldClose( window ); }
 
 private:

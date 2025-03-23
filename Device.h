@@ -10,15 +10,35 @@
 #include <vector>
 #include <optional>
 
+#include "Window.h"
+
+struct SwapChainSupportDetails {
+    VkSurfaceCapabilitiesKHR capabilities;
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR> presentModes;
+};
+
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
-    bool isComplete() { return graphicsFamily.has_value(); }
+    std::optional<uint32_t> presentFamily;
+
+    bool isComplete() {
+        return graphicsFamily.has_value() && presentFamily.has_value();
+    }
 };
 
 class Device {
 public:
-    Device();
+    Device( Window& window );
     ~Device();
+
+    SwapChainSupportDetails getSwapChainSupport() { return querySwapChainSupport( physicalDevice ); }
+
+    VkSurfaceKHR getSurface() { return surface; }
+
+    QueueFamilyIndices findPhysicalQueueFamilies() { return findQueueFamilies( physicalDevice ); }
+
+    VkDevice getLogicalDevice() { return logicalDevice; }
 
 private:
     void createInstance();
@@ -27,7 +47,11 @@ private:
 
     void createLogicalDevice();
 
+    void createSurface();
+
     bool isDeviceSuitable( VkPhysicalDevice device );
+
+    bool checkDeviceExtensionSupport( VkPhysicalDevice device );
 
     QueueFamilyIndices findQueueFamilies( VkPhysicalDevice device );
 
@@ -39,17 +63,24 @@ private:
 
     void setupDebugMessenger();
 
+    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
+
     const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
+    const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 #ifdef NDEBUG
     const bool enableValidationLayers = false;
 #else
     const bool enableValidationLayers = true;
 #endif
 
+    Window& window;
     VkInstance instance; /// Instance is a connection between app and vulkan
-    VkDebugUtilsMessengerEXT debugMessenger; /// Using for catch diff errors and leaks in debug
+    VkDebugUtilsMessengerEXT debugMessenger; /// Usinug for catch diff errors and leaks in debug
     VkPhysicalDevice physicalDevice; /// Physical device
-    VkDevice device; /// logical device
+    VkDevice logicalDevice; /// logical device
+    VkSurfaceKHR surface; /// connection between vulkan and os window
+    VkQueue graphicsQueue; /// graphics queue
+    VkQueue presentQueue; /// present queue
 };
 
 

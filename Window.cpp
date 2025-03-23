@@ -4,6 +4,8 @@
 
 #include "Window.h"
 
+#include <stdexcept>
+
 Window::Window( int w, int h, const std::string& name ) {
     initWindow( w, h, name );
 }
@@ -19,4 +21,15 @@ void Window::initWindow( int w, int h, const std::string& name) {
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     window = glfwCreateWindow( w, h, name.c_str(), nullptr, nullptr);
+}
+
+
+void Window::createWindowSurface( VkInstance instance, VkSurfaceKHR& surface ) {
+    if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create window surface!");
+    }
+}
+
+void Window::getFrameBufferSize( int& width, int& height ) {
+    glfwGetFramebufferSize(window, &width, &height);
 }
