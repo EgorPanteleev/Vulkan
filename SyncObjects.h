@@ -12,18 +12,18 @@ public:
     SyncObjects( Device& device );
     ~SyncObjects();
 
-    VkSemaphore getImageAvailableSemaphore() { return imageAvailableSemaphore; }
+    VkSemaphore getImageAvailableSemaphore( uint32_t frameIndex ) { return imageAvailableSemaphores[frameIndex]; }
 
-    VkSemaphore getRenderFinishedSemaphore() { return renderFinishedSemaphore; }
+    VkSemaphore getRenderFinishedSemaphore( uint32_t frameIndex ) { return renderFinishedSemaphores[frameIndex]; }
 
-    VkFence& getInFlightFence() { return inFlightFence; }
+    VkFence& getInFlightFence( uint32_t frameIndex ) { return inFlightFences[frameIndex]; }
 private:
     void createSyncObjects();
 
     Device& device;
-    VkSemaphore imageAvailableSemaphore;
-    VkSemaphore renderFinishedSemaphore;
-    VkFence inFlightFence;
+    std::vector<VkSemaphore> imageAvailableSemaphores;
+    std::vector<VkSemaphore> renderFinishedSemaphores;
+    std::vector<VkFence> inFlightFences;
 };
 
 

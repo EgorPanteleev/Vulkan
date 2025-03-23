@@ -10,7 +10,7 @@
 #include "GraphicsPipeline.h"
 #include "RenderPass.h"
 #include "FrameBuffers.h"
-#include "CommandBuffer.h"
+#include "CommandBuffers.h"
 #include "SyncObjects.h"
 
 #include <vector>
@@ -25,6 +25,7 @@ public:
     static constexpr int WIDTH = 800;
     static constexpr int HEIGHT = 600;
     static constexpr std::string NAME = "VulkanApp";
+    static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 private:
 
     void initVulkan();
@@ -42,7 +43,7 @@ private:
     RenderPass renderPass;
     std::unique_ptr<GraphicsPipeline> graphicsPipeline;
     FrameBuffers frameBuffers;
-    CommandBuffer commandBuffer;
+    CommandBuffers commandBuffers;
 };
 
 

@@ -11,7 +11,7 @@
 #include <iostream>
 
 FirstApp::FirstApp(): window( WIDTH, HEIGHT, NAME ),
-                      device( window ),
+                      device( window, MAX_FRAMES_IN_FLIGHT ),
                       syncObjects( device ),
                       swapChain( std::make_unique<SwapChain>( window, device, syncObjects ) ),
                       renderPass( device, swapChain->getImageFormat() ),
@@ -20,8 +20,8 @@ FirstApp::FirstApp(): window( WIDTH, HEIGHT, NAME ),
                               "/home/auser/dev/src/Vulkan/CompiledShaders/shader.vert.spv",
                               "/home/auser/dev/src/Vulkan/CompiledShaders/shader.frag.spv" ) ),
                       frameBuffers( device, *swapChain, renderPass ),
-                      commandBuffer( device, *swapChain, renderPass, frameBuffers, *graphicsPipeline, syncObjects ) {
-
+                      commandBuffers( device, *swapChain, renderPass, frameBuffers,
+                                     *graphicsPipeline, syncObjects ) {
 }
 
 void FirstApp::run() {
@@ -47,7 +47,7 @@ void FirstApp::cleanup() {
 void FirstApp::drawFrame() {
     uint32_t imageIndex;
     swapChain->acquireNextImage( &imageIndex );
-    vkResetCommandBuffer( commandBuffer(), 0 );
-    commandBuffer.recordCommandBuffer(commandBuffer(), imageIndex);
-    commandBuffer.submitCommandBuffer( commandBuffer(), &imageIndex );
+    commandBuffers.recordCommandBuffer( imageIndex );
+    commandBuffers.submitCommandBuffer( &imageIndex );
+    swapChain->updateCurrentFrame();
 }

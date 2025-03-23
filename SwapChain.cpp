@@ -140,11 +140,16 @@ void SwapChain::createImageViews() {
 
 VkResult SwapChain::acquireNextImage( uint32_t *imageIndex ) {
     auto logicalDevice = device.getLogicalDevice();
-    vkWaitForFences( logicalDevice, 1, &syncObjects.getInFlightFence(), VK_TRUE, UINT64_MAX );
-    vkResetFences( logicalDevice, 1, &syncObjects.getInFlightFence() );
+    vkWaitForFences( logicalDevice, 1, &syncObjects.getInFlightFence( currentFrame ), VK_TRUE, UINT64_MAX );
+    vkResetFences( logicalDevice, 1, &syncObjects.getInFlightFence( currentFrame ) );
 
     VkResult result = vkAcquireNextImageKHR( logicalDevice, swapChain, UINT64_MAX,
-                                             syncObjects.getImageAvailableSemaphore(), VK_NULL_HANDLE, imageIndex );
+                                             syncObjects.getImageAvailableSemaphore( currentFrame ),
+                                             VK_NULL_HANDLE, imageIndex );
 
     return result;
+}
+
+void SwapChain::updateCurrentFrame() {
+    currentFrame = (currentFrame + 1) % device.getMaxFramesInFlight();
 }

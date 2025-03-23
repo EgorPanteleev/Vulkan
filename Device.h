@@ -29,7 +29,7 @@ struct QueueFamilyIndices {
 
 class Device {
 public:
-    Device( Window& window );
+    Device( Window& window, int maxFramesInFlight );
     ~Device();
 
     SwapChainSupportDetails getSwapChainSupport() { return querySwapChainSupport( physicalDevice ); }
@@ -45,6 +45,8 @@ public:
     VkQueue getGraphicsQueue() { return graphicsQueue; }
 
     VkQueue getPresentQueue() { return presentQueue; }
+
+    int getMaxFramesInFlight() const { return maxFramesInFlight; }
 
 private:
     void createInstance();
@@ -90,6 +92,7 @@ private:
     VkQueue graphicsQueue; /// graphics queue
     VkQueue presentQueue; /// present queue
     VkCommandPool commandPool;
+    int maxFramesInFlight;
 };
 
 

@@ -47,7 +47,8 @@ static void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT&
     createInfo.pfnUserCallback = debugCallback;
 }
 
-Device::Device( Window& window ): physicalDevice(VK_NULL_HANDLE), window( window ) {
+Device::Device( Window& window, int maxFramesInFlight ): physicalDevice(VK_NULL_HANDLE), window( window ),
+                                                         maxFramesInFlight( maxFramesInFlight ) {
     createInstance();
     setupDebugMessenger();
     createSurface();

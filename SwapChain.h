@@ -28,6 +28,12 @@ public:
 
     VkResult acquireNextImage( uint32_t *imageIndex );
 
+    uint32_t getCurrentFrame() const { return currentFrame; }
+
+    void setCurrentFrame( uint32_t currFrame ) { currentFrame = currFrame; }
+
+    void updateCurrentFrame();
+
 private:
 
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
@@ -44,6 +50,7 @@ private:
     VkFormat swapChainImageFormat;
     VkExtent2D swapChainExtent;
     std::vector<VkImageView> swapChainImageViews;
+    uint32_t currentFrame = 0;
 };
 
 
