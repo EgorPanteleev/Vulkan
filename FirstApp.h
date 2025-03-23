@@ -33,8 +33,8 @@ private:
     Window window; /// glfw window
     Device device;
     std::unique_ptr<SwapChain> swapChain;
-    std::unique_ptr<GraphicsPipeline> graphicsPipeline;
     RenderPass renderPass;
+    std::unique_ptr<GraphicsPipeline> graphicsPipeline;
 
 };
 
