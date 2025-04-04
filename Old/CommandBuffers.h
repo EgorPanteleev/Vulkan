@@ -10,7 +10,7 @@
 #include "FrameBuffers.h"
 #include "SwapChain_old.h"
 #include "../GraphicsPipeline.h"
-#include "SyncObjects.h"
+#include "../SyncObjects.h"
 
 class CommandBuffers {
 public:

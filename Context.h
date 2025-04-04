@@ -25,6 +25,7 @@ public:
     VkSurfaceKHR surface() { return mSurface; }
     VkPhysicalDevice physicalDevice() { return mPhysicalDevice; }
     VkDevice device() { return mDevice; }
+    uint32_t maxFramesInFlight() { return mMaxFramesInFlight; }
 
 
 private:
@@ -46,6 +47,7 @@ private:
      */
     void createLogicalDevice();
     VkQueue getQueue(uint32_t index) const;
+    const uint32_t mMaxFramesInFlight = 2;
     const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
     const std::vector<const char *> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 #ifdef NDEBUG
@@ -53,7 +55,6 @@ private:
 #else
     const bool enableValidationLayers = true;
 #endif
-
     VkInstance mInstance;
     Window mWindow;
     VkSurfaceKHR mSurface;

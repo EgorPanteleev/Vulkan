@@ -6,6 +6,7 @@
 #include "SwapChain.h"
 #include "GraphicsPipeline.h"
 #include "CommandManager.h"
+#include "SyncObjects.h"
 int main() {
     Context context;
     SwapChain swapChain( &context );
@@ -13,4 +14,5 @@ int main() {
                                       "/home/auser/dev/src/Vulkan/CompiledShaders/shader.vert.spv",
                                       "/home/auser/dev/src/Vulkan/CompiledShaders/shader.frag.spv");
     CommandManager commandManager(&context);
+    SyncObjects syncObjects(&context);
 }

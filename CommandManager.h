@@ -9,7 +9,6 @@
 
 class CommandManager {
 public:
-    const uint32_t maxFramesInFlight = 2; //TODO
     CommandManager(Context* context);
     ~CommandManager();
 private:

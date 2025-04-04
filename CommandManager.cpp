@@ -31,7 +31,7 @@ void CommandManager::createCommandPool() {
 }
 
 void CommandManager::createCommandBuffers() {
-    mCommandBuffers.resize( maxFramesInFlight );
+    mCommandBuffers.resize( mContext->maxFramesInFlight() );
 
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

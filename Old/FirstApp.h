@@ -11,7 +11,7 @@
 #include "RenderPass.h"
 #include "FrameBuffers.h"
 #include "CommandBuffers.h"
-#include "SyncObjects.h"
+#include "../SyncObjects.h"
 
 #include <vector>
 #include <memory>

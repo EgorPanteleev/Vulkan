@@ -10,7 +10,7 @@
 
 #include "../Window.h"
 #include "Device.h"
-#include "SyncObjects.h"
+#include "../SyncObjects.h"
 
 class SwapChain_old {
 public:
