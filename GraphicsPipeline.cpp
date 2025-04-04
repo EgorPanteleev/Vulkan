@@ -15,11 +15,11 @@ GraphicsPipeline::GraphicsPipeline(Context* context, SwapChain* swapChain,
 }
 
 GraphicsPipeline::~GraphicsPipeline() {
-    vkDestroyPipeline(mContext->device(), graphicsPipeline, nullptr);
-    vkDestroyPipelineLayout(mContext->device(), pipelineLayout, nullptr);
-    vkDestroyShaderModule( mContext->device(), vertShaderModule, nullptr );
-    vkDestroyShaderModule( mContext->device(), fragShaderModule, nullptr );
-    vkDestroyRenderPass(mContext->device(), renderPass, nullptr);
+    vkDestroyPipeline(mContext->device(), mGraphicsPipeline, nullptr);
+    vkDestroyPipelineLayout(mContext->device(), mPipelineLayout, nullptr);
+    vkDestroyShaderModule( mContext->device(), mVertShaderModule, nullptr );
+    vkDestroyShaderModule( mContext->device(), mFragShaderModule, nullptr );
+    vkDestroyRenderPass(mContext->device(), mRenderPass, nullptr);
 }
 
 void GraphicsPipeline::createRenderPass() {
@@ -59,7 +59,7 @@ void GraphicsPipeline::createRenderPass() {
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
 
-    if (vkCreateRenderPass(mContext->device(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+    if (vkCreateRenderPass(mContext->device(), &renderPassInfo, nullptr, &mRenderPass) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create render pass!");
     }
     INFO << "Created render pass";
@@ -69,13 +69,13 @@ void GraphicsPipeline::createRenderPass() {
 void GraphicsPipeline::createGraphicsPipeline( const std::string& vertShaderPath, const std::string& fragShaderPath ) {
     auto vertShaderCode = Utils::readFile(vertShaderPath);
     auto fragShaderCode = Utils::readFile(fragShaderPath);
-    Utils::createShaderModule(mContext->device(), vertShaderCode, &vertShaderModule);
-    Utils::createShaderModule(mContext->device(), fragShaderCode, &fragShaderModule);
+    Utils::createShaderModule(mContext->device(), vertShaderCode, &mVertShaderModule);
+    Utils::createShaderModule(mContext->device(), fragShaderCode, &mFragShaderModule);
 
     VkPipelineShaderStageCreateInfo shaderStages[2];
     shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-    shaderStages[0].module = vertShaderModule;
+    shaderStages[0].module = mVertShaderModule;
     shaderStages[0].pName = "main";
     shaderStages[0].flags = 0;
     shaderStages[0].pNext = nullptr;
@@ -83,7 +83,7 @@ void GraphicsPipeline::createGraphicsPipeline( const std::string& vertShaderPath
 
     shaderStages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    shaderStages[1].module = fragShaderModule;
+    shaderStages[1].module = mFragShaderModule;
     shaderStages[1].pName = "main";
     shaderStages[1].flags = 0;
     shaderStages[1].pNext = nullptr;
@@ -103,13 +103,13 @@ void GraphicsPipeline::createGraphicsPipeline( const std::string& vertShaderPath
     pipelineInfo.pDepthStencilState = nullptr; // Optional
     pipelineInfo.pColorBlendState = &configInfo.colorBlendInfo;
     pipelineInfo.pDynamicState = &configInfo.dynamicStateInfo;
-    pipelineInfo.layout = pipelineLayout;
-    pipelineInfo.renderPass = renderPass;
+    pipelineInfo.layout = mPipelineLayout;
+    pipelineInfo.renderPass = mRenderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineInfo.basePipelineIndex = -1; // Optional
 
-    if (vkCreateGraphicsPipelines(mContext->device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+    if (vkCreateGraphicsPipelines(mContext->device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &mGraphicsPipeline) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create graphics pipeline!");
     }
     INFO << "Created graphics pipeline!";
@@ -123,7 +123,7 @@ void GraphicsPipeline::createPipelineLayout() {
     pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
     pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
-    if (vkCreatePipelineLayout(mContext->device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+    if (vkCreatePipelineLayout(mContext->device(), &pipelineLayoutInfo, nullptr, &mPipelineLayout) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create pipeline layout!");
     }
     INFO << "Created pipeline layout!";

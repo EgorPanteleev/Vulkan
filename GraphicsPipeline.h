@@ -30,6 +30,13 @@ public:
     GraphicsPipeline(Context* context, SwapChain* swapChain,
                      const std::string& vertShaderPath, const std::string& fragShaderPath);
     ~GraphicsPipeline();
+    /**
+    * Getters
+    */
+    VkRenderPass renderPass() { return mRenderPass; }
+    VkPipelineLayout pipelineLayout() { return mPipelineLayout; }
+    VkPipeline graphicsPipeline() { return mGraphicsPipeline; }
+
 private:
     /**
      * Creating render pass
@@ -47,11 +54,11 @@ private:
 
     Context* mContext;
     SwapChain* mSwapChain;
-    VkRenderPass renderPass;
-    VkPipelineLayout pipelineLayout;
-    VkPipeline graphicsPipeline;
-    VkShaderModule vertShaderModule;
-    VkShaderModule fragShaderModule;
+    VkRenderPass mRenderPass;
+    VkPipelineLayout mPipelineLayout;
+    VkPipeline mGraphicsPipeline;
+    VkShaderModule mVertShaderModule;
+    VkShaderModule mFragShaderModule;
 };
 
 
