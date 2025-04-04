@@ -142,4 +142,23 @@ namespace Utils {
             throw std::runtime_error("Failed to create shader module!");
         }
     }
+
+    VkFramebuffer createFrameBuffer(VkDevice device, VkRenderPass renderPass, VkImageView imageView, VkExtent2D extent) {
+        VkFramebuffer framebuffer;
+        VkImageView attachments[] = { imageView };
+        VkFramebufferCreateInfo framebufferInfo{};
+        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebufferInfo.renderPass = renderPass;
+        framebufferInfo.attachmentCount = 1;
+        framebufferInfo.pAttachments = attachments;
+        framebufferInfo.width = extent.width;
+        framebufferInfo.height = extent.height;
+        framebufferInfo.layers = 1;
+
+        if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffer) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to create frame buffer!");
+        }
+        return framebuffer;
+    }
+
 }

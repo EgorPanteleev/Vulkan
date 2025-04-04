@@ -20,6 +20,17 @@ public:
     VkExtent2D extent() { return mExtent; }
     std::vector<VkImage>& images() { return mImages; }
     std::vector<VkImageView>& imageViews() { return mImageViews; }
+    uint32_t currentFrame() { return mCurrentFrame; }
+    std::vector<VkFramebuffer>& frameBuffers() { return mFrameBuffers; }
+    /**
+    * Work with images
+    */
+    VkResult acquireNextImage(uint32_t* imageIndex, VkSemaphore imageAvailableSemaphore, VkFence inFlightFence);
+    void updateCurrentFrame();
+    /**
+    * Creating frame buffers
+    */
+    void createFrameBuffers(VkRenderPass renderPass);
 private:
     /**
      *  Creating swapchain
@@ -40,6 +51,8 @@ private:
     VkExtent2D mExtent;
     std::vector<VkImage> mImages;
     std::vector<VkImageView> mImageViews;
+    uint32_t mCurrentFrame;
+    std::vector<VkFramebuffer> mFrameBuffers;
 };
 
 

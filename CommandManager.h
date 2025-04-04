@@ -6,11 +6,16 @@
 #define VULKAN_COMMANDMANAGER_H
 
 #include "Context.h"
+#include "SwapChain.h"
+#include "GraphicsPipeline.h"
+#include "SyncObjects.h"
 
 class CommandManager {
 public:
     CommandManager(Context* context);
     ~CommandManager();
+    void recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline* graphicsPipeline, uint32_t imageIndex);
+    VkResult submitCommandBuffer(SwapChain* swapChain, SyncObjects* syncObjects, uint32_t* imageIndex);
 private:
     /**
     * Creating command pool
@@ -20,7 +25,6 @@ private:
     * Creating command buffers
     */
     void createCommandBuffers();
-    //void recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline* graphicsPipeline, uint32_t imageIndex);
 
 
     Context* mContext;

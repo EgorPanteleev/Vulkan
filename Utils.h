@@ -44,6 +44,7 @@ namespace Utils {
     uint32_t getImageCount(SwapChainSupportDetails swapChainSupport);
     std::vector<char> readFile(const std::string& filename);
     void createShaderModule( VkDevice device, const std::vector<char>& code, VkShaderModule* shaderModule );
+    VkFramebuffer createFrameBuffer(VkDevice device, VkRenderPass renderPass, VkImageView imageView, VkExtent2D extent);
 }
 
 #endif //VULKAN_UTILS_H

@@ -26,7 +26,8 @@ public:
     VkPhysicalDevice physicalDevice() { return mPhysicalDevice; }
     VkDevice device() { return mDevice; }
     uint32_t maxFramesInFlight() { return mMaxFramesInFlight; }
-
+    VkQueue graphicsQueue() { return mGraphicsQueue; }
+    VkQueue presentQueue() { return mPresentQueue; }
 
 private:
     /**

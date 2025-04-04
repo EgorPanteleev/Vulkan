@@ -5,11 +5,14 @@
 #include "SwapChain.h"
 #include "Utils.h"
 
-SwapChain::SwapChain(Context* context): mContext(context) {
+SwapChain::SwapChain(Context* context): mContext(context), mCurrentFrame(0) {
     recreate();
 }
 
 SwapChain::~SwapChain() {
+    for ( auto framebuffer : mFrameBuffers ) {
+        vkDestroyFramebuffer( mContext->device(), framebuffer, nullptr );
+    }
     vkDestroySwapchainKHR(mContext->device(), mSwapChain, nullptr);
     for (auto imageView : mImageViews) {
         vkDestroyImageView(mContext->device(), imageView, nullptr);
@@ -21,6 +24,10 @@ void SwapChain::recreate() {
     createSwapChain();
     createImages();
     createImageViews();
+}
+
+void SwapChain::updateCurrentFrame() {
+    mCurrentFrame = (mCurrentFrame + 1) % mContext->maxFramesInFlight();
 }
 
 void SwapChain::createSwapChain() {
@@ -123,4 +130,24 @@ void SwapChain::createImageViews() {
     for (size_t i = 0; i < mImages.size(); ++i) {
         mImageViews[i] = Utils::createImageView(mContext->device(), mImages[i], VK_IMAGE_VIEW_TYPE_2D, mFormat );
     }
+}
+
+
+VkResult SwapChain::acquireNextImage(uint32_t* imageIndex, VkSemaphore imageAvailableSemaphore, VkFence inFlightFence) {
+    vkWaitForFences(mContext->device(), 1, &inFlightFence, VK_TRUE, UINT64_MAX);
+    vkResetFences(mContext->device(), 1, &inFlightFence);
+
+    VkResult result = vkAcquireNextImageKHR(mContext->device(), mSwapChain, UINT64_MAX,
+                                             imageAvailableSemaphore,
+                                             VK_NULL_HANDLE, imageIndex);
+
+    return result;
+}
+
+void SwapChain::createFrameBuffers(VkRenderPass renderPass) {
+    mFrameBuffers.resize( mImageViews.size() );
+    for (size_t i = 0; i < mImageViews.size(); ++i) {
+        mFrameBuffers[i] = Utils::createFrameBuffer(mContext->device(), renderPass, mImageViews[i], mExtent);
+    }
+    INFO << "Created frame buffers!";
 }
