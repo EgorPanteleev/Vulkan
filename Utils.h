@@ -42,6 +42,7 @@ namespace Utils {
     SwapChainSupportDetails getSwapChainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
     VkImageView createImageView(VkDevice device, VkImage image, VkImageViewType viewType, VkFormat format);
     uint32_t getImageCount(SwapChainSupportDetails swapChainSupport);
+    std::vector<char> readFile(const std::string& filename);
 }
 
 #endif //VULKAN_UTILS_H

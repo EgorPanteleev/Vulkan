@@ -8,7 +8,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-#include "Window.h"
+#include "../Window.h"
 #include "Device.h"
 #include "SyncObjects.h"
 

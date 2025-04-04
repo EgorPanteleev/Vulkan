@@ -4,10 +4,10 @@
 #ifndef FIRSTAPP_H
 #define FIRSTAPP_H
 
-#include "Window.h"
+#include "../Window.h"
 #include "Device.h"
 #include "SwapChain_old.h"
-#include "GraphicsPipeline.h"
+#include "../GraphicsPipeline.h"
 #include "RenderPass.h"
 #include "FrameBuffers.h"
 #include "CommandBuffers.h"

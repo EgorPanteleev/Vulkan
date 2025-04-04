@@ -3,44 +3,72 @@
 //
 
 #include "GraphicsPipeline.h"
-#include <vector>
-#include <fstream>
-#include <iostream>
-
-static std::vector<char> readFile(const std::string& filename) {
-    std::ifstream file(filename, std::ios::ate | std::ios::binary);
-
-    if (!file.is_open()) {
-        throw std::runtime_error("Failed to open file!");
-    }
-    size_t fileSize = (size_t) file.tellg();
-    std::vector<char> buffer(fileSize);
-    file.seekg(0);
-    file.read(buffer.data(), fileSize);
-    file.close();
-
-    return buffer;
-}
+#include "Utils.h"
 
 
-GraphicsPipeline::GraphicsPipeline(Device& device, SwapChain_old& swapChain, RenderPass& renderPass,
-                                   const std::string& vertShaderPath,
-                                   const std::string& fragShaderPath ):
-                                    device( device ), swapChain( swapChain ), renderPass( renderPass ) {
+GraphicsPipeline::GraphicsPipeline(Context* context, SwapChain* swapChain,
+                                   const std::string& vertShaderPath, const std::string& fragShaderPath):
+                                   mContext(context), mSwapChain(swapChain) {
+    createRenderPass();
     createPipelineLayout();
     createGraphicsPipeline( vertShaderPath, fragShaderPath );
 }
 
 GraphicsPipeline::~GraphicsPipeline() {
-    vkDestroyShaderModule( device.getLogicalDevice(), vertShaderModule, nullptr );
-    vkDestroyShaderModule( device.getLogicalDevice(), fragShaderModule, nullptr );
-    vkDestroyPipeline(device.getLogicalDevice(), graphicsPipeline, nullptr);
-    vkDestroyPipelineLayout(device.getLogicalDevice(), pipelineLayout, nullptr);
+    vkDestroyPipeline(mContext->device(), graphicsPipeline, nullptr);
+    vkDestroyPipelineLayout(mContext->device(), pipelineLayout, nullptr);
+    vkDestroyShaderModule( mContext->device(), vertShaderModule, nullptr );
+    vkDestroyShaderModule( mContext->device(), fragShaderModule, nullptr );
+    vkDestroyRenderPass(mContext->device(), renderPass, nullptr);
+}
+
+void GraphicsPipeline::createRenderPass() {
+    VkAttachmentDescription colorAttachment{};
+    colorAttachment.format = mSwapChain->format();
+    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+    VkAttachmentReference colorAttachmentRef{};
+    colorAttachmentRef.attachment = 0;
+    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    VkSubpassDependency dependency{};
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependency.dstSubpass = 0;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.srcAccessMask = 0;
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+    VkSubpassDescription subpass{};
+    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &colorAttachmentRef;
+    VkRenderPassCreateInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    renderPassInfo.attachmentCount = 1;
+    renderPassInfo.pAttachments = &colorAttachment;
+    renderPassInfo.subpassCount = 1;
+    renderPassInfo.pSubpasses = &subpass;
+    renderPassInfo.dependencyCount = 1;
+    renderPassInfo.pDependencies = &dependency;
+
+    if (vkCreateRenderPass(mContext->device(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create render pass!");
+    }
+    INFO << "Created render pass";
+
 }
 
 void GraphicsPipeline::createGraphicsPipeline( const std::string& vertShaderPath, const std::string& fragShaderPath ) {
-    auto vertShaderCode = readFile(vertShaderPath);
-    auto fragShaderCode = readFile(fragShaderPath);
+    auto vertShaderCode = Utils::readFile(vertShaderPath);
+    auto fragShaderCode = Utils::readFile(fragShaderPath);
     createShaderModule(vertShaderCode, &vertShaderModule);
     createShaderModule(fragShaderCode, &fragShaderModule);
 
@@ -76,14 +104,15 @@ void GraphicsPipeline::createGraphicsPipeline( const std::string& vertShaderPath
     pipelineInfo.pColorBlendState = &configInfo.colorBlendInfo;
     pipelineInfo.pDynamicState = &configInfo.dynamicStateInfo;
     pipelineInfo.layout = pipelineLayout;
-    pipelineInfo.renderPass = renderPass();
+    pipelineInfo.renderPass = renderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineInfo.basePipelineIndex = -1; // Optional
 
-    if (vkCreateGraphicsPipelines(device.getLogicalDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+    if (vkCreateGraphicsPipelines(mContext->device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create graphics pipeline!");
     }
+    INFO << "Created graphics pipeline!";
 }
 
 void GraphicsPipeline::createPipelineLayout() {
@@ -94,9 +123,10 @@ void GraphicsPipeline::createPipelineLayout() {
     pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
     pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
-    if (vkCreatePipelineLayout(device.getLogicalDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+    if (vkCreatePipelineLayout(mContext->device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create pipeline layout!");
     }
+    INFO << "Created pipeline layout!";
 }
 
 void GraphicsPipeline::createShaderModule( const std::vector<char>& code, VkShaderModule* shaderModule ) {
@@ -104,7 +134,7 @@ void GraphicsPipeline::createShaderModule( const std::vector<char>& code, VkShad
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = code.size();
     createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-    if (vkCreateShaderModule(device.getLogicalDevice(), &createInfo, nullptr, shaderModule) != VK_SUCCESS) {
+    if (vkCreateShaderModule(mContext->device(), &createInfo, nullptr, shaderModule) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create shader module!");
     }
 }
@@ -138,14 +168,14 @@ void GraphicsPipeline::getPipelineConfigInfo( PipelineConfigInfo& configInfo ) {
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = (float) swapChain.getExtent().width;
-    viewport.height = (float) swapChain.getExtent().height;
+    viewport.width = (float) mSwapChain->extent().width;
+    viewport.height = (float) mSwapChain->extent().height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
     VkRect2D scissor{};
     scissor.offset = {0, 0};
-    scissor.extent = swapChain.getExtent();
+    scissor.extent = mSwapChain->extent();
 
     VkPipelineViewportStateCreateInfo viewportInfo{};
     viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;

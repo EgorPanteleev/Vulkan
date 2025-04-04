@@ -20,7 +20,7 @@ file(GLOB SOURCES "*.cpp")
 file(GLOB HEADERS "*.h")
 add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
 
-target_link_libraries( VulkanApp ${PROJECT_NAME} ${Libs} )
+#target_link_libraries( VulkanApp ${PROJECT_NAME} ${Libs} )
 
 target_link_libraries( test ${PROJECT_NAME} ${Libs} )
 

@@ -5,11 +5,8 @@
 #ifndef VULKAN_GRAPHICSPIPELINE_H
 #define VULKAN_GRAPHICSPIPELINE_H
 
-#include "Device.h"
-#include "SwapChain_old.h"
-#include "RenderPass.h"
-
-#include <string>
+#include "Context.h"
+#include "SwapChain.h"
 
 struct PipelineConfigInfo {
     PipelineConfigInfo() = default;
@@ -30,24 +27,28 @@ struct PipelineConfigInfo {
 
 class GraphicsPipeline {
 public:
-    GraphicsPipeline(Device& device, SwapChain_old& swapChain, RenderPass& renderPass,
-                     const std::string& vertShaderPath, const std::string& fragShaderPath );
+    GraphicsPipeline(Context* context, SwapChain* swapChain,
+                     const std::string& vertShaderPath, const std::string& fragShaderPath);
     ~GraphicsPipeline();
-
-    VkPipeline operator()() { return graphicsPipeline; }
 private:
-
-    void createGraphicsPipeline( const std::string& vertShaderPath, const std::string& fragShaderPath );
-
+    /**
+     * Creating render pass
+     */
+    void createRenderPass();
+    /**
+     * Creating pipeline layout
+     */
     void createPipelineLayout();
-
+    /**
+     * Creating graphics pipeline
+     */
+    void createGraphicsPipeline( const std::string& vertShaderPath, const std::string& fragShaderPath );
     void createShaderModule( const std::vector<char>& code, VkShaderModule* shaderModule );
-
     void getPipelineConfigInfo( PipelineConfigInfo& configInfo );
 
-    Device& device;
-    SwapChain_old& swapChain;
-    RenderPass& renderPass;
+    Context* mContext;
+    SwapChain* mSwapChain;
+    VkRenderPass renderPass;
     VkPipelineLayout pipelineLayout;
     VkPipeline graphicsPipeline;
     VkShaderModule vertShaderModule;

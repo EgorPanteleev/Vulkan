@@ -9,7 +9,7 @@
 #include "RenderPass.h"
 #include "FrameBuffers.h"
 #include "SwapChain_old.h"
-#include "GraphicsPipeline.h"
+#include "../GraphicsPipeline.h"
 #include "SyncObjects.h"
 
 class CommandBuffers {

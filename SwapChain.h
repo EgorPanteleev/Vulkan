@@ -12,6 +12,14 @@ public:
     SwapChain(Context* context);
     ~SwapChain();
     void recreate();
+    /**
+     *  Getters
+     */
+    VkSwapchainKHR swapChain() { return mSwapChain; }
+    VkFormat format() { return mFormat; }
+    VkExtent2D extent() { return mExtent; }
+    std::vector<VkImage>& images() { return mImages; }
+    std::vector<VkImageView>& imageViews() { return mImageViews; }
 private:
     /**
      *  Creating swapchain
