@@ -43,7 +43,6 @@ private:
      * Creating graphics pipeline
      */
     void createGraphicsPipeline( const std::string& vertShaderPath, const std::string& fragShaderPath );
-    void createShaderModule( const std::vector<char>& code, VkShaderModule* shaderModule );
     void getPipelineConfigInfo( PipelineConfigInfo& configInfo );
 
     Context* mContext;

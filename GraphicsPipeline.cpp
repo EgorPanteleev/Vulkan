@@ -69,8 +69,8 @@ void GraphicsPipeline::createRenderPass() {
 void GraphicsPipeline::createGraphicsPipeline( const std::string& vertShaderPath, const std::string& fragShaderPath ) {
     auto vertShaderCode = Utils::readFile(vertShaderPath);
     auto fragShaderCode = Utils::readFile(fragShaderPath);
-    createShaderModule(vertShaderCode, &vertShaderModule);
-    createShaderModule(fragShaderCode, &fragShaderModule);
+    Utils::createShaderModule(mContext->device(), vertShaderCode, &vertShaderModule);
+    Utils::createShaderModule(mContext->device(), fragShaderCode, &fragShaderModule);
 
     VkPipelineShaderStageCreateInfo shaderStages[2];
     shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -128,17 +128,6 @@ void GraphicsPipeline::createPipelineLayout() {
     }
     INFO << "Created pipeline layout!";
 }
-
-void GraphicsPipeline::createShaderModule( const std::vector<char>& code, VkShaderModule* shaderModule ) {
-    VkShaderModuleCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = code.size();
-    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-    if (vkCreateShaderModule(mContext->device(), &createInfo, nullptr, shaderModule) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create shader module!");
-    }
-}
-
 
 //VkPipelineViewportStateCreateInfo viewportInfo;
 //VkPipelineRasterizationStateCreateInfo rasterizationInfo;
