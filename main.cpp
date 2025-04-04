@@ -1,17 +1,16 @@
 //
-// Created by auser on 3/21/25.
+// Created by auser on 4/2/25.
 //
-#include "Old/FirstApp.h"
 
-#include <iostream>
+#include "Renderer.h"
+#include "MessageLogger.h"
 
 int main() {
-    FirstApp app;
+    Renderer app;
     try {
         app.run();
     } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
+        ERROR << e.what();
         return EXIT_FAILURE;
     }
-    return EXIT_SUCCESS;
 }

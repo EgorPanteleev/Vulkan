@@ -12,16 +12,12 @@ find_package(glm REQUIRED)
 
 add_executable(VulkanApp main.cpp)
 
-add_executable(test test.cpp)
-
 set(Libs -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi)
 #static Library
 file(GLOB SOURCES "*.cpp")
 file(GLOB HEADERS "*.h")
-add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
+add_library(VulkanLib STATIC ${SOURCES} ${HEADERS})
 
-#target_link_libraries( VulkanApp ${PROJECT_NAME} ${Libs} )
-
-target_link_libraries( test ${PROJECT_NAME} ${Libs} )
+target_link_libraries( VulkanApp VulkanLib ${Libs} )
 
 add_subdirectory( Shaders )
