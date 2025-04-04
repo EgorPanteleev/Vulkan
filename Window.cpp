@@ -3,8 +3,10 @@
 //
 
 #include "Window.h"
+#include "MessageLogger.h"
 
 #include <stdexcept>
+#include <iostream>
 
 Window::Window( int w, int h, const std::string& name ) {
     initWindow( w, h, name );
@@ -26,8 +28,9 @@ void Window::initWindow( int w, int h, const std::string& name) {
 
 void Window::createWindowSurface( VkInstance instance, VkSurfaceKHR& surface ) {
     if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create window surface!");
+        throw std::runtime_error("Failed to create window surface!");
     }
+    INFO << "Window surface created!";
 }
 
 void Window::getFrameBufferSize( int& width, int& height ) {
