@@ -6,7 +6,7 @@
 
 #include <stdexcept>
 
-CommandBuffers::CommandBuffers(Device& device, SwapChain& swapChain, RenderPass& renderPass,
+CommandBuffers::CommandBuffers(Device& device, SwapChain_old& swapChain, RenderPass& renderPass,
                                FrameBuffers& frameBuffers, GraphicsPipeline& graphicsPipeline,
                                SyncObjects& syncObjects):
                               device( device ), swapChain( swapChain ), renderPass( renderPass ),

@@ -38,8 +38,10 @@ namespace Utils {
 
     VkDebugUtilsMessengerCreateInfoEXT createDebugMessengerCreateInfo();
 
-    QueueFamilyIndices getQueueFamilies( VkPhysicalDevice device, VkSurfaceKHR surface );
-    SwapChainSupportDetails getSwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);
+    QueueFamilyIndices getQueueFamilies( VkPhysicalDevice physicalDevice, VkSurfaceKHR surface );
+    SwapChainSupportDetails getSwapChainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+    VkImageView createImageView(VkDevice device, VkImage image, VkImageViewType viewType, VkFormat format);
+    uint32_t getImageCount(SwapChainSupportDetails swapChainSupport);
 }
 
 #endif //VULKAN_UTILS_H

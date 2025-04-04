@@ -13,7 +13,7 @@
 FirstApp::FirstApp(): window( WIDTH, HEIGHT, NAME ),
                       device( window, MAX_FRAMES_IN_FLIGHT ),
                       syncObjects( device ),
-                      swapChain( std::make_unique<SwapChain>( window, device, syncObjects ) ),
+                      swapChain( std::make_unique<SwapChain_old>(window, device, syncObjects ) ),
                       renderPass( device, swapChain->getImageFormat() ),
                       graphicsPipeline( std::make_unique<GraphicsPipeline>(
                               device, *swapChain, renderPass,

@@ -1,56 +1,37 @@
 //
-// Created by auser on 3/22/25.
+// Created by auser on 4/4/25.
 //
 
 #ifndef VULKAN_SWAPCHAIN_H
 #define VULKAN_SWAPCHAIN_H
 
-#include <vulkan/vulkan.h>
-#include <vector>
-
-#include "Window.h"
-#include "Device.h"
-#include "SyncObjects.h"
+#include "Context.h"
 
 class SwapChain {
 public:
-    SwapChain( Window& window, Device& device, SyncObjects& syncObjects );
-
+    SwapChain(Context* context);
     ~SwapChain();
-
-    VkSwapchainKHR operator()() { return swapChain; }
-
-    VkFormat getImageFormat() { return swapChainImageFormat; }
-
-    VkExtent2D getExtent() { return swapChainExtent; }
-
-    std::vector<VkImageView>& getImageViews() { return swapChainImageViews; }
-
-    VkResult acquireNextImage( uint32_t *imageIndex );
-
-    uint32_t getCurrentFrame() const { return currentFrame; }
-
-    void setCurrentFrame( uint32_t currFrame ) { currentFrame = currFrame; }
-
-    void updateCurrentFrame();
-
+    void recreate();
 private:
-
-    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
-
+    /**
+     *  Creating swapchain
+     */
     void createSwapChain();
-
+    VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+    VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+    /**
+     * Creating images and image views
+     */
+    void createImages();
     void createImageViews();
 
-    Window& window;
-    Device& device;
-    SyncObjects& syncObjects;
-    VkSwapchainKHR swapChain;
-    std::vector<VkImage> swapChainImages;
-    VkFormat swapChainImageFormat;
-    VkExtent2D swapChainExtent;
-    std::vector<VkImageView> swapChainImageViews;
-    uint32_t currentFrame = 0;
+    Context* mContext;
+    VkSwapchainKHR mSwapChain;
+    VkFormat mFormat;
+    VkExtent2D mExtent;
+    std::vector<VkImage> mImages;
+    std::vector<VkImageView> mImageViews;
 };
 
 

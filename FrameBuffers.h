@@ -6,12 +6,12 @@
 #define VULKAN_FRAMEBUFFERS_H
 
 #include "Device.h"
-#include "SwapChain.h"
+#include "SwapChain_old.h"
 #include "RenderPass.h"
 
 class FrameBuffers {
 public:
-    FrameBuffers( Device& device, SwapChain& swapChain, RenderPass& renderPass );
+    FrameBuffers(Device& device, SwapChain_old& swapChain, RenderPass& renderPass );
 
     ~FrameBuffers();
 
@@ -20,7 +20,7 @@ private:
     void createFrameBuffers();
 
     Device& device;
-    SwapChain& swapChain;
+    SwapChain_old& swapChain;
     RenderPass& renderPass;
     std::vector<VkFramebuffer> frameBuffers;
 };

@@ -23,9 +23,9 @@ static std::vector<char> readFile(const std::string& filename) {
 }
 
 
-GraphicsPipeline::GraphicsPipeline( Device& device, SwapChain& swapChain, RenderPass& renderPass,
-                                    const std::string& vertShaderPath,
-                                    const std::string& fragShaderPath ):
+GraphicsPipeline::GraphicsPipeline(Device& device, SwapChain_old& swapChain, RenderPass& renderPass,
+                                   const std::string& vertShaderPath,
+                                   const std::string& fragShaderPath ):
                                     device( device ), swapChain( swapChain ), renderPass( renderPass ) {
     createPipelineLayout();
     createGraphicsPipeline( vertShaderPath, fragShaderPath );

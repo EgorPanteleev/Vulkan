@@ -6,7 +6,7 @@
 #define VULKAN_GRAPHICSPIPELINE_H
 
 #include "Device.h"
-#include "SwapChain.h"
+#include "SwapChain_old.h"
 #include "RenderPass.h"
 
 #include <string>
@@ -30,8 +30,8 @@ struct PipelineConfigInfo {
 
 class GraphicsPipeline {
 public:
-    GraphicsPipeline( Device& device, SwapChain& swapChain, RenderPass& renderPass,
-                      const std::string& vertShaderPath, const std::string& fragShaderPath );
+    GraphicsPipeline(Device& device, SwapChain_old& swapChain, RenderPass& renderPass,
+                     const std::string& vertShaderPath, const std::string& fragShaderPath );
     ~GraphicsPipeline();
 
     VkPipeline operator()() { return graphicsPipeline; }
@@ -46,7 +46,7 @@ private:
     void getPipelineConfigInfo( PipelineConfigInfo& configInfo );
 
     Device& device;
-    SwapChain& swapChain;
+    SwapChain_old& swapChain;
     RenderPass& renderPass;
     VkPipelineLayout pipelineLayout;
     VkPipeline graphicsPipeline;

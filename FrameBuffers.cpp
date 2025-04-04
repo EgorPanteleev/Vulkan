@@ -5,7 +5,7 @@
 #include "FrameBuffers.h"
 #include "stdexcept"
 
-FrameBuffers::FrameBuffers( Device& device, SwapChain& swapChain, RenderPass& renderPass ):
+FrameBuffers::FrameBuffers(Device& device, SwapChain_old& swapChain, RenderPass& renderPass ):
                             device( device ), swapChain( swapChain ), renderPass( renderPass )  {
     createFrameBuffers();
 }

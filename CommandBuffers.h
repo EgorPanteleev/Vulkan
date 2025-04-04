@@ -8,13 +8,13 @@
 #include "Device.h"
 #include "RenderPass.h"
 #include "FrameBuffers.h"
-#include "SwapChain.h"
+#include "SwapChain_old.h"
 #include "GraphicsPipeline.h"
 #include "SyncObjects.h"
 
 class CommandBuffers {
 public:
-    CommandBuffers(Device& device, SwapChain& swapChain, RenderPass& renderPass,
+    CommandBuffers(Device& device, SwapChain_old& swapChain, RenderPass& renderPass,
                    FrameBuffers& frameBuffers, GraphicsPipeline& graphicsPipeline,
                    SyncObjects& syncObjects );
 
@@ -29,7 +29,7 @@ private:
     void createCommandBuffers();
 
     Device& device;
-    SwapChain& swapChain;
+    SwapChain_old& swapChain;
     RenderPass& renderPass;
     FrameBuffers& frameBuffers;
     GraphicsPipeline& graphicsPipeline;

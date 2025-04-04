@@ -6,7 +6,7 @@
 
 #include "Window.h"
 #include "Device.h"
-#include "SwapChain.h"
+#include "SwapChain_old.h"
 #include "GraphicsPipeline.h"
 #include "RenderPass.h"
 #include "FrameBuffers.h"
@@ -39,7 +39,7 @@ private:
     Window window; /// glfw window
     Device device;
     SyncObjects syncObjects;
-    std::unique_ptr<SwapChain> swapChain;
+    std::unique_ptr<SwapChain_old> swapChain;
     RenderPass renderPass;
     std::unique_ptr<GraphicsPipeline> graphicsPipeline;
     FrameBuffers frameBuffers;
