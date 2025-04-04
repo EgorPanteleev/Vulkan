@@ -45,6 +45,9 @@ namespace Utils {
     std::vector<char> readFile(const std::string& filename);
     void createShaderModule( VkDevice device, const std::vector<char>& code, VkShaderModule* shaderModule );
     VkFramebuffer createFrameBuffer(VkDevice device, VkRenderPass renderPass, VkImageView imageView, VkExtent2D extent);
+    VkResult createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
+    void destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
+    VkDebugUtilsMessengerEXT createDebugMessenger(VkInstance instance);
 }
 
 #endif //VULKAN_UTILS_H

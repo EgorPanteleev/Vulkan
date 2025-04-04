@@ -15,12 +15,15 @@
 Context::Context(): mInstance(VK_NULL_HANDLE), mWindow( 800, 600, "VulkanApp" ), mPhysicalDevice(VK_NULL_HANDLE),
                     mDevice(VK_NULL_HANDLE), mGraphicsQueue(VK_NULL_HANDLE), mPresentQueue(VK_NULL_HANDLE) {
     createInstance();
+    if (enableValidationLayers)
+        mDebugMessenger = Utils::createDebugMessenger(mInstance);
     mWindow.createWindowSurface( mInstance, mSurface );
     pickPhysicalDevice();
     createLogicalDevice();
 }
 Context::~Context() {
     vkDestroyDevice(mDevice, nullptr);
+    if (enableValidationLayers) Utils::destroyDebugUtilsMessengerEXT(mInstance, mDebugMessenger, nullptr);
     vkDestroySurfaceKHR(mInstance, mSurface, nullptr);
     vkDestroyInstance( mInstance, nullptr );
 }

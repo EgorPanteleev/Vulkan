@@ -9,6 +9,7 @@
 #include <GLFW/glfw3.h>
 //STL
 #include <vector>
+#include <memory>
 
 #include "Window.h"
 
@@ -63,6 +64,7 @@ private:
     VkDevice mDevice;
     VkQueue mGraphicsQueue;
     VkQueue mPresentQueue;
+    VkDebugUtilsMessengerEXT mDebugMessenger;
 };
 
 
