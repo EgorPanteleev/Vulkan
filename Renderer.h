@@ -26,6 +26,7 @@ private:
     SwapChain mSwapChain;
     GraphicsPipeline mGraphicsPipeline;
     CommandManager mCommandManager;
+    VertexBuffer mVertexBuffer;
     SyncObjects mSyncObjects;
 };
 

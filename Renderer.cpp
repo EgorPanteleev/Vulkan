@@ -8,12 +8,11 @@ Renderer::Renderer(): mContext(), mSwapChain(&mContext),
                       mGraphicsPipeline(&mContext, &mSwapChain,
                                         "/home/auser/dev/src/Vulkan/CompiledShaders/shader.vert.spv",
                                         "/home/auser/dev/src/Vulkan/CompiledShaders/shader.frag.spv"),
-                      mCommandManager(&mContext), mSyncObjects(&mContext) {
+                      mCommandManager(&mContext), mVertexBuffer(&mContext), mSyncObjects(&mContext) {
     mSwapChain.createFrameBuffers(mGraphicsPipeline.renderPass());
 }
 
 Renderer::~Renderer() {
-
 }
 
 void Renderer::run() {
@@ -44,7 +43,7 @@ void Renderer::drawFrame() {
     // Only reset the fence if we are submitting work
     vkResetFences(mContext.device(), 1, &mSyncObjects.inFlightFence(mSwapChain.currentFrame()));
 
-    mCommandManager.recordCommandBuffer( &mSwapChain, &mGraphicsPipeline, imageIndex );
+    mCommandManager.recordCommandBuffer( &mSwapChain, &mGraphicsPipeline, &mVertexBuffer, imageIndex );
     auto submitResult = mCommandManager.submitCommandBuffer( &mSwapChain, &mSyncObjects, &imageIndex );
     if (submitResult == VK_ERROR_OUT_OF_DATE_KHR ||
             submitResult == VK_SUBOPTIMAL_KHR || mContext.window().frameBufferResized()) {

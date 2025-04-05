@@ -48,6 +48,15 @@ namespace Utils {
     VkResult createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
     void destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
     VkDebugUtilsMessengerEXT createDebugMessenger(VkInstance instance);
+
+    VkCommandPool createCommandPool(VkDevice device, VkPhysicalDevice physicalDevice,
+                                    VkSurfaceKHR surface,VkCommandPoolCreateFlags flags);
+
+    uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
+    void createBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage,
+                      VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+    void copyBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
+                    VkQueue graphicsQueue, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 }
 
 #endif //VULKAN_UTILS_H

@@ -17,15 +17,8 @@ CommandManager::~CommandManager() {
 }
 
 void CommandManager::createCommandPool() {
-    auto indices = Utils::getQueueFamilies(mContext->physicalDevice(), mContext->surface());
-    VkCommandPoolCreateInfo poolInfo{};
-    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    poolInfo.queueFamilyIndex = indices.graphicsFamily.value();
-    if (vkCreateCommandPool(mContext->device(), &poolInfo, nullptr, &mCommandPool) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create command pool!");
-    }
-    INFO << "Created command pool!";
+    mCommandPool = Utils::createCommandPool(mContext->device(), mContext->physicalDevice(),
+                             mContext->surface(), VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT );
 }
 
 void CommandManager::createCommandBuffers() {
@@ -43,7 +36,8 @@ void CommandManager::createCommandBuffers() {
     INFO << "Created command buffers";
 }
 
-void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline* graphicsPipeline, uint32_t imageIndex) {
+void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline* graphicsPipeline,
+                                         VertexBuffer* vertexBuffer, uint32_t imageIndex) {
     uint32_t currentFrame = swapChain->currentFrame();
     auto commandBuffer = mCommandBuffers[ currentFrame ];
     vkResetCommandBuffer( commandBuffer, 0 );
@@ -83,7 +77,13 @@ void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline*
     scissor.extent = swapChain->extent();
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->graphicsPipeline());
+
+    VkBuffer vertexBuffers[] = {vertexBuffer->vertexBuffer()};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+    vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertexBuffer->vertices().size()), 1, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
 

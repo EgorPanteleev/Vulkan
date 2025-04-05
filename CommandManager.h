@@ -9,12 +9,14 @@
 #include "SwapChain.h"
 #include "GraphicsPipeline.h"
 #include "SyncObjects.h"
+#include "VertexBuffer.h"
 
 class CommandManager {
 public:
     CommandManager(Context* context);
     ~CommandManager();
-    void recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline* graphicsPipeline, uint32_t imageIndex);
+    void recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline* graphicsPipeline,
+                             VertexBuffer* vertexBuffer, uint32_t imageIndex);
     VkResult submitCommandBuffer(SwapChain* swapChain, SyncObjects* syncObjects, uint32_t* imageIndex);
 private:
     /**

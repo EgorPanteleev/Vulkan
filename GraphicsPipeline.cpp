@@ -4,6 +4,7 @@
 
 #include "GraphicsPipeline.h"
 #include "Utils.h"
+#include "VertexBuffer.h"
 
 
 GraphicsPipeline::GraphicsPipeline(Context* context, SwapChain* swapChain,
@@ -139,12 +140,15 @@ void GraphicsPipeline::createPipelineLayout() {
 //VkPipelineDynamicStateCreateInfo dynamicStateInfo;
 
 void GraphicsPipeline::getPipelineConfigInfo( PipelineConfigInfo& configInfo ) {
+    static auto bindingDescription = Vertex::getBindingDescription();
+    static auto attributeDescriptions = Vertex::getAttributeDescriptions();
+
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
-    vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());;
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
     configInfo.vertexInputInfo = vertexInputInfo;
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
@@ -153,7 +157,6 @@ void GraphicsPipeline::getPipelineConfigInfo( PipelineConfigInfo& configInfo ) {
     inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
     configInfo.inputAssemblyInfo = inputAssemblyInfo;
 
-    //TODO
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
