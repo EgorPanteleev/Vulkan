@@ -34,12 +34,10 @@ void Renderer::drawFrame() {
                                  mSyncObjects.imageAvailableSemaphore(mSwapChain.currentFrame()),
                                  mSyncObjects.inFlightFence(mSwapChain.currentFrame()));
 
-    if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR ||
-        acquireResult == VK_SUBOPTIMAL_KHR || framebufferResized) {
-        framebufferResized = false;
+    if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR ) {
         recreateSwapChain();
         return;
-    } else if (acquireResult != VK_SUCCESS) {
+    } else if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR) {
         throw std::runtime_error("Failed to acquire swap chain image!");
     }
 
@@ -49,7 +47,8 @@ void Renderer::drawFrame() {
     mCommandManager.recordCommandBuffer( &mSwapChain, &mGraphicsPipeline, imageIndex );
     auto submitResult = mCommandManager.submitCommandBuffer( &mSwapChain, &mSyncObjects, &imageIndex );
     if (submitResult == VK_ERROR_OUT_OF_DATE_KHR ||
-            submitResult == VK_SUBOPTIMAL_KHR || framebufferResized) {
+            submitResult == VK_SUBOPTIMAL_KHR || mContext.window().frameBufferResized()) {
+        mContext.window().setResized(false);
         recreateSwapChain();
         return;
     } else if (submitResult != VK_SUCCESS) {
