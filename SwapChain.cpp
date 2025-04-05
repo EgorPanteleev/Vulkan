@@ -10,6 +10,16 @@ SwapChain::SwapChain(Context* context): mContext(context), mCurrentFrame(0) {
 }
 
 SwapChain::~SwapChain() {
+    clear();
+}
+
+void SwapChain::recreate() {
+    createSwapChain();
+    createImages();
+    createImageViews();
+}
+
+void SwapChain::clear() {
     for ( auto framebuffer : mFrameBuffers ) {
         vkDestroyFramebuffer( mContext->device(), framebuffer, nullptr );
     }
@@ -18,12 +28,6 @@ SwapChain::~SwapChain() {
         vkDestroyImageView(mContext->device(), imageView, nullptr);
     }
     mImageViews.clear();
-}
-
-void SwapChain::recreate() {
-    createSwapChain();
-    createImages();
-    createImageViews();
 }
 
 void SwapChain::updateCurrentFrame() {

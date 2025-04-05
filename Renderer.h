@@ -20,7 +20,9 @@ public:
 private:
     void mainLoop();
     void drawFrame();
+    void recreateSwapChain();
 
+    bool framebufferResized = false;
     Context mContext;
     SwapChain mSwapChain;
     GraphicsPipeline mGraphicsPipeline;

@@ -12,6 +12,7 @@ public:
     SwapChain(Context* context);
     ~SwapChain();
     void recreate();
+    void clear();
     /**
      *  Getters
      */

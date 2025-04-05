@@ -30,10 +30,37 @@ void Renderer::mainLoop() {
 
 void Renderer::drawFrame() {
     uint32_t imageIndex;
-    mSwapChain.acquireNextImage(&imageIndex,
+    auto acquireResult = mSwapChain.acquireNextImage(&imageIndex,
                                  mSyncObjects.imageAvailableSemaphore(mSwapChain.currentFrame()),
                                  mSyncObjects.inFlightFence(mSwapChain.currentFrame()));
+
+    if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR ||
+        acquireResult == VK_SUBOPTIMAL_KHR || framebufferResized) {
+        framebufferResized = false;
+        recreateSwapChain();
+        return;
+    } else if (acquireResult != VK_SUCCESS) {
+        throw std::runtime_error("Failed to acquire swap chain image!");
+    }
+
+    // Only reset the fence if we are submitting work
+    vkResetFences(mContext.device(), 1, &mSyncObjects.inFlightFence(mSwapChain.currentFrame()));
+
     mCommandManager.recordCommandBuffer( &mSwapChain, &mGraphicsPipeline, imageIndex );
-    mCommandManager.submitCommandBuffer( &mSwapChain, &mSyncObjects, &imageIndex );
+    auto submitResult = mCommandManager.submitCommandBuffer( &mSwapChain, &mSyncObjects, &imageIndex );
+    if (submitResult == VK_ERROR_OUT_OF_DATE_KHR ||
+            submitResult == VK_SUBOPTIMAL_KHR || framebufferResized) {
+        recreateSwapChain();
+        return;
+    } else if (submitResult != VK_SUCCESS) {
+        throw std::runtime_error("Failed to submit command buffer!");
+    }
     mSwapChain.updateCurrentFrame();
+}
+
+void Renderer::recreateSwapChain() {
+    vkDeviceWaitIdle(mContext.device());
+    mSwapChain.clear();
+    mSwapChain.recreate();
+    mSwapChain.createFrameBuffers(mGraphicsPipeline.renderPass());
 }

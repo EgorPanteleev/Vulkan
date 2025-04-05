@@ -20,10 +20,13 @@ public:
 
     [[nodiscard]] bool shouldClose() const {  return glfwWindowShouldClose( window ); }
 
+    void setResized(bool resized) { mFrameBufferResized = resized; }
+    bool frameBufferResized() { return mFrameBufferResized; }
 private:
     void initWindow( int w, int h, const std::string& name );
 
     GLFWwindow* window;
+    bool mFrameBufferResized;
 };
 
 
