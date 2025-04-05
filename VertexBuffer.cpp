@@ -34,13 +34,23 @@ std::array<VkVertexInputAttributeDescription, 2> Vertex::getAttributeDescription
 }
 
 VertexBuffer::VertexBuffer(Context* context): mContext(context) {
-    mVertices = { { {0.0f, -0.5f}, {1.0f, 0.0f, 0.0f} },
-                  { {0.5f, 0.5f }, {0.0f, 1.0f, 0.0f} },
-                  { {-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f} } };
+//    mVertices = { { {0.0f, -0.5f}, {1.0f, 0.0f, 0.0f} },
+//                  { {0.5f, 0.5f }, {0.0f, 1.0f, 0.0f} },
+//                  { {-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f} } };
+
+    mVertices = { { {-0.5f , -0.5f}, {1.0f, 0.0f, 0.0f} },
+                  { { 0.5f , -0.5f}, {0.0f, 1.0f, 0.0f} },
+                  { { 0.5f , 0.5f }, {0.0f, 0.0f, 1.0f} },
+                  { { -0.5f, 0.5f }, {1.0f, 1.0f, 1.0f} } };
+    mIndices = { 0, 1, 2, 2, 3, 0 };
     createVertexBuffer();
+    createIndexBuffer();
 }
 
 VertexBuffer::~VertexBuffer() {
+    vkDestroyBuffer(mContext->device(), mIndexBuffer, nullptr);
+    vkFreeMemory(mContext->device(), mIndexBufferMemory, nullptr);
+
     vkDestroyBuffer(mContext->device(), mVertexBuffer, nullptr);
     vkFreeMemory(mContext->device(), mVertexBufferMemory, nullptr);
 }
@@ -65,6 +75,31 @@ void VertexBuffer::createVertexBuffer() {
                         mVertexBuffer, mVertexBufferMemory);
     Utils::copyBuffer(mContext->device(), mContext->physicalDevice(), mContext->surface(),
                       mContext->graphicsQueue(), stagingBuffer, mVertexBuffer, bufferSize);
+
+    vkDestroyBuffer(mContext->device(), stagingBuffer, nullptr);
+    vkFreeMemory(mContext->device(), stagingBufferMemory, nullptr);
+}
+
+void VertexBuffer::createIndexBuffer() {
+    VkDeviceSize bufferSize = sizeof(mIndices[0]) * mIndices.size();
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    Utils::createBuffer(mContext->device(), mContext->physicalDevice(), bufferSize,
+                        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                        stagingBuffer, stagingBufferMemory);
+    void* data;
+    vkMapMemory(mContext->device(), stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, mIndices.data(), (size_t) bufferSize);
+    vkUnmapMemory(mContext->device(), stagingBufferMemory);
+
+    Utils::createBuffer(mContext->device(), mContext->physicalDevice(), bufferSize,
+                        VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                        mIndexBuffer, mIndexBufferMemory);
+    Utils::copyBuffer(mContext->device(), mContext->physicalDevice(), mContext->surface(),
+                      mContext->graphicsQueue(), stagingBuffer, mIndexBuffer, bufferSize);
 
     vkDestroyBuffer(mContext->device(), stagingBuffer, nullptr);
     vkFreeMemory(mContext->device(), stagingBufferMemory, nullptr);

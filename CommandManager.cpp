@@ -56,7 +56,7 @@ void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline*
     renderPassInfo.framebuffer = swapChain->frameBuffers()[imageIndex];
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent = swapChain->extent();
-    VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+    VkClearValue clearColor = {{{0.2f, 0.2f, 0.2f, 1.0f}}};
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -83,7 +83,9 @@ void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline*
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-    vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertexBuffer->vertices().size()), 1, 0, 0);
+    vkCmdBindIndexBuffer(commandBuffer, vertexBuffer->indexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(vertexBuffer->indices().size()), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
 

@@ -10,6 +10,8 @@
 
 #include "Context.h"
 
+//TODO all allocations with vulkan memory allocator
+
 struct Vertex {
     Vertex( const glm::vec2& pos, const glm::vec3& color );
     static VkVertexInputBindingDescription getBindingDescription();
@@ -25,15 +27,20 @@ public:
     ~VertexBuffer();
 
     std::vector<Vertex>& vertices() { return mVertices; }
+    std::vector<uint32_t>& indices() { return mIndices; }
     VkBuffer vertexBuffer() { return mVertexBuffer; }
-    VkDeviceMemory vertexBufferMemory() { return mVertexBufferMemory; }
+    VkBuffer indexBuffer() { return mIndexBuffer; }
 private:
     void createVertexBuffer();
+    void createIndexBuffer();
 
     Context* mContext;
     std::vector<Vertex> mVertices;
     VkBuffer mVertexBuffer;
     VkDeviceMemory mVertexBufferMemory;
+    std::vector<uint32_t> mIndices;
+    VkBuffer mIndexBuffer;
+    VkDeviceMemory mIndexBufferMemory;
 };
 
 
