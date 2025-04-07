@@ -4,6 +4,7 @@
 
 #include "CommandManager.h"
 #include "Utils.h"
+#include "DescriptorSet.h"
 
 CommandManager::CommandManager(Context* context): mContext(context) {
     createCommandPool();
@@ -37,7 +38,7 @@ void CommandManager::createCommandBuffers() {
 }
 
 void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline* graphicsPipeline,
-                                         VertexBuffer* vertexBuffer, uint32_t imageIndex) {
+                                         DescriptorSet* descriptorSet, VertexBuffer* vertexBuffer, uint32_t imageIndex) {
     uint32_t currentFrame = swapChain->currentFrame();
     auto commandBuffer = mCommandBuffers[ currentFrame ];
     vkResetCommandBuffer( commandBuffer, 0 );
@@ -84,6 +85,9 @@ void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline*
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
     vkCmdBindIndexBuffer(commandBuffer, vertexBuffer->indexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->pipelineLayout(),
+                            0, 1, &descriptorSet->descriptorSets()[currentFrame], 0, nullptr);
 
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(vertexBuffer->indices().size()), 1, 0, 0, 0);
 

@@ -16,7 +16,7 @@ public:
     CommandManager(Context* context);
     ~CommandManager();
     void recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline* graphicsPipeline,
-                             VertexBuffer* vertexBuffer, uint32_t imageIndex);
+                             DescriptorSet* descriptorSet, VertexBuffer* vertexBuffer, uint32_t imageIndex);
     VkResult submitCommandBuffer(SwapChain* swapChain, SyncObjects* syncObjects, uint32_t* imageIndex);
 private:
     /**

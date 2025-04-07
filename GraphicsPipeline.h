@@ -7,6 +7,7 @@
 
 #include "Context.h"
 #include "SwapChain.h"
+#include "DescriptorSet.h"
 
 struct PipelineConfigInfo {
     PipelineConfigInfo() = default;
@@ -27,7 +28,7 @@ struct PipelineConfigInfo {
 
 class GraphicsPipeline {
 public:
-    GraphicsPipeline(Context* context, SwapChain* swapChain,
+    GraphicsPipeline(Context* context, SwapChain* swapChain, DescriptorSet* descriptorSet,
                      const std::string& vertShaderPath, const std::string& fragShaderPath);
     ~GraphicsPipeline();
     /**
@@ -45,7 +46,7 @@ private:
     /**
      * Creating pipeline layout
      */
-    void createPipelineLayout();
+    void createPipelineLayout(DescriptorSet* descriptorSet);
     /**
      * Creating graphics pipeline
      */

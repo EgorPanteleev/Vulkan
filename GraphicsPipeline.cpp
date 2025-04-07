@@ -7,11 +7,11 @@
 #include "VertexBuffer.h"
 
 
-GraphicsPipeline::GraphicsPipeline(Context* context, SwapChain* swapChain,
+GraphicsPipeline::GraphicsPipeline(Context* context, SwapChain* swapChain, DescriptorSet* descriptorSet,
                                    const std::string& vertShaderPath, const std::string& fragShaderPath):
                                    mContext(context), mSwapChain(swapChain) {
     createRenderPass();
-    createPipelineLayout();
+    createPipelineLayout(descriptorSet);
     createGraphicsPipeline( vertShaderPath, fragShaderPath );
 }
 
@@ -116,28 +116,19 @@ void GraphicsPipeline::createGraphicsPipeline( const std::string& vertShaderPath
     INFO << "Created graphics pipeline!";
 }
 
-void GraphicsPipeline::createPipelineLayout() {
+void GraphicsPipeline::createPipelineLayout(DescriptorSet* descriptorSet) {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 0; // Optional
-    pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
-    pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
-    pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
+    pipelineLayoutInfo.setLayoutCount = 1;
+    pipelineLayoutInfo.pSetLayouts = &descriptorSet->descriptorSetLayout();
+    pipelineLayoutInfo.pushConstantRangeCount = 0;
+    pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
     if (vkCreatePipelineLayout(mContext->device(), &pipelineLayoutInfo, nullptr, &mPipelineLayout) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create pipeline layout!");
     }
     INFO << "Created pipeline layout!";
 }
-
-//VkPipelineViewportStateCreateInfo viewportInfo;
-//VkPipelineRasterizationStateCreateInfo rasterizationInfo;
-//VkPipelineMultisampleStateCreateInfo multisampleInfo;
-//VkPipelineColorBlendAttachmentState colorBlendAttachment;
-//VkPipelineColorBlendStateCreateInfo colorBlendInfo;
-//VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
-//std::vector<VkDynamicState> dynamicStateEnables;
-//VkPipelineDynamicStateCreateInfo dynamicStateInfo;
 
 void GraphicsPipeline::getPipelineConfigInfo( PipelineConfigInfo& configInfo ) {
     static auto bindingDescription = Vertex::getBindingDescription();
@@ -184,7 +175,7 @@ void GraphicsPipeline::getPipelineConfigInfo( PipelineConfigInfo& configInfo ) {
     rasterizationInfo.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizationInfo.lineWidth = 1.0f;
     rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizationInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasterizationInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterizationInfo.depthBiasEnable = VK_FALSE;
     rasterizationInfo.depthBiasConstantFactor = 0.0f; // Optional
     rasterizationInfo.depthBiasClamp = 0.0f; // Optional

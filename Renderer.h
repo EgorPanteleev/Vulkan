@@ -8,6 +8,7 @@
 #include "GraphicsPipeline.h"
 #include "CommandManager.h"
 #include "SyncObjects.h"
+#include "UniformBuffers.h"
 
 //#include <memory>
 
@@ -24,6 +25,8 @@ private:
 
     Context mContext;
     SwapChain mSwapChain;
+    UniformBuffers mUniformBuffers;
+    DescriptorSet mDescriptorSet;
     GraphicsPipeline mGraphicsPipeline;
     CommandManager mCommandManager;
     VertexBuffer mVertexBuffer;

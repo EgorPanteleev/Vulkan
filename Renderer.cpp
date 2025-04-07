@@ -4,8 +4,9 @@
 
 #include "Renderer.h"
 
-Renderer::Renderer(): mContext(), mSwapChain(&mContext),
-                      mGraphicsPipeline(&mContext, &mSwapChain,
+Renderer::Renderer(): mContext(), mSwapChain(&mContext), mUniformBuffers(&mContext),
+                      mDescriptorSet(&mContext, &mUniformBuffers),
+                      mGraphicsPipeline(&mContext, &mSwapChain, &mDescriptorSet,
                                         "/home/auser/dev/src/Vulkan/CompiledShaders/shader.vert.spv",
                                         "/home/auser/dev/src/Vulkan/CompiledShaders/shader.frag.spv"),
                       mCommandManager(&mContext), mVertexBuffer(&mContext), mSyncObjects(&mContext) {
@@ -43,7 +44,9 @@ void Renderer::drawFrame() {
     // Only reset the fence if we are submitting work
     vkResetFences(mContext.device(), 1, &mSyncObjects.inFlightFence(mSwapChain.currentFrame()));
 
-    mCommandManager.recordCommandBuffer( &mSwapChain, &mGraphicsPipeline, &mVertexBuffer, imageIndex );
+    mUniformBuffers.updateUniformBuffer(mSwapChain.currentFrame(), mSwapChain.extent());
+
+    mCommandManager.recordCommandBuffer( &mSwapChain, &mGraphicsPipeline, &mDescriptorSet, &mVertexBuffer, imageIndex );
     auto submitResult = mCommandManager.submitCommandBuffer( &mSwapChain, &mSyncObjects, &imageIndex );
     if (submitResult == VK_ERROR_OUT_OF_DATE_KHR ||
             submitResult == VK_SUBOPTIMAL_KHR || mContext.window().frameBufferResized()) {
