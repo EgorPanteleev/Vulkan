@@ -7,8 +7,8 @@
 Renderer::Renderer(): mContext(), mSwapChain(&mContext), mUniformBuffers(&mContext),
                       mDescriptorSet(&mContext, &mUniformBuffers),
                       mGraphicsPipeline(&mContext, &mSwapChain, &mDescriptorSet,
-                                        "/home/auser/dev/src/Vulkan/CompiledShaders/shader.vert.spv",
-                                        "/home/auser/dev/src/Vulkan/CompiledShaders/shader.frag.spv"),
+                                        "/home/auser/dev/src/Vulkan/compiled_shaders/shader.vert.spv",
+                                        "/home/auser/dev/src/Vulkan/compiled_shaders/shader.frag.spv"),
                       mCommandManager(&mContext), mVertexBuffer(&mContext), mSyncObjects(&mContext) {
     mSwapChain.createFrameBuffers(mGraphicsPipeline.renderPass());
 }

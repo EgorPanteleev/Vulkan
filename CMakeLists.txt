@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 23)
 
 set(CMAKE_CXX_FLAGS "-O2")
 
+add_subdirectory(thirdparty)
+
 #Find required packages
 find_package(Vulkan REQUIRED)
 find_package(glfw3 REQUIRED)
@@ -18,6 +20,8 @@ file(GLOB SOURCES "*.cpp")
 file(GLOB HEADERS "*.h")
 add_library(VulkanLib STATIC ${SOURCES} ${HEADERS})
 
-target_link_libraries( VulkanApp VulkanLib ${Libs} )
+target_link_libraries(VulkanLib stbImage)
 
-add_subdirectory( Shaders )
+target_link_libraries(VulkanApp VulkanLib ${Libs})
+
+add_subdirectory(shaders)
