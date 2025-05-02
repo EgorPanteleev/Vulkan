@@ -7,6 +7,7 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include <vk_mem_alloc.h>
 //STL
 #include <vector>
 #include <memory>
@@ -26,6 +27,7 @@ public:
     VkSurfaceKHR surface() { return mSurface; }
     VkPhysicalDevice physicalDevice() { return mPhysicalDevice; }
     VkDevice device() { return mDevice; }
+    VmaAllocator allocator() { return mAllocator; }
     uint32_t maxFramesInFlight() { return mMaxFramesInFlight; }
     VkQueue graphicsQueue() { return mGraphicsQueue; }
     VkQueue presentQueue() { return mPresentQueue; }
@@ -48,6 +50,8 @@ private:
      * Creating logical device
      */
     void createLogicalDevice();
+
+    void createAllocator();
     VkQueue getQueue(uint32_t index) const;
     const uint32_t mMaxFramesInFlight = 2;
     const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
@@ -62,6 +66,7 @@ private:
     VkSurfaceKHR mSurface;
     VkPhysicalDevice mPhysicalDevice;
     VkDevice mDevice;
+    VmaAllocator mAllocator;
     VkQueue mGraphicsQueue;
     VkQueue mPresentQueue;
     VkDebugUtilsMessengerEXT mDebugMessenger;

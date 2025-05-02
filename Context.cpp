@@ -5,6 +5,8 @@
 #include "Context.h"
 #include "Utils.h"
 
+#define VMA_IMPLEMENTATION
+#include <vk_mem_alloc.h>
 //STL
 #include <cstring>
 #include <stdexcept>
@@ -20,8 +22,10 @@ Context::Context(): mInstance(VK_NULL_HANDLE), mWindow( 800, 600, "VulkanApp" ),
     mWindow.createWindowSurface( mInstance, mSurface );
     pickPhysicalDevice();
     createLogicalDevice();
+    createAllocator();
 }
 Context::~Context() {
+    vmaDestroyAllocator(mAllocator);
     vkDestroyDevice(mDevice, nullptr);
     if (enableValidationLayers) Utils::destroyDebugUtilsMessengerEXT(mInstance, mDebugMessenger, nullptr);
     vkDestroySurfaceKHR(mInstance, mSurface, nullptr);
@@ -150,7 +154,7 @@ void Context::pickPhysicalDevice() {
     INFO << "Picked physical device:\n    " << deviceProperties.deviceName;
 }
 
-bool Context::isDeviceSuitable(VkPhysicalDevice device ) {
+bool Context::isDeviceSuitable(VkPhysicalDevice device) {
     VkPhysicalDeviceProperties properties;
     vkGetPhysicalDeviceProperties(device, &properties);
     if (properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
@@ -229,6 +233,15 @@ void Context::createLogicalDevice() {
     // Init queues
     mGraphicsQueue = getQueue(indices.graphicsFamily.value());
     mPresentQueue = getQueue(indices.presentFamily.value());
+}
+
+void Context::createAllocator() {
+    VmaAllocatorCreateInfo allocatorInfo = {};
+    allocatorInfo.physicalDevice = mPhysicalDevice;
+    allocatorInfo.device = mDevice;
+    allocatorInfo.instance = mInstance;
+
+    vmaCreateAllocator(&allocatorInfo, &mAllocator);
 }
 
 VkQueue Context::getQueue(uint32_t index) const {

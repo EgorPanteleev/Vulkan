@@ -26,7 +26,7 @@ private:
 
     Context* mContext;
     std::vector<VkBuffer> mUniformBuffers;
-    std::vector<VkDeviceMemory> mUniformBuffersMemory;
+    std::vector<VmaAllocation> mBuffersAllocation;
     std::vector<void*> mUniformBuffersMapped;
 };
 

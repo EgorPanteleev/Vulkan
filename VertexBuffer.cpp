@@ -48,59 +48,39 @@ VertexBuffer::VertexBuffer(Context* context): mContext(context) {
 }
 
 VertexBuffer::~VertexBuffer() {
-    vkDestroyBuffer(mContext->device(), mIndexBuffer, nullptr);
-    vkFreeMemory(mContext->device(), mIndexBufferMemory, nullptr);
-
-    vkDestroyBuffer(mContext->device(), mVertexBuffer, nullptr);
-    vkFreeMemory(mContext->device(), mVertexBufferMemory, nullptr);
+    vmaDestroyBuffer(mContext->allocator(), mIndexBuffer, mIndexBufferAllocation);
+    vmaDestroyBuffer(mContext->allocator(), mVertexBuffer, mVertexBufferAllocation);
 }
 
 void VertexBuffer::createVertexBuffer() {
     VkDeviceSize bufferSize = sizeof(mVertices[0]) * mVertices.size();
 
     VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    Utils::createBuffer(mContext->device(), mContext->physicalDevice(), bufferSize,
-                 VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                 stagingBuffer, stagingBufferMemory);
-    void* data;
-    vkMapMemory(mContext->device(), stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, mVertices.data(), (size_t) bufferSize);
-    vkUnmapMemory(mContext->device(), stagingBufferMemory);
+    VmaAllocation allocation;
+    Utils::createBuffer(mContext->allocator(), allocation, VMA_MEMORY_USAGE_CPU_ONLY,
+                        bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingBuffer );
 
-    Utils::createBuffer(mContext->device(), mContext->physicalDevice(), bufferSize,
-                        VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                        mVertexBuffer, mVertexBufferMemory);
-    Utils::copyBuffer(mContext->device(), mContext->physicalDevice(), mContext->surface(),
-                      mContext->graphicsQueue(), stagingBuffer, mVertexBuffer, bufferSize);
+    Utils::copyDataToBuffer(mContext->allocator(), allocation, bufferSize, mVertices.data() );
 
-    vkDestroyBuffer(mContext->device(), stagingBuffer, nullptr);
-    vkFreeMemory(mContext->device(), stagingBufferMemory, nullptr);
+    Utils::createBuffer(mContext->allocator(), mVertexBufferAllocation, VMA_MEMORY_USAGE_AUTO,
+                        bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, mVertexBuffer );
+    Utils::copyBuffer(mContext, stagingBuffer, mVertexBuffer, bufferSize);
+
+    vmaDestroyBuffer(mContext->allocator(), stagingBuffer, allocation);
 }
 
 void VertexBuffer::createIndexBuffer() {
     VkDeviceSize bufferSize = sizeof(mIndices[0]) * mIndices.size();
 
     VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    Utils::createBuffer(mContext->device(), mContext->physicalDevice(), bufferSize,
-                        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                        stagingBuffer, stagingBufferMemory);
-    void* data;
-    vkMapMemory(mContext->device(), stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, mIndices.data(), (size_t) bufferSize);
-    vkUnmapMemory(mContext->device(), stagingBufferMemory);
+    VmaAllocation allocation;
+    Utils::createBuffer(mContext->allocator(), allocation, VMA_MEMORY_USAGE_CPU_ONLY,
+                        bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingBuffer);
+    Utils::copyDataToBuffer(mContext->allocator(), allocation, bufferSize, mIndices.data());
 
-    Utils::createBuffer(mContext->device(), mContext->physicalDevice(), bufferSize,
-                        VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                        mIndexBuffer, mIndexBufferMemory);
-    Utils::copyBuffer(mContext->device(), mContext->physicalDevice(), mContext->surface(),
-                      mContext->graphicsQueue(), stagingBuffer, mIndexBuffer, bufferSize);
+    Utils::createBuffer(mContext->allocator(), mIndexBufferAllocation, VMA_MEMORY_USAGE_AUTO,
+                        bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, mIndexBuffer);
+    Utils::copyBuffer(mContext, stagingBuffer, mIndexBuffer, bufferSize);
 
-    vkDestroyBuffer(mContext->device(), stagingBuffer, nullptr);
-    vkFreeMemory(mContext->device(), stagingBufferMemory, nullptr);
+    vmaDestroyBuffer(mContext->allocator(), stagingBuffer, allocation);
 }

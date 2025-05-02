@@ -37,10 +37,10 @@ private:
     Context* mContext;
     std::vector<Vertex> mVertices;
     VkBuffer mVertexBuffer;
-    VkDeviceMemory mVertexBufferMemory;
+    VmaAllocation mVertexBufferAllocation;
     std::vector<uint32_t> mIndices;
     VkBuffer mIndexBuffer;
-    VkDeviceMemory mIndexBufferMemory;
+    VmaAllocation mIndexBufferAllocation;
 };
 
 

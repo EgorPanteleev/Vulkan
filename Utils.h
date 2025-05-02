@@ -5,6 +5,7 @@
 #ifndef VULKAN_UTILS_H
 #define VULKAN_UTILS_H
 #include <vulkan/vulkan.h>
+#include <vk_mem_alloc.h>
 
 //STL
 #include <optional>
@@ -12,6 +13,7 @@
 
 
 #include "MessageLogger.h"
+class Context;
 
 namespace Utils {
 
@@ -38,7 +40,7 @@ namespace Utils {
 
     VkDebugUtilsMessengerCreateInfoEXT createDebugMessengerCreateInfo();
 
-    QueueFamilyIndices getQueueFamilies( VkPhysicalDevice physicalDevice, VkSurfaceKHR surface );
+    QueueFamilyIndices getQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
     SwapChainSupportDetails getSwapChainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
     VkImageView createImageView(VkDevice device, VkImage image, VkImageViewType viewType, VkFormat format);
     uint32_t getImageCount(SwapChainSupportDetails swapChainSupport);
@@ -53,10 +55,23 @@ namespace Utils {
                                     VkSurfaceKHR surface,VkCommandPoolCreateFlags flags);
 
     uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
-    void createBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage,
-                      VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-    void copyBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
-                    VkQueue graphicsQueue, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+    void createBuffer(VmaAllocator allocator, VmaAllocation& allocation, VmaMemoryUsage allocUsage,
+                      VkDeviceSize size, VkBufferUsageFlags usage, VkBuffer& buffer);
+    void copyDataToBuffer(VmaAllocator allocator, VmaAllocation& allocation, VkDeviceSize bufferSize, void* data );
+    void copyBuffer(Context* context, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+    void createImage(VkDevice device, VkPhysicalDevice physicalDevice, uint32_t width,
+                     uint32_t height, VkFormat format,VkImageTiling tiling, VkImageUsageFlags usage,
+                     VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+    VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
+
+    void endSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue,
+                               VkCommandBuffer commandBuffer);
+    void transitionImageLayout(VkDevice device, VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
+                               VkQueue graphicsQueue, VkImage image, VkFormat format,
+                               VkImageLayout oldLayout, VkImageLayout newLayout);
+    void copyBufferToImage(VkDevice device, VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
+                               VkQueue graphicsQueue, VkImage image, VkFormat format,
+                               VkImageLayout oldLayout, VkImageLayout newLayout);
 }
 
 #endif //VULKAN_UTILS_H

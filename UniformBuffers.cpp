@@ -15,9 +15,9 @@ UniformBuffers::UniformBuffers(Context* context): mContext(context) {
 }
 
 UniformBuffers::~UniformBuffers() {
-    for (size_t i = 0; i < mContext->maxFramesInFlight(); i++) {
-        vkDestroyBuffer(mContext->device(), mUniformBuffers[i], nullptr);
-        vkFreeMemory(mContext->device(), mUniformBuffersMemory[i], nullptr);
+    for (size_t i = 0; i < mContext->maxFramesInFlight(); ++i) {
+        vmaUnmapMemory(mContext->allocator(), mBuffersAllocation[i]);
+        vmaDestroyBuffer(mContext->allocator(), mUniformBuffers[i], mBuffersAllocation[i]);
     }
 }
 
@@ -26,16 +26,14 @@ void UniformBuffers::createUniformBuffers() {
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
     mUniformBuffers.resize(mContext->maxFramesInFlight());
-    mUniformBuffersMemory.resize(mContext->maxFramesInFlight());
+    mBuffersAllocation.resize(mContext->maxFramesInFlight());
     mUniformBuffersMapped.resize(mContext->maxFramesInFlight());
 
     for (size_t i = 0; i < mContext->maxFramesInFlight(); ++i) {
-        Utils::createBuffer(mContext->device(), mContext->physicalDevice(),
-                            bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                            mUniformBuffers[i], mUniformBuffersMemory[i]);
+        Utils::createBuffer(mContext->allocator(), mBuffersAllocation[i], VMA_MEMORY_USAGE_CPU_ONLY,
+                            bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, mUniformBuffers[i] );
 
-        vkMapMemory(mContext->device(), mUniformBuffersMemory[i], 0, bufferSize, 0, &mUniformBuffersMapped[i]);
+        vmaMapMemory(mContext->allocator(), mBuffersAllocation[i], &mUniformBuffersMapped[i]);
     }
 }
 
