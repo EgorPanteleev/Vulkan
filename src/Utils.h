@@ -5,7 +5,7 @@
 #ifndef VULKAN_UTILS_H
 #define VULKAN_UTILS_H
 #include <vulkan/vulkan.h>
-#include <vk_mem_alloc.h>
+#include "vk_mem_alloc.h"
 
 //STL
 #include <optional>
