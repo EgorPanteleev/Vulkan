@@ -10,6 +10,7 @@
 #include "SyncObjects.h"
 #include "UniformBuffers.h"
 #include "Image.h"
+#include "DepthResources.h"
 
 //#include <memory>
 
@@ -27,6 +28,7 @@ private:
     Context mContext;
     Image image;
     SwapChain mSwapChain;
+    DepthResources mDepthResources;
     UniformBuffers mUniformBuffers;
     DescriptorSet mDescriptorSet;
     GraphicsPipeline mGraphicsPipeline;

@@ -7,9 +7,10 @@
 
 #include "Context.h"
 
+//Texture Image
 class Image {
 public:
-    Image(Context* context);
+    Image(Context* context, const std::string& path );
     ~Image();
 
     VkImage image() { return mImage; }
@@ -17,7 +18,7 @@ public:
     VkImageView imageView() { return mImageView; }
     VkSampler sampler() { return mSampler; }
 private:
-    void createImage();
+    void createImage(const std::string& path);
     void createImageView();
     void createSampler(); //Is it must be here?
 

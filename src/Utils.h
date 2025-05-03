@@ -41,11 +41,13 @@ namespace Utils {
 
     QueueFamilyIndices getQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
     SwapChainSupportDetails getSwapChainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
-    VkImageView createImageView(VkDevice device, VkImage image, VkImageViewType viewType, VkFormat format);
+    VkImageView createImageView(VkDevice device, VkImage image, VkImageViewType viewType,
+                                VkFormat format, VkImageAspectFlags aspectFlags);
     uint32_t getImageCount(const SwapChainSupportDetails& swapChainSupport);
     std::vector<char> readFile(const std::string& filename);
     void createShaderModule( VkDevice device, const std::vector<char>& code, VkShaderModule* shaderModule );
-    VkFramebuffer createFrameBuffer(VkDevice device, VkRenderPass renderPass, VkImageView imageView, VkExtent2D extent);
+    VkFramebuffer createFrameBuffer(VkDevice device, VkRenderPass renderPass,
+                                    VkImageView imageView, VkImageView depthImageView, VkExtent2D extent);
     VkResult createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
     void destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
     VkDebugUtilsMessengerEXT createDebugMessenger(VkInstance instance);
@@ -63,10 +65,16 @@ namespace Utils {
     VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
 
     void endSingleTimeCommands(Context* context, VkCommandPool commandPool, VkCommandBuffer commandBuffer);
+    bool hasStencilComponent(VkFormat format);
     void transitionImageLayout(Context* context, VkImage image, VkFormat format,
                                VkImageLayout oldLayout, VkImageLayout newLayout);
     void copyBufferToImage(Context* context, VkBuffer buffer, VkImage image,
                            uint32_t width, uint32_t height );
+
+    VkFormat findSupportedFormat(Context* context, const std::vector<VkFormat>& candidates, VkImageTiling tiling,
+                                 VkFormatFeatureFlags features);
+
+    VkFormat findDepthFormat(Context* context);
 }
 
 #endif //VULKAN_UTILS_H

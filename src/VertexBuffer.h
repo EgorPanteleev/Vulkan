@@ -11,11 +11,11 @@
 #include "Context.h"
 
 struct Vertex {
-    Vertex( const glm::vec2& pos, const glm::vec3& color, glm::vec2 texCoord );
+    Vertex( const glm::vec3& pos, const glm::vec3& color, glm::vec2 texCoord );
     static VkVertexInputBindingDescription getBindingDescription();
     static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions();
 
-    glm::vec2 pos;
+    glm::vec3 pos;
     glm::vec3 color;
     glm::vec2 texCoord;
 };

@@ -6,6 +6,7 @@
 #define VULKAN_SWAPCHAIN_H
 
 #include "Context.h"
+#include "DepthResources.h"
 
 class SwapChain {
 public:
@@ -31,7 +32,7 @@ public:
     /**
     * Creating frame buffers
     */
-    void createFrameBuffers(VkRenderPass renderPass);
+    void createFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView);
 private:
     /**
      *  Creating swapchain

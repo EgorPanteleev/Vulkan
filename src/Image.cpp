@@ -8,8 +8,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-Image::Image(Context* context): mContext(context) {
-    createImage();
+Image::Image(Context* context, const std::string& path): mContext(context) {
+    createImage(path);
     createImageView();
     createSampler();
 }
@@ -20,10 +20,12 @@ Image::~Image() {
     vmaDestroyImage(mContext->allocator(), mImage, mImageAllocation);
 }
 
-
-void Image::createImage() {
+//void createImage(VmaAllocator allocator, VmaAllocation& imageAllocation, VmaMemoryUsage allocUsage,
+//                 VkImage& image, uint32_t width, uint32_t height, VkFormat format,
+//                 VkImageTiling tiling, VkImageUsageFlags imageUsage)
+void Image::createImage(const std::string& path) {
     int texWidth, texHeight, texChannels;
-    stbi_uc* pixels = stbi_load("/home/auser/dev/src/Vulkan/textures/statue.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    stbi_uc* pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     VkDeviceSize imageSize = texWidth * texHeight * 4;
     if (!pixels) {
         throw std::runtime_error("Failed to load texture image!");
@@ -54,8 +56,8 @@ void Image::createImage() {
 }
 
 void Image::createImageView() {
-    mImageView = Utils::createImageView(mContext->device(), mImage,
-                                        VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB);
+    mImageView = Utils::createImageView(mContext->device(), mImage, VK_IMAGE_VIEW_TYPE_2D,
+                                        VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 
 }
 

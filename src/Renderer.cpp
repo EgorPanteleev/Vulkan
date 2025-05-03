@@ -4,13 +4,14 @@
 
 #include "Renderer.h"
 
-Renderer::Renderer(): mContext(), image(&mContext), mSwapChain(&mContext), mUniformBuffers(&mContext),
+Renderer::Renderer(): mContext(), image(&mContext, "/home/auser/dev/src/Vulkan/textures/statue.jpg"),
+                      mSwapChain(&mContext), mDepthResources(&mContext, mSwapChain.extent()), mUniformBuffers(&mContext),
                       mDescriptorSet(&mContext, &image, &mUniformBuffers),
                       mGraphicsPipeline(&mContext, &mSwapChain, &mDescriptorSet,
                                         "/home/auser/dev/src/Vulkan/compiled_shaders/shader.vert.spv",
                                         "/home/auser/dev/src/Vulkan/compiled_shaders/shader.frag.spv"),
                       mCommandManager(&mContext), mVertexBuffer(&mContext), mSyncObjects(&mContext) {
-    mSwapChain.createFrameBuffers(mGraphicsPipeline.renderPass());
+    mSwapChain.createFrameBuffers(mGraphicsPipeline.renderPass(), mDepthResources.imageView());
 }
 
 Renderer::~Renderer() {
@@ -63,5 +64,6 @@ void Renderer::recreateSwapChain() {
     vkDeviceWaitIdle(mContext.device());
     mSwapChain.clear();
     mSwapChain.recreate();
-    mSwapChain.createFrameBuffers(mGraphicsPipeline.renderPass());
+    mDepthResources.recreate(mSwapChain.extent());
+    mSwapChain.createFrameBuffers(mGraphicsPipeline.renderPass(), mDepthResources.imageView());
 }

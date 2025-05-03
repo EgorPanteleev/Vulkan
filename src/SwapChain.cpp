@@ -5,7 +5,8 @@
 #include "SwapChain.h"
 #include "Utils.h"
 
-SwapChain::SwapChain(Context* context): mContext(context), mCurrentFrame(0) {
+SwapChain::SwapChain(Context* context):
+                     mContext(context), mCurrentFrame(0) {
     recreate();
 }
 
@@ -132,7 +133,8 @@ void SwapChain::createImages() {
 void SwapChain::createImageViews() {
     mImageViews.resize(mImages.size());
     for (size_t i = 0; i < mImages.size(); ++i) {
-        mImageViews[i] = Utils::createImageView(mContext->device(), mImages[i], VK_IMAGE_VIEW_TYPE_2D, mFormat );
+        mImageViews[i] = Utils::createImageView(mContext->device(), mImages[i], VK_IMAGE_VIEW_TYPE_2D,
+                                                mFormat, VK_IMAGE_ASPECT_COLOR_BIT );
     }
 }
 
@@ -148,10 +150,11 @@ VkResult SwapChain::acquireNextImage(uint32_t* imageIndex, VkSemaphore imageAvai
     return result;
 }
 
-void SwapChain::createFrameBuffers(VkRenderPass renderPass) {
+void SwapChain::createFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView) {
     mFrameBuffers.resize( mImageViews.size() );
     for (size_t i = 0; i < mImageViews.size(); ++i) {
-        mFrameBuffers[i] = Utils::createFrameBuffer(mContext->device(), renderPass, mImageViews[i], mExtent);
+        mFrameBuffers[i] = Utils::createFrameBuffer(mContext->device(), renderPass, mImageViews[i],
+                                                    depthImageView, mExtent);
     }
     INFO << "Created frame buffers!";
 }
