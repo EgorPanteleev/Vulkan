@@ -11,8 +11,6 @@
 #include <fstream>
 #include <cstring>
 
-//TODO simplify
-
 namespace Utils {
     VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
             VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
