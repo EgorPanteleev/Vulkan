@@ -10,15 +10,14 @@
 
 #include "Context.h"
 
-//TODO all allocations with vulkan memory allocator
-
 struct Vertex {
-    Vertex( const glm::vec2& pos, const glm::vec3& color );
+    Vertex( const glm::vec2& pos, const glm::vec3& color, glm::vec2 texCoord );
     static VkVertexInputBindingDescription getBindingDescription();
-    static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions();
+    static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions();
 
     glm::vec2 pos;
     glm::vec3 color;
+    glm::vec2 texCoord;
 };
 
 class VertexBuffer {

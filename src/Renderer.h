@@ -9,6 +9,7 @@
 #include "CommandManager.h"
 #include "SyncObjects.h"
 #include "UniformBuffers.h"
+#include "Image.h"
 
 //#include <memory>
 
@@ -24,6 +25,7 @@ private:
     void recreateSwapChain();
 
     Context mContext;
+    Image image;
     SwapChain mSwapChain;
     UniformBuffers mUniformBuffers;
     DescriptorSet mDescriptorSet;

@@ -4,8 +4,8 @@
 
 #include "Renderer.h"
 
-Renderer::Renderer(): mContext(), mSwapChain(&mContext), mUniformBuffers(&mContext),
-                      mDescriptorSet(&mContext, &mUniformBuffers),
+Renderer::Renderer(): mContext(), image(&mContext), mSwapChain(&mContext), mUniformBuffers(&mContext),
+                      mDescriptorSet(&mContext, &image, &mUniformBuffers),
                       mGraphicsPipeline(&mContext, &mSwapChain, &mDescriptorSet,
                                         "/home/auser/dev/src/Vulkan/compiled_shaders/shader.vert.spv",
                                         "/home/auser/dev/src/Vulkan/compiled_shaders/shader.frag.spv"),

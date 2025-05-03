@@ -9,7 +9,8 @@
 #include <array>
 #include <cstring>
 
-Vertex::Vertex( const glm::vec2& pos, const glm::vec3& color ): pos(pos), color(color) {}
+Vertex::Vertex( const glm::vec2& pos, const glm::vec3& color, glm::vec2 texCoord ):
+                pos(pos), color(color), texCoord(texCoord) {}
 
 VkVertexInputBindingDescription Vertex::getBindingDescription() {
     VkVertexInputBindingDescription bindingDescription{};
@@ -19,8 +20,8 @@ VkVertexInputBindingDescription Vertex::getBindingDescription() {
     return bindingDescription;
 }
 
-std::array<VkVertexInputAttributeDescription, 2> Vertex::getAttributeDescriptions() {
-    std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+std::array<VkVertexInputAttributeDescription, 3> Vertex::getAttributeDescriptions() {
+    std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
     attributeDescriptions[0].binding = 0;
     attributeDescriptions[0].location = 0;
     attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
@@ -30,18 +31,19 @@ std::array<VkVertexInputAttributeDescription, 2> Vertex::getAttributeDescription
     attributeDescriptions[1].location = 1;
     attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
     attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+    attributeDescriptions[2].binding = 0;
+    attributeDescriptions[2].location = 2;
+    attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+    attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
     return attributeDescriptions;
 }
 
 VertexBuffer::VertexBuffer(Context* context): mContext(context) {
-//    mVertices = { { {0.0f, -0.5f}, {1.0f, 0.0f, 0.0f} },
-//                  { {0.5f, 0.5f }, {0.0f, 1.0f, 0.0f} },
-//                  { {-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f} } };
-
-    mVertices = { { {-0.5f , -0.5f}, {1.0f, 0.0f, 0.0f} },
-                  { { 0.5f , -0.5f}, {0.0f, 1.0f, 0.0f} },
-                  { { 0.5f , 0.5f }, {0.0f, 0.0f, 1.0f} },
-                  { { -0.5f, 0.5f }, {1.0f, 1.0f, 1.0f} } };
+    mVertices = { { {-0.5f , -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f} },
+                  { { 0.5f , -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f} },
+                  { { 0.5f , 0.5f }, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f} },
+                  { { -0.5f, 0.5f }, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f} } };
     mIndices = { 0, 1, 2, 2, 3, 0 };
     createVertexBuffer();
     createIndexBuffer();

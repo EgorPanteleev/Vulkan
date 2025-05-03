@@ -171,11 +171,11 @@ bool Context::isDeviceSuitable(VkPhysicalDevice device) {
         auto swapChainSupport = Utils::getSwapChainSupport(device, mSurface);
         swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
     }
-//
-//    VkPhysicalDeviceFeatures physicalDeviceFeatures;
-//    vkGetPhysicalDeviceFeatures(device, &physicalDeviceFeatures);
 
-    return indices.isComplete() && extensionsSupported && swapChainAdequate;
+    VkPhysicalDeviceFeatures supportedFeatures{};
+    vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
+
+    return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
 }
 
 bool Context::checkDeviceExtensionSupport(VkPhysicalDevice device) {
@@ -211,6 +211,7 @@ void Context::createLogicalDevice() {
     }
 
     VkPhysicalDeviceFeatures deviceFeatures{};
+    deviceFeatures.samplerAnisotropy = VK_TRUE;
 
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

@@ -57,17 +57,16 @@ namespace Utils {
                       VkDeviceSize size, VkBufferUsageFlags usage, VkBuffer& buffer);
     void copyDataToBuffer(VmaAllocator allocator, VmaAllocation& allocation, void* data, VkDeviceSize bufferSize );
     void copyBuffer(Context* context, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-    void createImage(Context* context, uint32_t width, uint32_t height,
-                     VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
-                     VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+    void createImage(VmaAllocator allocator, VmaAllocation& imageAllocation, VmaMemoryUsage allocUsage,
+                     VkImage& image, uint32_t width, uint32_t height, VkFormat format,
+                     VkImageTiling tiling, VkImageUsageFlags imageUsage);
     VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
 
-    void endSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue,
-                               VkCommandBuffer commandBuffer);
+    void endSingleTimeCommands(Context* context, VkCommandPool commandPool, VkCommandBuffer commandBuffer);
     void transitionImageLayout(Context* context, VkImage image, VkFormat format,
                                VkImageLayout oldLayout, VkImageLayout newLayout);
-    void copyBufferToImage(Context* context, VkImage image, VkFormat format,
-                               VkImageLayout oldLayout, VkImageLayout newLayout);
+    void copyBufferToImage(Context* context, VkBuffer buffer, VkImage image,
+                           uint32_t width, uint32_t height );
 }
 
 #endif //VULKAN_UTILS_H

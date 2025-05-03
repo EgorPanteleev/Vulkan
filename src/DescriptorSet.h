@@ -7,10 +7,11 @@
 
 #include "Context.h"
 #include "UniformBuffers.h"
+#include "Image.h"
 
 class DescriptorSet {
 public:
-    DescriptorSet(Context* context, UniformBuffers* uniformBuffers);
+    DescriptorSet(Context* context, Image* texture, UniformBuffers* uniformBuffers);
     ~DescriptorSet();
 
     VkDescriptorSetLayout& descriptorSetLayout() { return mDescriptorSetLayout; }
@@ -23,6 +24,9 @@ private:
     void createDescriptorSets();
 
     Context* mContext;
+
+    Image* mTexture;
+
     UniformBuffers* mUniformBuffers;
     /**
      * A descriptor set layout describes what types of resources (e.g., uniform buffers, samplers, storage buffers)
