@@ -11,6 +11,8 @@
 #include <fstream>
 #include <cstring>
 
+//TODO simplify
+
 namespace Utils {
     VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
             VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -111,7 +113,7 @@ namespace Utils {
         return imageView;
     }
 
-    uint32_t getImageCount(SwapChainSupportDetails swapChainSupport) {
+    uint32_t getImageCount(const SwapChainSupportDetails& swapChainSupport) {
         uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
 
         if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
@@ -126,7 +128,7 @@ namespace Utils {
         if (!file.is_open()) {
             throw std::runtime_error("Failed to open file!");
         }
-        size_t fileSize = (size_t) file.tellg();
+        auto fileSize = (size_t) file.tellg();
         std::vector<char> buffer(fileSize);
         file.seekg(0);
         file.read(buffer.data(), fileSize);
@@ -218,22 +220,22 @@ namespace Utils {
         INFO << "Created buffer!";
     }
 
-    VkCommandPool createCommandPool(VkDevice device, VkPhysicalDevice physicalDevice,
-                                    VkSurfaceKHR surface, VkCommandPoolCreateFlags flags) {
+    VkCommandPool createCommandPool(Context* context, VkCommandPoolCreateFlags flags) {
         VkCommandPool commandPool;
-        auto indices = Utils::getQueueFamilies(physicalDevice, surface);
+        auto indices = Utils::getQueueFamilies(context->physicalDevice(),
+                                               context->surface());
         VkCommandPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         poolInfo.flags = flags;
         poolInfo.queueFamilyIndex = indices.graphicsFamily.value();
-        if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+        if (vkCreateCommandPool(context->device(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create command pool!");
         }
         INFO << "Created command pool!";
         return commandPool;
     }
 
-    void copyDataToBuffer(VmaAllocator allocator, VmaAllocation& allocation, VkDeviceSize bufferSize, void* data ) {
+    void copyDataToBuffer(VmaAllocator allocator, VmaAllocation& allocation, void* data, VkDeviceSize bufferSize ) {
         void* stagingData;
         vmaMapMemory(allocator, allocation, &stagingData);
         memcpy(stagingData, data, (size_t) bufferSize);
@@ -242,8 +244,7 @@ namespace Utils {
 
     void copyBuffer(Context* context, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
         auto device = context->device();
-        auto commandPool = Utils::createCommandPool(device, context->physicalDevice(),
-                                 context->surface(), VK_COMMAND_POOL_CREATE_TRANSIENT_BIT );
+        auto commandPool = Utils::createCommandPool(context, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT );
 
         auto commandBuffer = beginSingleTimeCommands(device, commandPool);
 
@@ -257,9 +258,10 @@ namespace Utils {
         vkDestroyCommandPool(device, commandPool, nullptr);
     }
 
-    void createImage(VkDevice device, VkPhysicalDevice physicalDevice, uint32_t width,
-                     uint32_t height, VkFormat format,VkImageTiling tiling, VkImageUsageFlags usage,
+    void createImage(Context* context, uint32_t width, uint32_t height,
+                     VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
                      VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
+        auto device = context->device();
         VkImageCreateInfo imageInfo{};
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -285,7 +287,7 @@ namespace Utils {
         VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
+        allocInfo.memoryTypeIndex = findMemoryType(context->physicalDevice(), memRequirements.memoryTypeBits, properties);
 
         if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
             throw std::runtime_error("failed to allocate image memory!");
@@ -328,23 +330,20 @@ namespace Utils {
         vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
     }
 
-    void transitionImageLayout(VkDevice device, VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
-                               VkQueue graphicsQueue, VkImage image, VkFormat format,
+    void transitionImageLayout(Context* context, VkImage image, VkFormat format,
                                VkImageLayout oldLayout, VkImageLayout newLayout) {
-        auto commandPool = Utils::createCommandPool(device, physicalDevice,
-                                                    surface, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT );
+        auto commandPool = Utils::createCommandPool(context, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT );
 
-        VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
+        VkCommandBuffer commandBuffer = beginSingleTimeCommands(context->device(), commandPool);
 
-        endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
+        endSingleTimeCommands(context->device(), commandPool, context->graphicsQueue(), commandBuffer);
     }
 
-    void copyBufferToImage(VkDevice device, VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
-                           VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
-        auto commandPool = Utils::createCommandPool(device, physicalDevice,
-                                                    surface, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT );
+    void copyBufferToImage(Context* context, VkImage image, VkFormat format,
+                           VkImageLayout oldLayout, VkImageLayout newLayout) {
+        auto commandPool = Utils::createCommandPool(context, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT );
 
-        VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
+        VkCommandBuffer commandBuffer = beginSingleTimeCommands(context->device(), commandPool);
 
         VkBufferImageCopy region{};
         region.bufferOffset = 0;
@@ -357,20 +356,20 @@ namespace Utils {
         region.imageSubresource.layerCount = 1;
 
         region.imageOffset = {0, 0, 0};
-        region.imageExtent = {
-                width,
-                height,
-                1
-        };
-
-        vkCmdCopyBufferToImage(
-                commandBuffer,
-                buffer,
-                image,
-                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                1,
-                &region
-        );
+//        region.imageExtent = {
+//                width,
+//                height,
+//                1
+//        };
+//
+//        vkCmdCopyBufferToImage(
+//                commandBuffer,
+//                buffer,
+//                image,
+//                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+//                1,
+//                &region
+//        );
 
         //endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
     }

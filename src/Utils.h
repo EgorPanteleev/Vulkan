@@ -10,9 +10,8 @@
 //STL
 #include <optional>
 #include <vector>
-
-
 #include "MessageLogger.h"
+
 class Context;
 
 namespace Utils {
@@ -43,7 +42,7 @@ namespace Utils {
     QueueFamilyIndices getQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
     SwapChainSupportDetails getSwapChainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
     VkImageView createImageView(VkDevice device, VkImage image, VkImageViewType viewType, VkFormat format);
-    uint32_t getImageCount(SwapChainSupportDetails swapChainSupport);
+    uint32_t getImageCount(const SwapChainSupportDetails& swapChainSupport);
     std::vector<char> readFile(const std::string& filename);
     void createShaderModule( VkDevice device, const std::vector<char>& code, VkShaderModule* shaderModule );
     VkFramebuffer createFrameBuffer(VkDevice device, VkRenderPass renderPass, VkImageView imageView, VkExtent2D extent);
@@ -51,26 +50,23 @@ namespace Utils {
     void destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
     VkDebugUtilsMessengerEXT createDebugMessenger(VkInstance instance);
 
-    VkCommandPool createCommandPool(VkDevice device, VkPhysicalDevice physicalDevice,
-                                    VkSurfaceKHR surface,VkCommandPoolCreateFlags flags);
+    VkCommandPool createCommandPool(Context* context,VkCommandPoolCreateFlags flags);
 
     uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
     void createBuffer(VmaAllocator allocator, VmaAllocation& allocation, VmaMemoryUsage allocUsage,
                       VkDeviceSize size, VkBufferUsageFlags usage, VkBuffer& buffer);
-    void copyDataToBuffer(VmaAllocator allocator, VmaAllocation& allocation, VkDeviceSize bufferSize, void* data );
+    void copyDataToBuffer(VmaAllocator allocator, VmaAllocation& allocation, void* data, VkDeviceSize bufferSize );
     void copyBuffer(Context* context, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-    void createImage(VkDevice device, VkPhysicalDevice physicalDevice, uint32_t width,
-                     uint32_t height, VkFormat format,VkImageTiling tiling, VkImageUsageFlags usage,
+    void createImage(Context* context, uint32_t width, uint32_t height,
+                     VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
                      VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
     VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
 
     void endSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue,
                                VkCommandBuffer commandBuffer);
-    void transitionImageLayout(VkDevice device, VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
-                               VkQueue graphicsQueue, VkImage image, VkFormat format,
+    void transitionImageLayout(Context* context, VkImage image, VkFormat format,
                                VkImageLayout oldLayout, VkImageLayout newLayout);
-    void copyBufferToImage(VkDevice device, VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
-                               VkQueue graphicsQueue, VkImage image, VkFormat format,
+    void copyBufferToImage(Context* context, VkImage image, VkFormat format,
                                VkImageLayout oldLayout, VkImageLayout newLayout);
 }
 

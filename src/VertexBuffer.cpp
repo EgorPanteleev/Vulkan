@@ -60,7 +60,7 @@ void VertexBuffer::createVertexBuffer() {
     Utils::createBuffer(mContext->allocator(), allocation, VMA_MEMORY_USAGE_CPU_ONLY,
                         bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingBuffer );
 
-    Utils::copyDataToBuffer(mContext->allocator(), allocation, bufferSize, mVertices.data() );
+    Utils::copyDataToBuffer(mContext->allocator(), allocation, mVertices.data(), bufferSize );
 
     Utils::createBuffer(mContext->allocator(), mVertexBufferAllocation, VMA_MEMORY_USAGE_AUTO,
                         bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, mVertexBuffer );
@@ -76,7 +76,7 @@ void VertexBuffer::createIndexBuffer() {
     VmaAllocation allocation;
     Utils::createBuffer(mContext->allocator(), allocation, VMA_MEMORY_USAGE_CPU_ONLY,
                         bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingBuffer);
-    Utils::copyDataToBuffer(mContext->allocator(), allocation, bufferSize, mIndices.data());
+    Utils::copyDataToBuffer(mContext->allocator(), allocation, mIndices.data(), bufferSize);
 
     Utils::createBuffer(mContext->allocator(), mIndexBufferAllocation, VMA_MEMORY_USAGE_AUTO,
                         bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, mIndexBuffer);

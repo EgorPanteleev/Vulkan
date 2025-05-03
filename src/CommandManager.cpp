@@ -18,8 +18,7 @@ CommandManager::~CommandManager() {
 }
 
 void CommandManager::createCommandPool() {
-    mCommandPool = Utils::createCommandPool(mContext->device(), mContext->physicalDevice(),
-                             mContext->surface(), VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT );
+    mCommandPool = Utils::createCommandPool(mContext, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT );
 }
 
 void CommandManager::createCommandBuffers() {
