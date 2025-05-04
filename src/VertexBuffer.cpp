@@ -6,39 +6,6 @@
 #include "MessageLogger.h"
 #include "Utils.h"
 
-#include <array>
-#include <cstring>
-
-Vertex::Vertex( const glm::vec3& pos, const glm::vec3& color, glm::vec2 texCoord ):
-                pos(pos), color(color), texCoord(texCoord) {}
-
-VkVertexInputBindingDescription Vertex::getBindingDescription() {
-    VkVertexInputBindingDescription bindingDescription{};
-    bindingDescription.binding = 0;
-    bindingDescription.stride = sizeof(Vertex);
-    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-    return bindingDescription;
-}
-
-std::array<VkVertexInputAttributeDescription, 3> Vertex::getAttributeDescriptions() {
-    std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
-    attributeDescriptions[0].binding = 0;
-    attributeDescriptions[0].location = 0;
-    attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-    attributeDescriptions[1].binding = 0;
-    attributeDescriptions[1].location = 1;
-    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescriptions[1].offset = offsetof(Vertex, color);
-
-    attributeDescriptions[2].binding = 0;
-    attributeDescriptions[2].location = 2;
-    attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
-    return attributeDescriptions;
-}
-
 VertexBuffer::VertexBuffer(Context* context): mContext(context) {
     mVertices = { { {-0.5f , -0.5f, 0.0f }, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f} },
                   { { 0.5f , -0.5f, 0.0f }, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f} },
@@ -52,6 +19,12 @@ VertexBuffer::VertexBuffer(Context* context): mContext(context) {
 
     mIndices = { 0, 1, 2, 2, 3, 0,
                  4, 5, 6, 6, 7, 4 };
+
+    Model model;
+    Utils::loadModel(model, "/home/auser/dev/src/Vulkan/models/viking_room/viking_room.obj");
+    mVertices = model.vertices;
+    mIndices = model.indices;
+
     createVertexBuffer();
     createIndexBuffer();
 }

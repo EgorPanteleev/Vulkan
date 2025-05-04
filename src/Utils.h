@@ -4,6 +4,8 @@
 
 #ifndef VULKAN_UTILS_H
 #define VULKAN_UTILS_H
+#include "Vertex.h"
+
 #include <vulkan/vulkan.h>
 #include "vk_mem_alloc.h"
 
@@ -13,6 +15,11 @@
 #include "MessageLogger.h"
 
 class Context;
+
+struct Model {
+    std::vector<Vertex> vertices;
+    std::vector<uint32_t> indices;
+};
 
 namespace Utils {
 
@@ -75,6 +82,8 @@ namespace Utils {
                                  VkFormatFeatureFlags features);
 
     VkFormat findDepthFormat(Context* context);
+
+    void loadModel(Model& model, const std::string& path);
 }
 
 #endif //VULKAN_UTILS_H

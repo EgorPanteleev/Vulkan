@@ -11,6 +11,6 @@ file(GLOB SOURCES "*.cpp")
 file(GLOB HEADERS "*.h")
 add_library(VulkanLib STATIC ${SOURCES} ${HEADERS})
 
-target_link_libraries(VulkanLib stbImage vma)
+target_link_libraries(VulkanLib stbImage vma objLoader)
 
 target_link_libraries(VulkanApp VulkanLib ${Libs})

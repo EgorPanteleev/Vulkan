@@ -6,7 +6,7 @@
 #include "Clock.h"
 #include "MessageLogger.h"
 
-Renderer::Renderer(): mContext(), image(&mContext, "/home/auser/dev/src/Vulkan/textures/statue.jpg"),
+Renderer::Renderer(): mContext(), image(&mContext, "/home/auser/dev/src/Vulkan/models/viking_room/viking_room.png"),
                       mSwapChain(&mContext), mDepthResources(&mContext, mSwapChain.extent()), mUniformBuffers(&mContext),
                       mDescriptorSet(&mContext, &image, &mUniformBuffers),
                       mGraphicsPipeline(&mContext, &mSwapChain, &mDescriptorSet,

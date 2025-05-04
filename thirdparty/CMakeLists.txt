@@ -6,3 +6,5 @@ target_include_directories(stbImage INTERFACE ./stbi/)
 add_library(vma INTERFACE)
 target_include_directories(vma INTERFACE ./VulkanMemoryAllocator/include/)
 
+add_library(objLoader INTERFACE)
+target_include_directories(objLoader INTERFACE ./tinyobjloader/ )
