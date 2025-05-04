@@ -150,11 +150,11 @@ VkResult SwapChain::acquireNextImage(uint32_t* imageIndex, VkSemaphore imageAvai
     return result;
 }
 
-void SwapChain::createFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView) {
+void SwapChain::createFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView, VkImageView colorImageView) {
     mFrameBuffers.resize( mImageViews.size() );
     for (size_t i = 0; i < mImageViews.size(); ++i) {
         mFrameBuffers[i] = Utils::createFrameBuffer(mContext->device(), renderPass, mImageViews[i],
-                                                    depthImageView, mExtent);
+                                                    depthImageView, colorImageView, mExtent);
     }
     INFO << "Created frame buffers!";
 }

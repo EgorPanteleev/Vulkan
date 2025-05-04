@@ -7,13 +7,14 @@
 #include "MessageLogger.h"
 
 Renderer::Renderer(): mContext(), image(&mContext, "/home/auser/dev/src/Vulkan/models/viking_room/viking_room.png"),
-                      mSwapChain(&mContext), mDepthResources(&mContext, mSwapChain.extent()), mUniformBuffers(&mContext),
+                      mSwapChain(&mContext), mColorResources(&mContext, mSwapChain.extent(), mSwapChain.format()),
+                      mDepthResources(&mContext, mSwapChain.extent()), mUniformBuffers(&mContext),
                       mDescriptorSet(&mContext, &image, &mUniformBuffers),
                       mGraphicsPipeline(&mContext, &mSwapChain, &mDescriptorSet,
                                         "/home/auser/dev/src/Vulkan/compiled_shaders/shader.vert.spv",
                                         "/home/auser/dev/src/Vulkan/compiled_shaders/shader.frag.spv"),
                       mCommandManager(&mContext), mVertexBuffer(&mContext), mSyncObjects(&mContext) {
-    mSwapChain.createFrameBuffers(mGraphicsPipeline.renderPass(), mDepthResources.imageView());
+    mSwapChain.createFrameBuffers(mGraphicsPipeline.renderPass(), mDepthResources.imageView(), mColorResources.imageView());
 }
 
 Renderer::~Renderer() {
@@ -81,6 +82,7 @@ void Renderer::recreateSwapChain() {
     vkDeviceWaitIdle(mContext.device());
     mSwapChain.clear();
     mSwapChain.recreate();
+    mColorResources.recreate(mSwapChain.extent(), mSwapChain.format());
     mDepthResources.recreate(mSwapChain.extent());
-    mSwapChain.createFrameBuffers(mGraphicsPipeline.renderPass(), mDepthResources.imageView());
+    mSwapChain.createFrameBuffers(mGraphicsPipeline.renderPass(), mDepthResources.imageView(), mColorResources.imageView());
 }

@@ -11,6 +11,7 @@
 #include "UniformBuffers.h"
 #include "Image.h"
 #include "DepthResources.h"
+#include "ColorResources.h"
 
 //#include <memory>
 
@@ -28,6 +29,7 @@ private:
     Context mContext;
     Image image;
     SwapChain mSwapChain;
+    ColorResources mColorResources;
     DepthResources mDepthResources;
     UniformBuffers mUniformBuffers;
     DescriptorSet mDescriptorSet;

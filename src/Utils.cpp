@@ -151,12 +151,13 @@ namespace Utils {
         }
     }
 
-    VkFramebuffer createFrameBuffer(VkDevice device, VkRenderPass renderPass,
-                                    VkImageView imageView, VkImageView depthImageView, VkExtent2D extent) {
+    VkFramebuffer createFrameBuffer(VkDevice device, VkRenderPass renderPass, VkImageView imageView,
+                                    VkImageView depthImageView, VkImageView colorImageView, VkExtent2D extent) {
         VkFramebuffer framebuffer;
-        std::array<VkImageView, 2> attachments = {
-                imageView,
-                depthImageView
+        std::array<VkImageView, 3> attachments = {
+                colorImageView,
+                depthImageView,
+                imageView
         };
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -268,7 +269,8 @@ namespace Utils {
     }
 
     void createImage(VmaAllocator allocator, VmaAllocation& imageAllocation, VmaMemoryUsage allocUsage,
-                     VkImage& image, uint32_t mipLevels, uint32_t width, uint32_t height, VkFormat format,
+                     VkImage& image, uint32_t mipLevels, VkSampleCountFlagBits numSamples,
+                     uint32_t width, uint32_t height, VkFormat format,
                      VkImageTiling tiling, VkImageUsageFlags imageUsage) {
         VkImageCreateInfo imageInfo{};
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -282,7 +284,7 @@ namespace Utils {
         imageInfo.tiling = tiling;
         imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         imageInfo.usage = imageUsage;
-        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageInfo.samples = numSamples;
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
         VmaAllocationCreateInfo allocInfo{};
@@ -493,6 +495,21 @@ namespace Utils {
                 model.indices.push_back(uniqueVertices[vertex]);
             }
         }
+    }
+
+    VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice) {
+        VkPhysicalDeviceProperties physicalDeviceProperties;
+        vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+
+        VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+        if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
+        if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
+        if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
+        if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
+        if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
+        if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
+
+        return VK_SAMPLE_COUNT_1_BIT;
     }
 
 }

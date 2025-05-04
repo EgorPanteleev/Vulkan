@@ -53,8 +53,8 @@ namespace Utils {
     uint32_t getImageCount(const SwapChainSupportDetails& swapChainSupport);
     std::vector<char> readFile(const std::string& filename);
     void createShaderModule( VkDevice device, const std::vector<char>& code, VkShaderModule* shaderModule );
-    VkFramebuffer createFrameBuffer(VkDevice device, VkRenderPass renderPass,
-                                    VkImageView imageView, VkImageView depthImageView, VkExtent2D extent);
+    VkFramebuffer createFrameBuffer(VkDevice device, VkRenderPass renderPass, VkImageView imageView,
+                                    VkImageView depthImageView, VkImageView colorImageView, VkExtent2D extent);
     VkResult createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
     void destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
     VkDebugUtilsMessengerEXT createDebugMessenger(VkInstance instance);
@@ -67,7 +67,8 @@ namespace Utils {
     void copyDataToBuffer(VmaAllocator allocator, VmaAllocation& allocation, void* data, VkDeviceSize bufferSize );
     void copyBuffer(Context* context, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
     void createImage(VmaAllocator allocator, VmaAllocation& imageAllocation, VmaMemoryUsage allocUsage,
-                     VkImage& image, uint32_t mipLevels, uint32_t width, uint32_t height, VkFormat format,
+                     VkImage& image, uint32_t mipLevels, VkSampleCountFlagBits numSamples,
+                     uint32_t width, uint32_t height, VkFormat format,
                      VkImageTiling tiling, VkImageUsageFlags imageUsage);
     VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
 
@@ -84,6 +85,8 @@ namespace Utils {
     VkFormat findDepthFormat(Context* context);
 
     void loadModel(Model& model, const std::string& path);
+
+    VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice);
 }
 
 #endif //VULKAN_UTILS_H

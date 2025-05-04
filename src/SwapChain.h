@@ -32,7 +32,7 @@ public:
     /**
     * Creating frame buffers
     */
-    void createFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView);
+    void createFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView, VkImageView colorImageView);
 private:
     /**
      *  Creating swapchain

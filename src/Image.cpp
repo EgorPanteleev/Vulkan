@@ -40,8 +40,8 @@ void Image::createImage(const std::string& path) {
     stbi_image_free(pixels);
 
     Utils::createImage(mContext->allocator(), mImageAllocation, VMA_MEMORY_USAGE_AUTO,
-                       mImage, mMipLevels, mTexWidth, mTexHeight, VK_FORMAT_R8G8B8A8_SRGB,
-                       VK_IMAGE_TILING_OPTIMAL,
+                       mImage, mMipLevels, VK_SAMPLE_COUNT_1_BIT,
+                       mTexWidth, mTexHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
                        VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT );
 
     Utils::transitionImageLayout(mContext, mImage, mMipLevels, VK_FORMAT_R8G8B8A8_SRGB,
