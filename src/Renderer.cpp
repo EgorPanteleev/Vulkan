@@ -6,9 +6,10 @@
 #include "Clock.h"
 #include "MessageLogger.h"
 
-Renderer::Renderer(): mContext(), image(&mContext, "/home/auser/dev/src/Vulkan/models/viking_room/viking_room.png"),
+Renderer::Renderer(): mCamera(),
+                      mContext(), image(&mContext, "/home/auser/dev/src/Vulkan/models/viking_room/viking_room.png"),
                       mSwapChain(&mContext), mColorResources(&mContext, mSwapChain.extent(), mSwapChain.format()),
-                      mDepthResources(&mContext, mSwapChain.extent()), mUniformBuffers(&mContext),
+                      mDepthResources(&mContext, mSwapChain.extent()), mUniformBuffers(&mContext, &mCamera),
                       mDescriptorSet(&mContext, &image, &mUniformBuffers),
                       mGraphicsPipeline(&mContext, &mSwapChain, &mDescriptorSet,
                                         "/home/auser/dev/src/Vulkan/compiled_shaders/shader.vert.spv",
@@ -63,7 +64,7 @@ void Renderer::drawFrame() {
     // Only reset the fence if we are submitting work
     vkResetFences(mContext.device(), 1, &mSyncObjects.inFlightFence(mSwapChain.currentFrame()));
 
-    mUniformBuffers.updateUniformBuffer(mSwapChain.currentFrame(), mSwapChain.extent());
+    mUniformBuffers.updateUniformBuffer(mSwapChain.currentFrame(), mSwapChain.extent() );
 
     mCommandManager.recordCommandBuffer( &mSwapChain, &mGraphicsPipeline, &mDescriptorSet, &mVertexBuffer, imageIndex );
     auto submitResult = mCommandManager.submitCommandBuffer( &mSwapChain, &mSyncObjects, &imageIndex );

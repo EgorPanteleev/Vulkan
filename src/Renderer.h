@@ -5,6 +5,7 @@
 #ifndef VULKAN_RENDERER_H
 #define VULKAN_RENDERER_H
 
+#include "Camera.h"
 #include "GraphicsPipeline.h"
 #include "CommandManager.h"
 #include "SyncObjects.h"
@@ -21,11 +22,15 @@ public:
     ~Renderer();
 
     void run();
+
+    Context* context() { return &mContext; }
+    Camera* camera() {return &mCamera; }
 private:
     void mainLoop();
     void drawFrame();
     void recreateSwapChain();
 
+    Camera mCamera;
     Context mContext;
     Image image;
     SwapChain mSwapChain;

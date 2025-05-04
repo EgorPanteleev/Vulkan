@@ -7,6 +7,7 @@
 
 #include <glm/glm.hpp>
 #include "Context.h"
+#include "Camera.h"
 
 struct UniformBufferObject {
     glm::mat4 model;
@@ -16,7 +17,7 @@ struct UniformBufferObject {
 
 class UniformBuffers {
 public:
-    UniformBuffers(Context* context);
+    UniformBuffers(Context* context, Camera* camera);
     ~UniformBuffers();
     void updateUniformBuffer(uint32_t currentImage, VkExtent2D extent);
 
@@ -25,6 +26,7 @@ private:
     void createUniformBuffers();
 
     Context* mContext;
+    Camera* mCamera;
     std::vector<VkBuffer> mUniformBuffers;
     std::vector<VmaAllocation> mBuffersAllocation;
     std::vector<void*> mUniformBuffersMapped;

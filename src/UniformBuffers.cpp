@@ -10,7 +10,7 @@
 #include <chrono>
 #include <cstring>
 
-UniformBuffers::UniformBuffers(Context* context): mContext(context) {
+UniformBuffers::UniformBuffers(Context* context, Camera* camera): mContext(context), mCamera(camera) {
     createUniformBuffers();
 }
 
@@ -38,15 +38,9 @@ void UniformBuffers::createUniformBuffers() {
 }
 
 void UniformBuffers::updateUniformBuffer(uint32_t currentImage, VkExtent2D extent) {
-    static auto startTime = std::chrono::high_resolution_clock::now();
-
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
     UniformBufferObject ubo{};
-    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), extent.width / (float) extent.height, 0.1f, 10.0f);
-    ubo.proj[1][1] *= -1;
+    ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.view = mCamera->getViewMatrix();
+    ubo.proj = mCamera->getProjectionMatrix(extent.width / (float) extent.height);
     std::memcpy(mUniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
 }

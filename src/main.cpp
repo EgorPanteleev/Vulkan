@@ -2,11 +2,11 @@
 // Created by auser on 4/2/25.
 //
 
-#include "Renderer.h"
+#include "VulkanApp.h"
 #include "MessageLogger.h"
 
 int main() {
-    Renderer app;
+    VulkanApp app;
     try {
         app.run();
     } catch (const std::exception& e) {
