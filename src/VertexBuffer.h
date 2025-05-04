@@ -12,7 +12,7 @@
 
 class VertexBuffer {
 public:
-    VertexBuffer(Context* context);
+    VertexBuffer(Context* context, const std::string& path);
     ~VertexBuffer();
 
     std::vector<Vertex>& vertices() { return mVertices; }

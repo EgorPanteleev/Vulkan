@@ -6,7 +6,7 @@
 #include "MessageLogger.h"
 #include "Utils.h"
 
-VertexBuffer::VertexBuffer(Context* context): mContext(context) {
+VertexBuffer::VertexBuffer(Context* context, const std::string& path): mContext(context) {
     mVertices = { { {-0.5f , -0.5f, 0.0f }, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f} },
                   { { 0.5f , -0.5f, 0.0f }, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f} },
                   { { 0.5f , 0.5f, 0.0f }, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f} },
@@ -21,7 +21,7 @@ VertexBuffer::VertexBuffer(Context* context): mContext(context) {
                  4, 5, 6, 6, 7, 4 };
 
     Model model;
-    Utils::loadModel(model, "/home/auser/dev/src/Vulkan/models/viking_room/viking_room.obj");
+    Utils::loadModel(model, path);
     mVertices = model.vertices;
     mIndices = model.indices;
 

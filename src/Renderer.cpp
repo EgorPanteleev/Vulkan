@@ -14,7 +14,8 @@ Renderer::Renderer(): mCamera(),
                       mGraphicsPipeline(&mContext, &mSwapChain, &mDescriptorSet,
                                         "/home/auser/dev/src/Vulkan/compiled_shaders/shader.vert.spv",
                                         "/home/auser/dev/src/Vulkan/compiled_shaders/shader.frag.spv"),
-                      mCommandManager(&mContext), mVertexBuffer(&mContext), mSyncObjects(&mContext) {
+                      mCommandManager(&mContext),
+                      mVertexBuffer(&mContext, "/home/auser/dev/src/Vulkan/models/viking_room/viking_room.obj"), mSyncObjects(&mContext) {
     mSwapChain.createFrameBuffers(mGraphicsPipeline.renderPass(), mDepthResources.imageView(), mColorResources.imageView());
 }
 
