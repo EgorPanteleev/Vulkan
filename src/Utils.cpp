@@ -94,7 +94,7 @@ namespace Utils {
         return details;
     }
 
-    VkImageView createImageView(VkDevice device, VkImage image, VkImageViewType viewType,
+    VkImageView createImageView(VkDevice device, VkImage image, uint32_t mipLevels, VkImageViewType viewType,
                                 VkFormat format, VkImageAspectFlags aspectFlags) {
         VkImageView imageView;
         VkImageViewCreateInfo createInfo{};
@@ -108,7 +108,7 @@ namespace Utils {
         createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
         createInfo.subresourceRange.aspectMask = aspectFlags;
         createInfo.subresourceRange.baseMipLevel = 0;
-        createInfo.subresourceRange.levelCount = 1;
+        createInfo.subresourceRange.levelCount = mipLevels;
         createInfo.subresourceRange.baseArrayLayer = 0;
         createInfo.subresourceRange.layerCount = 1;
         if (vkCreateImageView(device, &createInfo, nullptr, &imageView) != VK_SUCCESS) {
@@ -268,7 +268,7 @@ namespace Utils {
     }
 
     void createImage(VmaAllocator allocator, VmaAllocation& imageAllocation, VmaMemoryUsage allocUsage,
-                     VkImage& image, uint32_t width, uint32_t height, VkFormat format,
+                     VkImage& image, uint32_t mipLevels, uint32_t width, uint32_t height, VkFormat format,
                      VkImageTiling tiling, VkImageUsageFlags imageUsage) {
         VkImageCreateInfo imageInfo{};
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -276,7 +276,7 @@ namespace Utils {
         imageInfo.extent.width = width;
         imageInfo.extent.height = height;
         imageInfo.extent.depth = 1;
-        imageInfo.mipLevels = 1;
+        imageInfo.mipLevels = mipLevels;
         imageInfo.arrayLayers = 1;
         imageInfo.format = format;
         imageInfo.tiling = tiling;
@@ -335,7 +335,7 @@ namespace Utils {
         return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
     }
 
-    void transitionImageLayout(Context* context, VkImage image, VkFormat format,
+    void transitionImageLayout(Context* context, VkImage image, uint32_t mipLevels, VkFormat format,
                                VkImageLayout oldLayout, VkImageLayout newLayout) {
         auto commandPool = Utils::createCommandPool(context, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT );
 
@@ -350,7 +350,7 @@ namespace Utils {
         barrier.image = image;
         barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.levelCount = mipLevels;
         barrier.subresourceRange.baseArrayLayer = 0;
         barrier.subresourceRange.layerCount = 1;
         barrier.srcAccessMask = 0; // TODO

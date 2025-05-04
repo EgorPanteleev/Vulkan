@@ -21,9 +21,12 @@ private:
     void createImage(const std::string& path);
     void createImageView();
     void createSampler(); //Is it must be here?
+    void generateMipMaps(VkFormat imageFormat);
 
     Context* mContext;
     VkImage mImage;
+    uint32_t mMipLevels;
+    uint32_t mTexWidth, mTexHeight, mTexChannels;
     VmaAllocation mImageAllocation;
     VkImageView mImageView;
     VkSampler mSampler;

@@ -133,7 +133,7 @@ void SwapChain::createImages() {
 void SwapChain::createImageViews() {
     mImageViews.resize(mImages.size());
     for (size_t i = 0; i < mImages.size(); ++i) {
-        mImageViews[i] = Utils::createImageView(mContext->device(), mImages[i], VK_IMAGE_VIEW_TYPE_2D,
+        mImageViews[i] = Utils::createImageView(mContext->device(), mImages[i], 1, VK_IMAGE_VIEW_TYPE_2D,
                                                 mFormat, VK_IMAGE_ASPECT_COLOR_BIT );
     }
 }

@@ -48,7 +48,7 @@ namespace Utils {
 
     QueueFamilyIndices getQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
     SwapChainSupportDetails getSwapChainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
-    VkImageView createImageView(VkDevice device, VkImage image, VkImageViewType viewType,
+    VkImageView createImageView(VkDevice device, VkImage image, uint32_t mipLevels, VkImageViewType viewType,
                                 VkFormat format, VkImageAspectFlags aspectFlags);
     uint32_t getImageCount(const SwapChainSupportDetails& swapChainSupport);
     std::vector<char> readFile(const std::string& filename);
@@ -67,13 +67,13 @@ namespace Utils {
     void copyDataToBuffer(VmaAllocator allocator, VmaAllocation& allocation, void* data, VkDeviceSize bufferSize );
     void copyBuffer(Context* context, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
     void createImage(VmaAllocator allocator, VmaAllocation& imageAllocation, VmaMemoryUsage allocUsage,
-                     VkImage& image, uint32_t width, uint32_t height, VkFormat format,
+                     VkImage& image, uint32_t mipLevels, uint32_t width, uint32_t height, VkFormat format,
                      VkImageTiling tiling, VkImageUsageFlags imageUsage);
     VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
 
     void endSingleTimeCommands(Context* context, VkCommandPool commandPool, VkCommandBuffer commandBuffer);
     bool hasStencilComponent(VkFormat format);
-    void transitionImageLayout(Context* context, VkImage image, VkFormat format,
+    void transitionImageLayout(Context* context, VkImage image, uint32_t mipLevels, VkFormat format,
                                VkImageLayout oldLayout, VkImageLayout newLayout);
     void copyBufferToImage(Context* context, VkBuffer buffer, VkImage image,
                            uint32_t width, uint32_t height );
