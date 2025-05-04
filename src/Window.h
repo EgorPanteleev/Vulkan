@@ -18,14 +18,16 @@ public:
 
     void getFrameBufferSize( int& width, int& height );
 
-    [[nodiscard]] bool shouldClose() const {  return glfwWindowShouldClose( window ); }
+    [[nodiscard]] bool shouldClose() const {  return glfwWindowShouldClose( mWindow ); }
 
     void setResized(bool resized) { mFrameBufferResized = resized; }
     bool frameBufferResized() { return mFrameBufferResized; }
+
+    GLFWwindow* window() { return mWindow; }
 private:
     void initWindow( int w, int h, const std::string& name );
 
-    GLFWwindow* window;
+    GLFWwindow* mWindow;
     bool mFrameBufferResized;
 };
 

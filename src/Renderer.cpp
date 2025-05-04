@@ -3,6 +3,8 @@
 //
 
 #include "Renderer.h"
+#include "Clock.h"
+#include "MessageLogger.h"
 
 Renderer::Renderer(): mContext(), image(&mContext, "/home/auser/dev/src/Vulkan/textures/statue.jpg"),
                       mSwapChain(&mContext), mDepthResources(&mContext, mSwapChain.extent()), mUniformBuffers(&mContext),
@@ -22,9 +24,24 @@ void Renderer::run() {
 }
 
 void Renderer::mainLoop() {
+    bool fpsCounted = true;
+    Clock clock;
+    int frames = 0;
     while ( !mContext.window().shouldClose() ) {
         glfwPollEvents();
+        if (fpsCounted) {
+            clock.start();
+            fpsCounted = false;
+        }
         drawFrame();
+        ++frames;
+        clock.stop();
+        if (clock.duration() > 0.1) {
+            std::string title = "FPS: " + std::to_string(frames / clock.duration());
+            glfwSetWindowTitle(mContext.window().window(), title.c_str());
+            fpsCounted = true;
+            frames = 0;
+        }
     }
     vkDeviceWaitIdle( mContext.device() );
 }

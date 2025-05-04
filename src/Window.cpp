@@ -18,7 +18,7 @@ Window::Window( int w, int h, const std::string& name ): mFrameBufferResized(fal
 }
 
 Window::~Window() {
-    glfwDestroyWindow( window );
+    glfwDestroyWindow( mWindow );
     glfwTerminate();
 }
 
@@ -27,18 +27,18 @@ void Window::initWindow( int w, int h, const std::string& name) {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-    window = glfwCreateWindow( w, h, name.c_str(), nullptr, nullptr);
-    glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window, frameBufferResizeCallback);
+    mWindow = glfwCreateWindow( w, h, name.c_str(), nullptr, nullptr);
+    glfwSetWindowUserPointer(mWindow, this);
+    glfwSetFramebufferSizeCallback(mWindow, frameBufferResizeCallback);
 }
 
 void Window::createWindowSurface( VkInstance instance, VkSurfaceKHR& surface ) {
-    if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
+    if (glfwCreateWindowSurface(instance, mWindow, nullptr, &surface) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create window surface!");
     }
     INFO << "Window surface created!";
 }
 
 void Window::getFrameBufferSize( int& width, int& height ) {
-    glfwGetFramebufferSize(window, &width, &height);
+    glfwGetFramebufferSize(mWindow, &width, &height);
 }
