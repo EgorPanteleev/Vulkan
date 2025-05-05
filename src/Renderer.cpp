@@ -6,8 +6,18 @@
 #include "Clock.h"
 #include "MessageLogger.h"
 
+static std::string MODEL_PATH =
+        "/home/auser/dev/src/Vulkan/models/woodspring-priory/source/WoodspringPriory/WoodspringPriory.obj";
+static std::string TEXTURE_PATH =
+        "/home/auser/dev/src/Vulkan/models/woodspring-priory/source/WoodspringPriory/WoodspringPrioryExterior01_Model_4a_u1_v1_diffuse.jpg";
+
+//static std::string MODEL_PATH =
+//        "/home/auser/dev/src/Vulkan/models/lamborghini/source/2022_Lamborghini_Countach_LPI_800-4_LBWK_3D_Assetto/ksp_lambo_countach_lbwk/lambo_countach_2022.obj";
+//static std::string TEXTURE_PATH =
+//        "/home/auser/dev/src/Vulkan/models/lamborghini/textures/Countach50_01_InteriorA_.png";
+
 Renderer::Renderer(): mCamera(),
-                      mContext(), image(&mContext, "/home/auser/dev/src/Vulkan/models/viking_room/viking_room.png"),
+                      mContext(), image(&mContext, TEXTURE_PATH),
                       mSwapChain(&mContext), mColorResources(&mContext, mSwapChain.extent(), mSwapChain.format()),
                       mDepthResources(&mContext, mSwapChain.extent()), mUniformBuffers(&mContext, &mCamera),
                       mDescriptorSet(&mContext, &image, &mUniformBuffers),
@@ -15,8 +25,26 @@ Renderer::Renderer(): mCamera(),
                                         "/home/auser/dev/src/Vulkan/compiled_shaders/shader.vert.spv",
                                         "/home/auser/dev/src/Vulkan/compiled_shaders/shader.frag.spv"),
                       mCommandManager(&mContext),
-                      mVertexBuffer(&mContext, "/home/auser/dev/src/Vulkan/models/viking_room/viking_room.obj"), mSyncObjects(&mContext) {
+                      mVertexBuffer(&mContext, MODEL_PATH), mSyncObjects(&mContext) {
     mSwapChain.createFrameBuffers(mGraphicsPipeline.renderPass(), mDepthResources.imageView(), mColorResources.imageView());
+
+    glm::vec3 min(FLT_MAX);
+    glm::vec3 max(-FLT_MAX);
+
+    for (const auto& vertex : mVertexBuffer.vertices()) {
+        min = glm::min(min, vertex.pos);
+        max = glm::max(max, vertex.pos);
+    }
+
+    glm::vec3 center = (min + max) * 0.5f;
+    glm::vec3 size = max - min;
+    float radius = glm::length(size) * 0.5f;
+    float fov = glm::radians(mCamera.zoom()); // or glm::radians(45.0f)
+    float distance = radius / std::tan(fov / 2.0f);
+    mCamera.setTarget(center);
+    mCamera.setPosition(center + glm::vec3(distance));
+    mCamera.updatePosition();
+
 }
 
 Renderer::~Renderer() {

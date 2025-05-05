@@ -14,7 +14,7 @@ glm::mat4 Camera::getViewMatrix() const {
 }
 
 glm::mat4 Camera::getProjectionMatrix(float aspectRatio) const {
-    glm::mat4 proj = glm::perspective(glm::radians(mZoom), aspectRatio, 0.1f, 100.0f);
+    glm::mat4 proj = glm::perspective(glm::radians(mZoom), aspectRatio, 0.1f, 10000.0f);
     proj[1][1] *= -1;
     return proj;
 }
