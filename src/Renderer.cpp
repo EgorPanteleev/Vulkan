@@ -7,9 +7,9 @@
 #include "MessageLogger.h"
 
 static std::string MODEL_PATH =
-        "/home/auser/dev/src/Vulkan/models/woodspring-priory/source/WoodspringPriory/WoodspringPriory.obj";
+        "/home/auser/dev/src/Vulkan/models/tiny_isometric_room/scene.gltf";
 static std::string TEXTURE_PATH =
-        "/home/auser/dev/src/Vulkan/models/woodspring-priory/source/WoodspringPriory/WoodspringPrioryExterior01_Model_4a_u1_v1_diffuse.jpg";
+        "/home/auser/dev/src/Vulkan/models/tiny_isometric_room/textures/equipment_material_baseColor.png";
 
 //static std::string MODEL_PATH =
 //        "/home/auser/dev/src/Vulkan/models/lamborghini/source/2022_Lamborghini_Countach_LPI_800-4_LBWK_3D_Assetto/ksp_lambo_countach_lbwk/lambo_countach_2022.obj";

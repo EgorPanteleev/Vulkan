@@ -16,11 +16,6 @@
 
 class Context;
 
-struct Model {
-    std::vector<Vertex> vertices;
-    std::vector<uint32_t> indices;
-};
-
 namespace Utils {
 
     struct QueueFamilyIndices {
@@ -83,8 +78,6 @@ namespace Utils {
                                  VkFormatFeatureFlags features);
 
     VkFormat findDepthFormat(Context* context);
-
-    void loadModel(Model& model, const std::string& path);
 
     VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice);
 }

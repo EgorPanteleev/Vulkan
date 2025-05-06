@@ -5,6 +5,7 @@
 #include "VertexBuffer.h"
 #include "MessageLogger.h"
 #include "Utils.h"
+#include "ModelLoader/ModelLoader.h"
 
 VertexBuffer::VertexBuffer(Context* context, const std::string& path): mContext(context) {
 //    mVertices = { { {-0.5f , -0.5f, 0.0f }, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f} },
@@ -24,10 +25,11 @@ VertexBuffer::VertexBuffer(Context* context, const std::string& path): mContext(
 //    mIndices = { 0, 1, 2, 2, 3, 0,
 //                 4, 5, 6, 6, 7, 4 };
 
-    Model model;
-    Utils::loadModel(model, path);
-    mVertices = model.vertices;
-    mIndices = model.indices;
+    auto modelLoader = ModelLoader::createLoader(path);
+    modelLoader->load();
+
+    mVertices = modelLoader->vertices();
+    mIndices = modelLoader->indices();
 
     createVertexBuffer();
     createIndexBuffer();
