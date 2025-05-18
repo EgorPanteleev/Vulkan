@@ -157,6 +157,7 @@ void Context::pickPhysicalDevice() {
 bool Context::isDeviceSuitable(VkPhysicalDevice device) {
     VkPhysicalDeviceProperties properties;
     vkGetPhysicalDeviceProperties(device, &properties);
+
     if (properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
         properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
         return false;

@@ -14,23 +14,30 @@
 class Vertex {
 public:
     Vertex();
-    Vertex( const glm::vec3& pos, const glm::vec3& color, glm::vec2 texCoord );
+    Vertex( const glm::vec3& pos, const glm::vec3& color, const glm::vec2& texCoord, const glm::vec3& normal );
     static VkVertexInputBindingDescription getBindingDescription();
-    static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions();
+    static std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptions();
 
     bool operator==(const Vertex& other) const;
 
     glm::vec3 pos;
     glm::vec3 color;
     glm::vec2 texCoord;
+    glm::vec3 normal;
 };
 
 namespace std {
     template<> struct hash<Vertex> {
         size_t operator()(Vertex const& vertex) const {
-            return ((hash<glm::vec3>()(vertex.pos) ^
-                     (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
-                   (hash<glm::vec2>()(vertex.texCoord) << 1);
+            size_t h1 = std::hash<glm::vec3>()(vertex.pos);
+            size_t h2 = std::hash<glm::vec3>()(vertex.color);
+            size_t h3 = std::hash<glm::vec2>()(vertex.texCoord);
+            size_t h4 = std::hash<glm::vec3>()(vertex.normal);
+
+            return ((h1 ^
+                     (h2 << 1)) >> 1) ^
+                   (h3 << 1) ^
+                   (h4 << 1);
         }
     };
 }

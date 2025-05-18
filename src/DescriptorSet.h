@@ -6,12 +6,14 @@
 #define VULKAN_DESCRIPTORSET_H
 
 #include "Context.h"
-#include "UniformBuffers.h"
+#include "UniformBuffer.h"
 #include "Image.h"
 
 class DescriptorSet {
 public:
-    DescriptorSet(Context* context, Image* texture, UniformBuffers* uniformBuffers);
+    using UniformBuffers = std::vector<std::unique_ptr<UniformBuffer>>;
+
+    DescriptorSet(Context* context, Image* texture, const UniformBuffers& uniformBuffers);
     ~DescriptorSet();
 
     VkDescriptorSetLayout& descriptorSetLayout() { return mDescriptorSetLayout; }
@@ -27,7 +29,7 @@ private:
 
     Image* mTexture;
 
-    UniformBuffers* mUniformBuffers;
+    const UniformBuffers& mUniformBuffers;
     /**
      * A descriptor set layout describes what types of resources (e.g., uniform buffers, samplers, storage buffers)
      * your shaders expect, and where (binding points).

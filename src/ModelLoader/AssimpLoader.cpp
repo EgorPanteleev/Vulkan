@@ -43,6 +43,14 @@ bool AssimpLoader::load() {
                 pos.y = mesh->mVertices[assimpIndex].y;
                 pos.z = mesh->mVertices[assimpIndex].z;
 
+                glm::vec3 normal;
+                if (mesh->HasNormals()) {
+                    aiVector3D aiNormal = mesh->mNormals[assimpIndex];
+                    normal = {aiNormal.x, aiNormal.y, aiNormal.z};
+                } else {
+                    normal = {0, 0, 0};
+                }
+
                 // Color (default to white if missing)
                 glm::vec3 color(1.0f);
                 if (mesh->HasVertexColors(0)) {
@@ -59,7 +67,7 @@ bool AssimpLoader::load() {
                 }
 
                 // Create a Vertex instance
-                Vertex vertex(pos, color, texCoord);
+                Vertex vertex(pos, color, texCoord, normal);
 
                 // Check if this vertex is already in the map
                 if (uniqueVertices.find(vertex) != uniqueVertices.end()) {

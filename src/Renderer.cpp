@@ -5,6 +5,8 @@
 #include "Renderer.h"
 #include "Clock.h"
 #include "MessageLogger.h"
+#include "ModelUniformBuffer.h"
+#include "LightUniformBuffer.h"
 
 static std::string MODEL_PATH =
         "/home/auser/dev/src/Vulkan/models/Sponza/glTF/Sponza.gltf";
@@ -16,11 +18,19 @@ static std::string TEXTURE_PATH =
 //static std::string TEXTURE_PATH =
 //        "/home/auser/dev/src/Vulkan/models/lamborghini/textures/Countach50_01_InteriorA_.png";
 
+static std::vector<std::unique_ptr<UniformBuffer>> makeUniforms(Context* ctx, Camera* cam) {
+    std::vector<std::unique_ptr<UniformBuffer>> uniformBuffers;
+    uniformBuffers.emplace_back(std::make_unique<ModelUniformBuffer>(ctx, cam));
+    uniformBuffers.emplace_back(std::make_unique<LightUniformBuffer>(ctx, cam));
+    return uniformBuffers;
+}
+
 Renderer::Renderer(): mCamera(45.0f, 1280.0f / 720.0f, 0.1f, 1000000),
                       mContext(), image(&mContext, TEXTURE_PATH),
                       mSwapChain(&mContext), mColorResources(&mContext, mSwapChain.extent(), mSwapChain.format()),
-                      mDepthResources(&mContext, mSwapChain.extent()), mUniformBuffers(&mContext, &mCamera),
-                      mDescriptorSet(&mContext, &image, &mUniformBuffers),
+                      mDepthResources(&mContext, mSwapChain.extent()),
+                      mUniformBuffers( makeUniforms(&mContext, &mCamera) ),
+                      mDescriptorSet(&mContext, &image, mUniformBuffers),
                       mGraphicsPipeline(&mContext, &mSwapChain, &mDescriptorSet,
                                         "/home/auser/dev/src/Vulkan/compiled_shaders/shader.vert.spv",
                                         "/home/auser/dev/src/Vulkan/compiled_shaders/shader.frag.spv"),
@@ -127,7 +137,9 @@ void Renderer::drawFrame() {
     // Only reset the fence if we are submitting work
     vkResetFences(mContext.device(), 1, &mSyncObjects.inFlightFence(mSwapChain.currentFrame()));
 
-    mUniformBuffers.updateUniformBuffer(mSwapChain.currentFrame(), mSwapChain.extent() );
+    for ( auto& uniformBuffer: mUniformBuffers ) {
+        uniformBuffer->updateUniformBuffer(mSwapChain.currentFrame(), mSwapChain.extent() );
+    }
 
     mCommandManager.recordCommandBuffer( &mSwapChain, &mGraphicsPipeline, &mDescriptorSet, &mVertexBuffer, imageIndex );
     auto submitResult = mCommandManager.submitCommandBuffer( &mSwapChain, &mSyncObjects, &imageIndex );

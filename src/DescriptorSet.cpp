@@ -5,7 +5,7 @@
 #include "DescriptorSet.h"
 #include "MessageLogger.h"
 
-DescriptorSet::DescriptorSet(Context* context, Image* texture, UniformBuffers* uniformBuffers):
+DescriptorSet::DescriptorSet(Context* context, Image* texture, const UniformBuffers& uniformBuffers):
                              mContext(context), mTexture(texture), mUniformBuffers(uniformBuffers) {
     createDescriptorSetLayout();
     createDescriptorPool();
@@ -32,7 +32,14 @@ void DescriptorSet::createDescriptorSetLayout() {
     samplerLayoutBinding.pImmutableSamplers = nullptr;
     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    std::array<VkDescriptorSetLayoutBinding, 2> bindings = {uboLayoutBinding, samplerLayoutBinding};
+    VkDescriptorSetLayoutBinding lightUBOLayoutBinding{};
+    lightUBOLayoutBinding.binding = 2;
+    lightUBOLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    lightUBOLayoutBinding.descriptorCount = 1;
+    lightUBOLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    lightUBOLayoutBinding.pImmutableSamplers = nullptr;
+
+    std::array<VkDescriptorSetLayoutBinding, 3> bindings = {uboLayoutBinding, samplerLayoutBinding, lightUBOLayoutBinding};
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
@@ -45,11 +52,13 @@ void DescriptorSet::createDescriptorSetLayout() {
 }
 
 void DescriptorSet::createDescriptorPool() {
-    std::array<VkDescriptorPoolSize, 2> poolSizes{};
+    std::array<VkDescriptorPoolSize, 3> poolSizes{};
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[0].descriptorCount = static_cast<uint32_t>(mContext->maxFramesInFlight());
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     poolSizes[1].descriptorCount = static_cast<uint32_t>(mContext->maxFramesInFlight());
+    poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSizes[2].descriptorCount = static_cast<uint32_t>(mContext->maxFramesInFlight());
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -77,16 +86,21 @@ void DescriptorSet::createDescriptorSets() {
 
     for (size_t i = 0; i < mContext->maxFramesInFlight(); ++i) {
         VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = mUniformBuffers->uniformBuffers()[i];
+        bufferInfo.buffer = mUniformBuffers[0]->uniformBuffers()[i];
         bufferInfo.offset = 0;
-        bufferInfo.range = sizeof(UniformBufferObject);
+        bufferInfo.range = mUniformBuffers[0]->getSize();
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         imageInfo.imageView = mTexture->imageView();
         imageInfo.sampler = mTexture->sampler();
 
-        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+        VkDescriptorBufferInfo lightBufferInfo{};
+        lightBufferInfo.buffer = mUniformBuffers[1]->uniformBuffers()[i];
+        lightBufferInfo.offset = 0;
+        lightBufferInfo.range = mUniformBuffers[1]->getSize();
+
+        std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
         descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrites[0].dstSet = mDescriptorSets[i];
         descriptorWrites[0].dstBinding = 0;
@@ -104,6 +118,16 @@ void DescriptorSet::createDescriptorSets() {
         descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         descriptorWrites[1].descriptorCount = 1;
         descriptorWrites[1].pImageInfo = &imageInfo;
+
+        descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[2].dstSet = mDescriptorSets[i];
+        descriptorWrites[2].dstBinding = 2;
+        descriptorWrites[2].dstArrayElement = 0;
+        descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrites[2].descriptorCount = 1;
+        descriptorWrites[2].pBufferInfo = &lightBufferInfo;
+        descriptorWrites[2].pImageInfo = nullptr; // Optional
+        descriptorWrites[2].pTexelBufferView = nullptr; // Optional
 
         vkUpdateDescriptorSets(mContext->device(), static_cast<uint32_t>(descriptorWrites.size()),
                                descriptorWrites.data(), 0, nullptr);

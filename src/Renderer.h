@@ -9,7 +9,7 @@
 #include "GraphicsPipeline.h"
 #include "CommandManager.h"
 #include "SyncObjects.h"
-#include "UniformBuffers.h"
+#include "UniformBuffer.h"
 #include "Image.h"
 #include "DepthResources.h"
 #include "ColorResources.h"
@@ -26,6 +26,8 @@ public:
     Context* context() { return &mContext; }
     Camera* camera() {return &mCamera; }
 private:
+    using UniformBuffers = std::vector<std::unique_ptr<UniformBuffer>>;
+
     void mainLoop();
     void drawFrame();
     void recreateSwapChain();

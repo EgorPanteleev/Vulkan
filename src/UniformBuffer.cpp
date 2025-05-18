@@ -2,7 +2,7 @@
 // Created by auser on 4/5/25.
 //
 
-#include "UniformBuffers.h"
+#include "UniformBuffer.h"
 #include "MessageLogger.h"
 #include "Utils.h"
 
@@ -10,11 +10,10 @@
 #include <chrono>
 #include <cstring>
 
-UniformBuffers::UniformBuffers(Context* context, Camera* camera): mContext(context), mCamera(camera) {
-    createUniformBuffers();
+UniformBuffer::UniformBuffer(Context* context, Camera* camera): mContext(context), mCamera(camera) {
 }
 
-UniformBuffers::~UniformBuffers() {
+UniformBuffer::~UniformBuffer() {
     for (size_t i = 0; i < mContext->maxFramesInFlight(); ++i) {
         vmaUnmapMemory(mContext->allocator(), mBuffersAllocation[i]);
         vmaDestroyBuffer(mContext->allocator(), mUniformBuffers[i], mBuffersAllocation[i]);
@@ -22,8 +21,8 @@ UniformBuffers::~UniformBuffers() {
 }
 
 
-void UniformBuffers::createUniformBuffers() {
-    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+void UniformBuffer::createUniformBuffers() {
+    VkDeviceSize bufferSize = getSize();
 
     mUniformBuffers.resize(mContext->maxFramesInFlight());
     mBuffersAllocation.resize(mContext->maxFramesInFlight());
@@ -35,12 +34,4 @@ void UniformBuffers::createUniformBuffers() {
 
         vmaMapMemory(mContext->allocator(), mBuffersAllocation[i], &mUniformBuffersMapped[i]);
     }
-}
-
-void UniformBuffers::updateUniformBuffer(uint32_t currentImage, VkExtent2D extent) {
-    UniformBufferObject ubo{};
-    ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    ubo.view = mCamera->viewMatrix();
-    ubo.proj = mCamera->projectionMatrix();
-    std::memcpy(mUniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
 }
