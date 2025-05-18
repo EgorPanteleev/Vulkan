@@ -20,7 +20,6 @@ public:
 private:
     void createImage(const std::string& path);
     void createImageView();
-    void createSampler(); //Is it must be here?
     void generateMipMaps(VkFormat imageFormat);
 
     Context* mContext;

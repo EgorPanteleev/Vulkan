@@ -80,6 +80,8 @@ namespace Utils {
     VkFormat findDepthFormat(Context* context);
 
     VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice);
+
+    void createSampler(Context* context, VkSampler& sampler, uint32_t mipLevels);
 }
 
 #endif //VULKAN_UTILS_H

@@ -12,7 +12,7 @@ Image::Image(Context* context, const std::string& path): mContext(context) {
     createImage(path);
     generateMipMaps(VK_FORMAT_R8G8B8A8_SRGB);
     createImageView();
-    createSampler();
+    Utils::createSampler(mContext, mSampler, mMipLevels);
 }
 
 Image::~Image() {
@@ -58,32 +58,6 @@ void Image::createImageView() {
     mImageView = Utils::createImageView(mContext->device(), mImage, mMipLevels, VK_IMAGE_VIEW_TYPE_2D,
                                         VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 
-}
-
-void Image::createSampler() {
-    VkSamplerCreateInfo samplerInfo{};
-    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.magFilter = VK_FILTER_LINEAR;
-    samplerInfo.minFilter = VK_FILTER_LINEAR;
-    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.anisotropyEnable = VK_TRUE;
-    VkPhysicalDeviceProperties properties{};
-    vkGetPhysicalDeviceProperties(mContext->physicalDevice(), &properties);
-    samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
-    samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-    samplerInfo.unnormalizedCoordinates = VK_FALSE;
-    samplerInfo.compareEnable = VK_FALSE;
-    samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    samplerInfo.minLod = 0; // Optional
-    samplerInfo.maxLod = static_cast<float>(mMipLevels);
-    samplerInfo.mipLodBias = 0.0f; // Optional
-    if (vkCreateSampler(mContext->device(), &samplerInfo, nullptr, &mSampler) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create texture sampler!");
-    }
 }
 
 void Image::generateMipMaps(VkFormat imageFormat) {

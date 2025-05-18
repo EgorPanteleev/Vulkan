@@ -14,6 +14,7 @@ public:
 
     VkImage image() { return mImage; }
     VkImageView imageView() { return mImageView; }
+    VkSampler sampler() { return mSampler; }
 
     void recreate(VkExtent2D swapChainExtent);
 private:
@@ -25,6 +26,7 @@ private:
     VkImage mImage;
     VmaAllocation mImageAllocation;
     VkImageView mImageView;
+    VkSampler mSampler;
 };
 
 
