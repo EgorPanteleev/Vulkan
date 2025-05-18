@@ -39,8 +39,8 @@ void UniformBuffers::createUniformBuffers() {
 
 void UniformBuffers::updateUniformBuffer(uint32_t currentImage, VkExtent2D extent) {
     UniformBufferObject ubo{};
-    ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.view = mCamera->getViewMatrix();
-    ubo.proj = mCamera->getProjectionMatrix(extent.width / (float) extent.height);
+    ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    ubo.view = mCamera->viewMatrix();
+    ubo.proj = mCamera->projectionMatrix();
     std::memcpy(mUniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
 }

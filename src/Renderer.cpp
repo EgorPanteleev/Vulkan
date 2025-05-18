@@ -7,16 +7,16 @@
 #include "MessageLogger.h"
 
 static std::string MODEL_PATH =
-        "/home/auser/dev/src/Vulkan/models/tiny_isometric_room/scene.gltf";
+        "/home/auser/dev/src/Vulkan/models/Sponza/glTF/Sponza.gltf";
 static std::string TEXTURE_PATH =
-        "/home/auser/dev/src/Vulkan/models/tiny_isometric_room/textures/equipment_material_baseColor.png";
+        "/home/auser/dev/src/Vulkan/textures/statue.jpg";
 
 //static std::string MODEL_PATH =
 //        "/home/auser/dev/src/Vulkan/models/lamborghini/source/2022_Lamborghini_Countach_LPI_800-4_LBWK_3D_Assetto/ksp_lambo_countach_lbwk/lambo_countach_2022.obj";
 //static std::string TEXTURE_PATH =
 //        "/home/auser/dev/src/Vulkan/models/lamborghini/textures/Countach50_01_InteriorA_.png";
 
-Renderer::Renderer(): mCamera(),
+Renderer::Renderer(): mCamera(45.0f, 1280.0f / 720.0f, 0.1f, 1000000),
                       mContext(), image(&mContext, TEXTURE_PATH),
                       mSwapChain(&mContext), mColorResources(&mContext, mSwapChain.extent(), mSwapChain.format()),
                       mDepthResources(&mContext, mSwapChain.extent()), mUniformBuffers(&mContext, &mCamera),
@@ -31,19 +31,52 @@ Renderer::Renderer(): mCamera(),
     glm::vec3 min(FLT_MAX);
     glm::vec3 max(-FLT_MAX);
 
-    for (const auto& vertex : mVertexBuffer.vertices()) {
-        min = glm::min(min, vertex.pos);
-        max = glm::max(max, vertex.pos);
-    }
+//    for (const auto& vertex : mVertexBuffer.vertices()) {
+//        min = glm::min(min, vertex.pos);
+//        max = glm::max(max, vertex.pos);
+//    }
+//
+//    glm::vec3 center = (min + max) * 0.5f;
+//    glm::vec3 size = max - min;
+//    float radius = glm::length(size) * 0.5f;
+//    float fov = glm::radians(mCamera.zoom()); // or glm::radians(45.0f)
+//    float distance = radius / std::tan(fov / 2.0f);
+//    mCamera.setTarget(center);
+//    mCamera.setPosition(center + glm::vec3(distance));
+//    mCamera.updatePosition();
 
-    glm::vec3 center = (min + max) * 0.5f;
-    glm::vec3 size = max - min;
-    float radius = glm::length(size) * 0.5f;
-    float fov = glm::radians(mCamera.zoom()); // or glm::radians(45.0f)
-    float distance = radius / std::tan(fov / 2.0f);
-    mCamera.setTarget(center);
-    mCamera.setPosition(center + glm::vec3(distance));
-    mCamera.updatePosition();
+}
+
+namespace glm {
+    inline std::ostream &operator<<(std::ostream &os, glm::vec3 const &v) {
+        return os << "("
+                  << v.x << ", "
+                  << v.y << ", "
+                  << v.z << ")";
+    }
+}
+
+void ProcessInput(Camera& camera, GLFWwindow* window) {
+    float speed = 2.5f * 1;
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        camera.setPosition(camera.position() + camera.forward() * speed);
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        camera.setPosition(camera.position() - camera.forward() * speed);
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        camera.setPosition(camera.position() - glm::normalize(glm::cross(camera.forward(), camera.up())) * speed);
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        camera.setPosition(camera.position() + glm::normalize(glm::cross(camera.forward(), camera.up())) * speed);
+    }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        camera.setPosition( camera.position() + camera.up() * speed );
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+        camera.setPosition( camera.position() - camera.up() * speed );
+    }
 
 }
 
@@ -65,6 +98,7 @@ void Renderer::mainLoop() {
             fpsCounted = false;
         }
         drawFrame();
+        ProcessInput( mCamera, mContext.window().window() );
         ++frames;
         clock.stop();
         if (clock.duration() > 0.1) {

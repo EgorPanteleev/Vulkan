@@ -15,6 +15,27 @@ struct UniformBufferObject {
     glm::mat4 proj;
 };
 
+//struct CameraUBO {
+//    glm::mat4 view;
+//    glm::mat4 proj;
+//};
+//
+//// binding = 1 : Light UBO
+//struct LightUBO {
+//    glm::vec4 lightPos;   // w unused
+//    glm::vec4 lightColor; // rgb,  a unused
+//};
+//
+//// binding = 2 : Material UBO
+//struct MaterialUBO {
+//    glm::vec4 ambient;   // rgb ambient color
+//    glm::vec4 diffuse;   // rgb diffuse color
+//    glm::vec4 specular;  // rgb specular color
+//    float shininess;
+//    // pad to vec4
+//    float pad[3];
+//};
+
 class UniformBuffers {
 public:
     UniformBuffers(Context* context, Camera* camera);

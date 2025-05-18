@@ -8,34 +8,38 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+// model matrix - from objects local - world coords
+// view matrix - from world space - camera space
+// projection - from camera to screen
+
 class Camera {
 public:
-    Camera();
+    constexpr static glm::vec3 worldUp = glm::vec3(0.0, 0.0, 1.0);
 
-    float zoom() { return mZoom; }
+    Camera(float FOV, float aspectRatio, float nearPlane, float farPlane);
 
-    void setTarget( const glm::vec3& target ) { mTarget = target; }
+    void setPosition(const glm::vec3& position) { mPosition = position; }
+    void setPitch(double pitch) { mPitch = pitch; }
+    void setYaw(double yaw) { mYaw = yaw; }
 
-    void setPosition( const glm::vec3& position ) { mPosition = position; }
+    glm::vec3 position() const { return mPosition; }
+    glm::vec3 forward() const;
+    glm::vec3 right() const { return glm::normalize(glm::cross(forward(), worldUp)); }
+    glm::vec3 up() const { return glm::normalize(glm::cross(right(), forward())); }
 
-    glm::mat4 getViewMatrix() const;
+    double pitch() { return mPitch; }
+    double yaw() { return mYaw; }
 
-    glm::mat4 getProjectionMatrix(float aspectRatio) const;
-
-    void rotate(float dx, float dy);
-
-    void zoomBy(float delta);
-    void updatePosition();
+    glm::mat4 viewMatrix() const;
+    glm::mat4 projectionMatrix() const { return mProjectionMatrix; }
 
 private:
+    void calculateProjection(float FOV, float aspectRatio, float nearPlane, float farPlane);
 
     glm::vec3 mPosition;
-    glm::vec3 mTarget;
-    glm::vec3 mUp;
-
-    float mYaw;
-    float mPitch;
-    float mZoom;
+    double mPitch;
+    double mYaw;
+    glm::mat4 mProjectionMatrix;
 };
 
 

@@ -4,30 +4,39 @@
 
 #include "VulkanApp.h"
 
+bool rightMouseButtonPressed = false;
+double lastX = 0.0f, lastY = 0.0f;
+
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
     auto camera = reinterpret_cast<Camera*>(glfwGetWindowUserPointer(window));
-    camera->zoomBy(static_cast<float>(yoffset * 2));
+    //camera->zoomBy(static_cast<float>(yoffset * 2));
+}
+
+void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+        if (action == GLFW_PRESS) {
+            rightMouseButtonPressed = true;
+            glfwGetCursorPos(window, &lastX, &lastY);  // Initialize lastX and lastY
+        } else if (action == GLFW_RELEASE) {
+            rightMouseButtonPressed = false;
+        }
+    }
 }
 
 void mouseMoveCallback(GLFWwindow* window, double xpos, double ypos) {
-    static double lastX = -1;
-    static double lastY = -1;
+    auto camera = static_cast<Camera*>(glfwGetWindowUserPointer(window));
 
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-        if (lastX >= 0 && lastY >= 0) {
-            auto dx = static_cast<float>(lastX - xpos);
-            auto dy = static_cast<float>(ypos - lastY);
+    if (!rightMouseButtonPressed || !camera) return;
 
-            auto camera = static_cast<Camera*>(glfwGetWindowUserPointer(window));
-            camera->rotate(dx * 0.2f, dy * 0.2f);
-        }
+    double sensitivity = 0.1f;
+    double offsetX = xpos - lastX;
+    double offsetY = lastY - ypos;  // Inverted since y-coordinates go from bottom to top
 
-        lastX = xpos;
-        lastY = ypos;
-    } else {
-        lastX = -1;
-        lastY = -1;
-    }
+    lastX = xpos;
+    lastY = ypos;
+
+    camera->setYaw(camera->yaw() - offsetX * sensitivity);
+    camera->setPitch(glm::clamp(camera->pitch() + offsetY * sensitivity, -89.0, 89.0));
 }
 
 VulkanApp::VulkanApp(): renderer() {
@@ -35,6 +44,7 @@ VulkanApp::VulkanApp(): renderer() {
     glfwSetWindowUserPointer(glfwWindow, renderer.camera());
     glfwSetScrollCallback(glfwWindow, scrollCallback);
     glfwSetCursorPosCallback(glfwWindow, mouseMoveCallback);
+    glfwSetMouseButtonCallback(glfwWindow, MouseButtonCallback);
 }
 
 void VulkanApp::run() {

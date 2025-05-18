@@ -15,8 +15,10 @@ AssimpLoader::AssimpLoader(std::string modelPath): AbsLoader(ASSIMP, std::move(m
 
 bool AssimpLoader::load() {
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(mModelPath,
-                                             aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+    unsigned int flags = aiProcess_Triangulate |
+                         aiProcess_FlipUVs |
+                         aiProcess_GenNormals;
+    const aiScene* scene = importer.ReadFile(mModelPath, flags);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         std::cerr << "Assimp Error: " << importer.GetErrorString() << std::endl;
