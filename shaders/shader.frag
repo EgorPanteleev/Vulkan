@@ -9,6 +9,8 @@ layout(location = 0) out vec4 outColor;
 
 layout(binding = 1) uniform sampler2D texSampler;
 
+//layout(binding = 3) uniform sampler2D shadowMap;
+
 const int MAX_LIGHTS = 10;
 
 layout(std140, binding = 2) uniform Light {
@@ -47,6 +49,9 @@ void main() {
 
     outColor = vec4(result, 1.0);
 
-    //    vec4 texColor = texture(texSampler, fragTexCoord);
-    //    outColor = texColor * vec4(fragColor, 1.0); // modulate color by vertex color
+    vec4 texColor = texture(texSampler, fragTexCoord);
+    outColor = texColor * vec4(fragColor, 1.0); // modulate color by vertex color
+
+//    vec4 texColor = texture(texSampler, fragTexCoord);
+//    outColor = texColor * vec4(fragColor, 1.0);
 }

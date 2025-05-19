@@ -23,14 +23,16 @@ void DepthResources::createDepthResources(VkExtent2D swapChainExtent) {
     auto msaaSamples = Utils::getMaxUsableSampleCount(mContext->physicalDevice());
     Utils::createImage(mContext->allocator(), mImageAllocation, VMA_MEMORY_USAGE_AUTO,
                        mImage, 1, msaaSamples, swapChainExtent.width, swapChainExtent.height, depthFormat,
-                       VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+                       VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
     mImageView = Utils::createImageView(mContext->device(), mImage, 1, VK_IMAGE_VIEW_TYPE_2D,
                                                    depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
     Utils::transitionImageLayout(mContext, mImage, 1, depthFormat,
                                  VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    Utils::createSampler(mContext, mSampler, 1);
 }
 
 void DepthResources::clear() {
+    vkDestroySampler(mContext->device(), mSampler, nullptr);
     vkDestroyImageView(mContext->device(), mImageView, nullptr);
     vmaDestroyImage(mContext->allocator(), mImage, mImageAllocation);
 }

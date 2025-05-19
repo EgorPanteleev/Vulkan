@@ -29,7 +29,7 @@ struct PipelineConfigInfo {
 class GraphicsPipeline {
 public:
     GraphicsPipeline(Context* context, SwapChain* swapChain, DescriptorSet* descriptorSet,
-                     const std::string& vertShaderPath, const std::string& fragShaderPath);
+                     VkShaderModule& mVertShaderModule, VkShaderModule& mFragShaderModule);
     ~GraphicsPipeline();
     /**
     * Getters
@@ -50,7 +50,7 @@ private:
     /**
      * Creating graphics pipeline
      */
-    void createGraphicsPipeline( const std::string& vertShaderPath, const std::string& fragShaderPath );
+    void createGraphicsPipeline( VkShaderModule& vertShaderModule, VkShaderModule& fragShaderModule );
     void getPipelineConfigInfo( PipelineConfigInfo& configInfo );
 
     Context* mContext;
@@ -58,8 +58,6 @@ private:
     VkRenderPass mRenderPass;
     VkPipelineLayout mPipelineLayout;
     VkPipeline mGraphicsPipeline;
-    VkShaderModule mVertShaderModule;
-    VkShaderModule mFragShaderModule;
 };
 
 

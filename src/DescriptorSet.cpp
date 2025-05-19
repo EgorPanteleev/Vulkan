@@ -39,7 +39,9 @@ void DescriptorSet::createDescriptorSetLayout() {
     lightUBOLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
     lightUBOLayoutBinding.pImmutableSamplers = nullptr;
 
-    std::array<VkDescriptorSetLayoutBinding, 3> bindings = {uboLayoutBinding, samplerLayoutBinding, lightUBOLayoutBinding};
+    std::array<VkDescriptorSetLayoutBinding, 3> bindings = {uboLayoutBinding,
+                                                            samplerLayoutBinding,
+                                                            lightUBOLayoutBinding};
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
