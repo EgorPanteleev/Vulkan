@@ -44,14 +44,13 @@ void main() {
     vec3 viewDir = normalize(lights.viewPos.xyz - fragPos);
     vec3 result = vec3(0.0);
     for (int i = 0; i < lights.lightCount; ++i) {
-        result = vec3(1);
-        //result += calculateBlinnPhong(normal, fragPos, viewDir, lights.lightPos[i].xyz, lights.lightColor[i].xyz);
+        result += calculateBlinnPhong(normal, fragPos, viewDir, lights.lightPos[i].xyz, lights.lightColor[i].xyz);
     }
 
     outColor = vec4(result, 1.0);
 
-    //vec4 texColor = texture(texSampler, fragTexCoord);
-    //outColor = texColor * vec4(fragColor, 1.0); // modulate color by vertex color
+    // vec4 texColor = texture(texSampler, fragTexCoord);
+    // outColor = texColor * vec4(fragColor, 1.0); // modulate color by vertex color
 
     //    vec4 texColor = texture(texSampler, fragTexCoord);
     //    outColor = texColor * vec4(fragColor, 1.0);
