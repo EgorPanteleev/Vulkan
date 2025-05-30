@@ -36,8 +36,9 @@ void CommandManager::createCommandBuffers() {
     INFO << "Created command buffers";
 }
 
-void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline* graphicsPipeline,
-                                         DescriptorSet* descriptorSet, VertexBuffer* vertexBuffer, uint32_t imageIndex) {
+void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline* graphicsPipeline, ShadowPipeline* shadowPipeline,
+                                         DescriptorSet* descriptorSet, ShadowDescriptorSet* shadowDescriptorSet,
+                                         VertexBuffer* vertexBuffer, uint32_t imageIndex) {
     uint32_t currentFrame = swapChain->currentFrame();
     auto commandBuffer = mCommandBuffers[ currentFrame ];
     vkResetCommandBuffer( commandBuffer, 0 );
@@ -50,6 +51,56 @@ void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline*
         throw std::runtime_error("Failed to begin recording command buffer!");
     }
 
+    // SHADOW PASS BEGIN
+    VkRenderPassBeginInfo shadowPassInfo{};
+    shadowPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    shadowPassInfo.renderPass = shadowPipeline->renderPass();
+    shadowPassInfo.framebuffer = swapChain->shadowFrameBuffers()[0];
+    shadowPassInfo.renderArea.offset = {0, 0};
+    shadowPassInfo.renderArea.extent = {1024,1024};
+
+    VkClearValue shadowClearValue{};
+    shadowClearValue.depthStencil = {1.0f, 0};
+    shadowPassInfo.clearValueCount = 1;
+    shadowPassInfo.pClearValues = &shadowClearValue;
+
+    vkCmdBeginRenderPass(commandBuffer, &shadowPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowPipeline->graphicsPipeline());
+
+    // Set viewport and scissor for shadow pipeline
+    VkViewport shadowViewport{};
+    shadowViewport.x = 0.0f;
+    shadowViewport.y = 0.0f;
+    shadowViewport.width = static_cast<float>(1024);
+    shadowViewport.height = static_cast<float>(1024);
+    shadowViewport.minDepth = 0.0f;
+    shadowViewport.maxDepth = 1.0f;
+    vkCmdSetViewport(commandBuffer, 0, 1, &shadowViewport);
+
+    VkRect2D shadowScissor{};
+    shadowScissor.offset = {0, 0};
+    shadowScissor.extent = {1024,1024};
+    vkCmdSetScissor(commandBuffer, 0, 1, &shadowScissor);
+
+    VkBuffer vertexBuffers[] = {vertexBuffer->vertexBuffer()};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+    vkCmdBindIndexBuffer(commandBuffer, vertexBuffer->indexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowPipeline->pipelineLayout(),
+                            0, 1, &shadowDescriptorSet->descriptorSets()[currentFrame], 0, nullptr);
+
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(vertexBuffer->indices().size()), 1, 0, 0, 0);
+
+    vkCmdEndRenderPass(commandBuffer);
+    // SHADOW PASS END
+
+    // Transition Shadow Map to Read-Only Optimal for Sampling
+//    Utils::transitionImageLayout(mContext, shadowPipeline->(), 1, shadowPipeline->depthFormat(),
+//                                 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = graphicsPipeline->renderPass();
@@ -58,7 +109,7 @@ void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline*
     renderPassInfo.renderArea.extent = swapChain->extent();
 
     std::array<VkClearValue, 2> clearValues{};
-    clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+    clearValues[0].color = {{0.2f, 0.2f, 0.2f, 1.0f}};
     clearValues[1].depthStencil = {1.0f, 0};
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
     renderPassInfo.pClearValues = clearValues.data();
@@ -82,8 +133,8 @@ void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline*
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->graphicsPipeline());
 
-    VkBuffer vertexBuffers[] = {vertexBuffer->vertexBuffer()};
-    VkDeviceSize offsets[] = {0};
+//    VkBuffer vertexBuffers[] = {vertexBuffer->vertexBuffer()};
+//    VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
     vkCmdBindIndexBuffer(commandBuffer, vertexBuffer->indexBuffer(), 0, VK_INDEX_TYPE_UINT32);

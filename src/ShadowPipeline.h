@@ -13,6 +13,10 @@ public:
     ShadowPipeline(Context* context, ShadowDescriptorSet* descriptorSet, VkShaderModule& vertShaderModule);
     ~ShadowPipeline();
 
+    VkRenderPass renderPass() { return mRenderPass; }
+    VkPipelineLayout pipelineLayout() { return mPipelineLayout; }
+    VkPipeline graphicsPipeline() { return mGraphicsPipeline; }
+
 private:
     void createRenderPass();
     void createPipelineLayout(ShadowDescriptorSet* descriptorSet);

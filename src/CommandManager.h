@@ -10,13 +10,16 @@
 #include "GraphicsPipeline.h"
 #include "SyncObjects.h"
 #include "VertexBuffer.h"
+#include "ShadowDescriptorSet.h"
+#include "ShadowPipeline.h"
 
 class CommandManager {
 public:
     CommandManager(Context* context);
     ~CommandManager();
-    void recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline* graphicsPipeline,
-                             DescriptorSet* descriptorSet, VertexBuffer* vertexBuffer, uint32_t imageIndex);
+    void recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline* graphicsPipeline, ShadowPipeline* shadowPipeline,
+                             DescriptorSet* descriptorSet, ShadowDescriptorSet* shadowDescriptorSet,
+                             VertexBuffer* vertexBuffer, uint32_t imageIndex);
     VkResult submitCommandBuffer(SwapChain* swapChain, SyncObjects* syncObjects, uint32_t* imageIndex);
 private:
     /**

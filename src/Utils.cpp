@@ -149,14 +149,9 @@ namespace Utils {
         }
     }
 
-    VkFramebuffer createFrameBuffer(VkDevice device, VkRenderPass renderPass, VkImageView imageView,
-                                    VkImageView depthImageView, VkImageView colorImageView, VkExtent2D extent) {
+    VkFramebuffer createFrameBuffer(VkDevice device, VkRenderPass renderPass,
+                                    std::vector<VkImageView> attachments, VkExtent2D extent) {
         VkFramebuffer framebuffer;
-        std::array<VkImageView, 3> attachments = {
-                colorImageView,
-                depthImageView,
-                imageView
-        };
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferInfo.renderPass = renderPass;

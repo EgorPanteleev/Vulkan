@@ -49,6 +49,7 @@ Renderer::Renderer() {
     mSwapChain->createFrameBuffers(mGraphicsPipeline->renderPass(),
                                    mDepthResources->imageView(),
                                    mColorResources->imageView());
+    mSwapChain->createShadowFrameBuffers(mShadowPipeline->renderPass(), mDepthResources->shadowImageView());
 }
 
 void processKeyboard(Camera& camera, GLFWwindow* window) {
@@ -129,8 +130,8 @@ void Renderer::drawFrame() {
         uniformBuffer->updateUniformBuffer(mSwapChain->currentFrame(), mSwapChain->extent() );
     }
 
-    mCommandManager->recordCommandBuffer( mSwapChain.get(), mGraphicsPipeline.get(),
-                                         mDescriptorSet.get(), mVertexBuffer.get(), imageIndex );
+    mCommandManager->recordCommandBuffer( mSwapChain.get(), mGraphicsPipeline.get(), mShadowPipeline.get(),
+                                         mDescriptorSet.get(), mShadowDescriptorSet.get(), mVertexBuffer.get(), imageIndex );
     auto submitResult = mCommandManager->submitCommandBuffer( mSwapChain.get(), mSyncObjects.get(), &imageIndex );
     
     if (submitResult == VK_ERROR_OUT_OF_DATE_KHR ||

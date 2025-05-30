@@ -16,6 +16,9 @@ public:
     VkImageView imageView() { return mImageView; }
     VkSampler sampler() { return mSampler; }
 
+    VkImage shadowImage() { return mShadowImage; }
+    VkImageView shadowImageView() { return mShadowImageView; }
+
     void recreate(VkExtent2D swapChainExtent);
 private:
     void createDepthResources(VkExtent2D swapChainExtent);
@@ -26,6 +29,10 @@ private:
     VkImage mImage;
     VmaAllocation mImageAllocation;
     VkImageView mImageView;
+
+    VkImage mShadowImage;
+    VmaAllocation mShadowImageAllocation;
+    VkImageView mShadowImageView;
     VkSampler mSampler;
 };
 

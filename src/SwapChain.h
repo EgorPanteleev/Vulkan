@@ -24,6 +24,7 @@ public:
     std::vector<VkImageView>& imageViews() { return mImageViews; }
     uint32_t currentFrame() { return mCurrentFrame; }
     std::vector<VkFramebuffer>& frameBuffers() { return mFrameBuffers; }
+    std::vector<VkFramebuffer>& shadowFrameBuffers() { return mShadowFrameBuffers; }
     /**
     * Work with images
     */
@@ -33,6 +34,7 @@ public:
     * Creating frame buffers
     */
     void createFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView, VkImageView colorImageView);
+    void createShadowFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView);
 private:
     /**
      *  Creating swapchain
@@ -55,6 +57,7 @@ private:
     std::vector<VkImageView> mImageViews;
     uint32_t mCurrentFrame;
     std::vector<VkFramebuffer> mFrameBuffers;
+    std::vector<VkFramebuffer> mShadowFrameBuffers;
 };
 
 
