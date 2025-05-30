@@ -8,7 +8,7 @@
 #include "UniformBuffer.h"
 
 struct alignas(16) Light {
-    glm::mat4 lightViewProj[10];
+    //glm::mat4 lightViewProj[10];
     glm::vec4 lightPos[10];
     glm::vec4 lightColor[10];
     glm::vec4 viewPos;

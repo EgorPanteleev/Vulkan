@@ -18,8 +18,8 @@ void LightUniformBuffer::updateUniformBuffer(uint32_t currentImage, VkExtent2D e
 
 // Light 1: Red
     lightData.lightPos[0] = glm::vec4(0.0, 0.0, 0.0, 1);
-    lightData.lightColor[0] = glm::vec4(1.0, 1.0, 1.0, 0.0);
-    lightData.lightViewProj[0] = {};
+    lightData.lightColor[0] = glm::vec4(1.0, 1.0, 1.0, 1.0);
+    //lightData.lightViewProj[0] = {};
 
 //// Light 2: Green
 //    lightData.lightPos[1] = glm::vec4(-1.0, -2.0, 1.0, 0.0);
