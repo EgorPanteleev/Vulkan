@@ -28,5 +28,5 @@ void LightUniformBuffer::updateUniformBuffer(uint32_t currentImage, VkExtent2D e
 //// Light 3: Blue
 //    lightData.lightPos[2] = glm::vec4(0.0f, 1.0f, 3.0f, 0.0);
 //    lightData.lightColor[2] = glm::vec4(0.0f, 0.0f, 1.0f, 0.0);
-//    std::memcpy(mUniformBuffersMapped[currentImage], &lightData, getSize());
+    std::memcpy(mUniformBuffersMapped[currentImage], &lightData, getSize());
 }
