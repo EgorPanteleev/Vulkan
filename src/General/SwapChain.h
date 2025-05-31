@@ -6,7 +6,6 @@
 #define VULKAN_SWAPCHAIN_H
 
 #include "Context.h"
-#include "DepthResources.h"
 
 class SwapChain {
 public:

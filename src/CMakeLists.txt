@@ -1,22 +1,21 @@
-#Find required packages
-find_package(Vulkan REQUIRED)
-find_package(glfw3 REQUIRED)
-find_package(glm REQUIRED)
-
+add_subdirectory(Camera)
 add_subdirectory(Message)
-
 add_subdirectory(Geometry)
-
 add_subdirectory(ModelLoader)
 
-add_executable(VulkanApp main.cpp)
+add_subdirectory(General)
+add_subdirectory(UniformBuffers)
+add_subdirectory(ShadowPipeline)
+add_subdirectory(GraphicsPipeline)
 
-set(Libs -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi)
+set(Libs Camera General GraphicsPipeline ShadowPipeline)
+
 #static Library
 file(GLOB SOURCES "*.cpp")
 file(GLOB HEADERS "*.h")
 add_library(VulkanLib STATIC ${SOURCES} ${HEADERS})
 
-target_link_libraries(VulkanLib stbImage vma Geometry ModelLoader Message)
+target_link_libraries(VulkanLib ${Libs} )
+target_include_directories(VulkanLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(VulkanApp VulkanLib ${Libs})
+add_subdirectory(Applications)

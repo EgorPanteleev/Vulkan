@@ -5,8 +5,8 @@
 #ifndef VULKAN_SHADOWPIPELINE_H
 #define VULKAN_SHADOWPIPELINE_H
 
-#include "GraphicsPipeline.h"
 #include "ShadowDescriptorSet.h"
+#include "Utils.h"
 
 class ShadowPipeline {
 public:
@@ -21,7 +21,7 @@ private:
     void createRenderPass();
     void createPipelineLayout(ShadowDescriptorSet* descriptorSet);
     void createGraphicsPipeline(VkShaderModule& vertShaderModule);
-    void getPipelineConfigInfo( PipelineConfigInfo& configInfo );
+    void getPipelineConfigInfo( Utils::PipelineConfigInfo& configInfo );
 
     Context* mContext;
     VkRenderPass mRenderPass;

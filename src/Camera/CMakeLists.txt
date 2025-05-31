@@ -1,4 +1,4 @@
-project(Geometry)
+project(Camera)
 
 find_package(glm REQUIRED)
 

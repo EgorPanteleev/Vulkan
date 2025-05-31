@@ -5,7 +5,7 @@
 #include "VertexBuffer.h"
 #include "MessageLogger.h"
 #include "Utils.h"
-#include "ModelLoader/ModelLoader.h"
+#include "ModelLoader.h"
 
 VertexBuffer::VertexBuffer(Context* context, const std::string& path): mContext(context) {
 //    mVertices = { { {-0.5f , -0.5f, 0.0f }, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f} },

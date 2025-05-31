@@ -1,8 +1,17 @@
 //
-// Created by auser on 5/4/25.
+// Created by auser on 4/2/25.
 //
 
-#include "VulkanApp.h"
+#include "Renderer.h"
+#include "MessageLogger.h"
+
+class VulkanApp {
+public:
+    VulkanApp();
+    void run();
+private:
+    Renderer renderer;
+};
 
 bool rightMouseButtonPressed = false;
 double lastX = 0.0f, lastY = 0.0f;
@@ -49,4 +58,14 @@ VulkanApp::VulkanApp(): renderer() {
 
 void VulkanApp::run() {
     renderer.run();
+}
+
+int main() {
+    VulkanApp app;
+    try {
+        app.run();
+    } catch (const std::exception& e) {
+        ERROR << e.what();
+        return EXIT_FAILURE;
+    }
 }

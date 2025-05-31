@@ -8,23 +8,7 @@
 #include "Context.h"
 #include "SwapChain.h"
 #include "DescriptorSet.h"
-
-struct PipelineConfigInfo {
-    PipelineConfigInfo() = default;
-    VkPipelineVertexInputStateCreateInfo vertexInputInfo;
-    VkPipelineViewportStateCreateInfo viewportInfo;
-    VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
-    VkPipelineRasterizationStateCreateInfo rasterizationInfo;
-    VkPipelineMultisampleStateCreateInfo multisampleInfo;
-    VkPipelineColorBlendAttachmentState colorBlendAttachment;
-    VkPipelineColorBlendStateCreateInfo colorBlendInfo;
-    VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
-    std::vector<VkDynamicState> dynamicStateEnables;
-    VkPipelineDynamicStateCreateInfo dynamicStateInfo;
-    VkPipelineLayout pipelineLayout = nullptr;
-    VkRenderPass renderPass = nullptr;
-    uint32_t subpass = 0;
-};
+#include "Utils.h"
 
 class GraphicsPipeline {
 public:
@@ -51,7 +35,7 @@ private:
      * Creating graphics pipeline
      */
     void createGraphicsPipeline( VkShaderModule& vertShaderModule, VkShaderModule& fragShaderModule );
-    void getPipelineConfigInfo( PipelineConfigInfo& configInfo );
+    void getPipelineConfigInfo( Utils::PipelineConfigInfo& configInfo );
 
     Context* mContext;
     SwapChain* mSwapChain;
