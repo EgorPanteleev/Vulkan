@@ -10,10 +10,11 @@
 #include "Utils.h"
 #include "Image.h"
 
-static std::string MODEL_PATH =
-        "/home/auser/dev/src/Vulkan/models/Sponza/glTF/Sponza.gltf";
-static std::string TEXTURE_PATH =
-        "/home/auser/dev/src/Vulkan/textures/statue.jpg";
+#define MODEL_PATH PROJECT_PATH"models/Sponza/glTF/Sponza.gltf"
+
+#define TEXTURE_PATH PROJECT_PATH"textures/statue.jpg"
+
+#define COMPILED_SHADERS_PATH BINARY_PATH"compiled_shaders/"
 
 //static std::string MODEL_PATH =
 //        "/home/auser/dev/src/Vulkan/models/lamborghini/source/2022_Lamborghini_Countach_LPI_800-4_LBWK_3D_Assetto/ksp_lambo_countach_lbwk/lambo_countach_2022.obj";
@@ -33,12 +34,12 @@ Renderer::Renderer() {
     mUniformBuffers->emplace_back(std::make_unique<LightUniformBuffer>(mContext.get(), mCamera.get()));
 
     mShadowDescriptorSet = std::make_unique<ShadowDescriptorSet>(mContext.get(), mDepthResources.get(), *mUniformBuffers);
-    loadShader("/home/auser/dev/src/Vulkan/compiled_shaders/shadowShader.vert.spv", mShadowVertShaderModule);
+    loadShader(COMPILED_SHADERS_PATH"shadowShader.vert.spv", mShadowVertShaderModule);
     mShadowPipeline = std::make_unique<ShadowPipeline>(mContext.get(), mShadowDescriptorSet.get(), mShadowVertShaderModule);
 
     mDescriptorSet = std::make_unique<DescriptorSet>(mContext.get(), mTexture.get(), *mUniformBuffers);
-    loadShader("/home/auser/dev/src/Vulkan/compiled_shaders/shader.vert.spv", mMainVertShaderModule);
-    loadShader("/home/auser/dev/src/Vulkan/compiled_shaders/shader.frag.spv", mFragShaderModule);
+    loadShader(COMPILED_SHADERS_PATH"shader.vert.spv", mMainVertShaderModule);
+    loadShader(COMPILED_SHADERS_PATH"shader.frag.spv", mFragShaderModule);
     mGraphicsPipeline = std::make_unique<GraphicsPipeline>(mContext.get(), mSwapChain.get(), mDescriptorSet.get(),
                                                            mMainVertShaderModule, mFragShaderModule);
     mCommandManager = std::make_unique<CommandManager>(mContext.get());

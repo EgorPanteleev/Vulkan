@@ -1,3 +1,6 @@
+add_compile_definitions(PROJECT_PATH="${CMAKE_SOURCE_DIR}/")
+add_compile_definitions(BINARY_PATH="${CMAKE_BINARY_DIR}/")
+
 add_subdirectory(Camera)
 add_subdirectory(Message)
 add_subdirectory(Geometry)
