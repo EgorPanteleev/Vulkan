@@ -8,23 +8,6 @@
 #include "ModelLoader.h"
 
 VertexBuffer::VertexBuffer(Context* context, const std::string& path): mContext(context) {
-//    mVertices = { { {-0.5f , -0.5f, 0.0f }, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f} },
-//                  { { 0.5f , -0.5f, 0.0f }, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f} },
-//                  { { 0.5f , 0.5f, 0.0f }, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f} },
-//                  { { -0.5f, 0.5f, 0.0f }, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f} },
-//
-//                  { {-0.5f , -0.5f, -0.5f }, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f} },
-//                  { { 0.5f , -0.5f, -0.5f }, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f} },
-//                  { { 0.5f , 0.5f, -0.5f }, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f} },
-//                  { { -0.5f, 0.5f, -0.5f }, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f} } };
-//
-//    for ( auto& vert: mVertices ) {
-//        vert.pos += glm::vec3( 100, 100, 100 );
-//    }
-//
-//    mIndices = { 0, 1, 2, 2, 3, 0,
-//                 4, 5, 6, 6, 7, 4 };
-
     auto modelLoader = ModelLoader::createLoader(path);
     modelLoader->load();
 

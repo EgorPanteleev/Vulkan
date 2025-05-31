@@ -7,6 +7,7 @@
 #include "MessageLogger.h"
 #include "ModelUniformBuffer.h"
 #include "LightUniformBuffer.h"
+#include "DirectionalLightBuffer.h"
 #include "Utils.h"
 #include "Image.h"
 
@@ -32,6 +33,7 @@ Renderer::Renderer() {
     mUniformBuffers = std::make_unique<UniformBuffers>();
     mUniformBuffers->emplace_back(std::make_unique<ModelUniformBuffer>(mContext.get(), mCamera.get()));
     mUniformBuffers->emplace_back(std::make_unique<LightUniformBuffer>(mContext.get(), mCamera.get()));
+    mUniformBuffers->emplace_back(std::make_unique<DirectionalLightBuffer>(mContext.get(), mCamera.get()));
 
     mShadowDescriptorSet = std::make_unique<ShadowDescriptorSet>(mContext.get(), mDepthResources.get(), *mUniformBuffers);
     loadShader(COMPILED_SHADERS_PATH"shadowShader.vert.spv", mShadowVertShaderModule);
