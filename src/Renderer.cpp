@@ -43,7 +43,7 @@ Renderer::Renderer() {
                                                            mMainVertShaderModule, mFragShaderModule);
     mCommandManager = std::make_unique<CommandManager>(mContext.get());
     mVertexBuffer = std::make_unique<VertexBuffer>(mContext.get(), MODEL_PATH);
-    mSyncObjects = std::make_unique<SyncObjects>(mContext.get());
+    mSyncObjects = std::make_unique<SyncObjects>(mContext.get(), mSwapChain.get());
 
 
     mSwapChain->createFrameBuffers(mGraphicsPipeline->renderPass(),

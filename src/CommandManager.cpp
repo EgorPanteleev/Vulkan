@@ -163,7 +163,7 @@ VkResult CommandManager::submitCommandBuffer(SwapChain* swapChain, SyncObjects* 
     submitInfo.pWaitDstStageMask = waitStages;
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &mCommandBuffers[currentFrame];
-    VkSemaphore signalSemaphores[] = { syncObjects->renderFinishedSemaphore( currentFrame ) };
+    VkSemaphore signalSemaphores[] = { syncObjects->renderFinishedSemaphore( *imageIndex ) };
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 

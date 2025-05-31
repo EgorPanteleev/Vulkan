@@ -7,22 +7,23 @@
 
 #include <stdexcept>
 
-SyncObjects::SyncObjects( Context* context ): mContext(context) {
+SyncObjects::SyncObjects(Context* context, SwapChain* swapChain): mContext(context), mSwapChain(swapChain) {
     createSyncObjects();
 }
 
 SyncObjects::~SyncObjects() {
-    for (size_t i = 0; i < mContext->maxFramesInFlight(); i++) {
-        vkDestroySemaphore(mContext->device(), mRenderFinishedSemaphores[i], nullptr);
-        vkDestroySemaphore(mContext->device(), mImageAvailableSemaphores[i], nullptr);
-        vkDestroyFence(mContext->device(), mInFlightFences[i], nullptr);
-    }
+    for ( auto imageAvailableSemaphore: mImageAvailableSemaphores )
+        vkDestroySemaphore(mContext->device(), imageAvailableSemaphore, nullptr);
+    for ( auto renderFinishedSemaphore: mRenderFinishedSemaphores )
+        vkDestroySemaphore(mContext->device(), renderFinishedSemaphore, nullptr);
+    for ( auto inFlightFence: mInFlightFences )
+        vkDestroyFence(mContext->device(), inFlightFence, nullptr);
 }
 
 void SyncObjects::createSyncObjects() {
     int maxFramesInFlight = mContext->maxFramesInFlight();
     mImageAvailableSemaphores.resize( maxFramesInFlight );
-    mRenderFinishedSemaphores.resize( maxFramesInFlight );
+    mRenderFinishedSemaphores.resize( mSwapChain->images().size() );
     mInFlightFences.resize( maxFramesInFlight );
 
     VkSemaphoreCreateInfo semaphoreInfo{};
@@ -31,15 +32,19 @@ void SyncObjects::createSyncObjects() {
     VkFenceCreateInfo fenceInfo{};
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
     auto logicalDevice = mContext->device();
-    for ( size_t i = 0; i < maxFramesInFlight; ++i ) {
-        if (vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr, &mImageAvailableSemaphores[i]) != VK_SUCCESS ||
-            vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr, &mRenderFinishedSemaphores[i]) != VK_SUCCESS ||
-            vkCreateFence(logicalDevice, &fenceInfo, nullptr, &mInFlightFences[i]) != VK_SUCCESS) {
 
-            throw std::runtime_error("Failed to create synchronization objects for a frame!");
-        }
+    for ( auto& imageAvailableSemaphore: mImageAvailableSemaphores ){
+        if (vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr, &imageAvailableSemaphore) == VK_SUCCESS) continue;
+        throw std::runtime_error("Failed to create image available semaphore for a frame!");
+    }
+    for ( auto& renderFinishedSemaphore: mRenderFinishedSemaphores ) {
+        if (vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr, &renderFinishedSemaphore) == VK_SUCCESS) continue;
+        throw std::runtime_error("Failed to create render finished semaphore for a frame!");
+    }
+    for ( auto& inFlightFence: mInFlightFences ) {
+        if (vkCreateFence(logicalDevice, &fenceInfo, nullptr, &inFlightFence) == VK_SUCCESS) continue;
+        throw std::runtime_error("Failed to create in flight fence for a frame!");
     }
     INFO << "Created synchronization objects!";
 }

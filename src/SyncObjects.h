@@ -6,10 +6,11 @@
 #define VULKAN_SYNCOBJECTS_H
 
 #include "Context.h"
+#include "SwapChain.h"
 
 class SyncObjects {
 public:
-    SyncObjects( Context* context );
+    SyncObjects( Context* context, SwapChain* swapChain );
     ~SyncObjects();
 
     VkSemaphore imageAvailableSemaphore(uint32_t frameIndex) { return mImageAvailableSemaphores[frameIndex]; }
@@ -21,6 +22,7 @@ private:
     void createSyncObjects();
 
     Context* mContext;
+    SwapChain* mSwapChain;
     std::vector<VkSemaphore> mImageAvailableSemaphores;
     std::vector<VkSemaphore> mRenderFinishedSemaphores;
     std::vector<VkFence> mInFlightFences;
