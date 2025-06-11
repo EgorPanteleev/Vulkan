@@ -86,6 +86,8 @@ namespace Utils {
 
     void endSingleTimeCommands(Context* context, VkCommandPool commandPool, VkCommandBuffer commandBuffer);
     bool hasStencilComponent(VkFormat format);
+    void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, uint32_t mipLevels,
+                               VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
     void transitionImageLayout(Context* context, VkImage image, uint32_t mipLevels, VkFormat format,
                                VkImageLayout oldLayout, VkImageLayout newLayout);
     void copyBufferToImage(Context* context, VkBuffer buffer, VkImage image,
@@ -98,7 +100,9 @@ namespace Utils {
 
     VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice);
 
-    void createSampler(Context* context, VkSampler& sampler, uint32_t mipLevels);
+    void createSampler(Context* context, VkSampler& sampler, uint32_t mipLevels,
+                       VkSamplerAddressMode adressMode, VkBorderColor borderColor,
+                       VkBool32 compare);
 }
 
 #endif //VULKAN_UTILS_H

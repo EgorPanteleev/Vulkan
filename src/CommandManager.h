@@ -15,7 +15,7 @@
 
 class CommandManager {
 public:
-    CommandManager(Context* context);
+    CommandManager(Context* context, DepthResources* depthResources);
     ~CommandManager();
     void recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline* graphicsPipeline, ShadowPipeline* shadowPipeline,
                              DescriptorSet* descriptorSet, ShadowDescriptorSet* shadowDescriptorSet,
@@ -33,6 +33,7 @@ private:
 
 
     Context* mContext;
+    DepthResources* mDepthResources;
     VkCommandPool mCommandPool;
     std::vector<VkCommandBuffer> mCommandBuffers;
 };

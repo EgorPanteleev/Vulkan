@@ -5,8 +5,8 @@
 #include "DescriptorSet.h"
 #include "MessageLogger.h"
 
-DescriptorSet::DescriptorSet(Context* context, Image* texture, const UniformBuffers& uniformBuffers):
-                             mContext(context), mTexture(texture), mUniformBuffers(uniformBuffers) {
+DescriptorSet::DescriptorSet(Context* context, Image* texture, DepthResources* depthResources, const UniformBuffers& uniformBuffers):
+                             mContext(context), mTexture(texture), mDepthResources(depthResources), mUniformBuffers(uniformBuffers) {
     createDescriptorSetLayout();
     createDescriptorPool();
     createDescriptorSets();
@@ -27,10 +27,10 @@ void DescriptorSet::createDescriptorSetLayout() {
 
     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
     samplerLayoutBinding.binding = 1;
-    samplerLayoutBinding.descriptorCount = 1;
     samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    samplerLayoutBinding.pImmutableSamplers = nullptr;
+    samplerLayoutBinding.descriptorCount = 1;
     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    samplerLayoutBinding.pImmutableSamplers = nullptr;
 
     VkDescriptorSetLayoutBinding lightUBOLayoutBinding{};
     lightUBOLayoutBinding.binding = 2;
@@ -39,9 +39,26 @@ void DescriptorSet::createDescriptorSetLayout() {
     lightUBOLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
     lightUBOLayoutBinding.pImmutableSamplers = nullptr;
 
-    std::array<VkDescriptorSetLayoutBinding, 3> bindings = {uboLayoutBinding,
-                                                            samplerLayoutBinding,
-                                                            lightUBOLayoutBinding};
+    VkDescriptorSetLayoutBinding shadowSamplerLayoutBinding{};
+    shadowSamplerLayoutBinding.binding = 3;
+    shadowSamplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    shadowSamplerLayoutBinding.descriptorCount = 1;
+    shadowSamplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    shadowSamplerLayoutBinding.pImmutableSamplers = nullptr;
+
+    VkDescriptorSetLayoutBinding directLightLayoutBinding{};
+    directLightLayoutBinding.binding = 4;
+    directLightLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    directLightLayoutBinding.descriptorCount = 1;
+    directLightLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    directLightLayoutBinding.pImmutableSamplers = nullptr;
+
+
+    std::vector<VkDescriptorSetLayoutBinding> bindings = {uboLayoutBinding,
+                                                          samplerLayoutBinding,
+                                                          lightUBOLayoutBinding,
+                                                          shadowSamplerLayoutBinding,
+                                                          directLightLayoutBinding};
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
@@ -54,13 +71,13 @@ void DescriptorSet::createDescriptorSetLayout() {
 }
 
 void DescriptorSet::createDescriptorPool() {
-    std::array<VkDescriptorPoolSize, 3> poolSizes{};
-    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = static_cast<uint32_t>(mContext->maxFramesInFlight());
-    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = static_cast<uint32_t>(mContext->maxFramesInFlight());
-    poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[2].descriptorCount = static_cast<uint32_t>(mContext->maxFramesInFlight());
+    auto descriptorCount = static_cast<uint32_t>(mContext->maxFramesInFlight());
+    std::vector<VkDescriptorPoolSize> poolSizes{};
+    poolSizes.emplace_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, descriptorCount);
+    poolSizes.emplace_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, descriptorCount);
+    poolSizes.emplace_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, descriptorCount);
+    poolSizes.emplace_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, descriptorCount);
+    poolSizes.emplace_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, descriptorCount);
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -102,7 +119,17 @@ void DescriptorSet::createDescriptorSets() {
         lightBufferInfo.offset = 0;
         lightBufferInfo.range = mUniformBuffers[1]->getSize();
 
-        std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
+        VkDescriptorImageInfo shadowSamplerInfo{};
+        shadowSamplerInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        shadowSamplerInfo.imageView = mDepthResources->shadowImageView();
+        shadowSamplerInfo.sampler = mDepthResources->sampler();
+
+        VkDescriptorBufferInfo directLightBufferInfo{};
+        directLightBufferInfo.buffer = mUniformBuffers[2]->uniformBuffers()[i];
+        directLightBufferInfo.offset = 0;
+        directLightBufferInfo.range = mUniformBuffers[2]->getSize();
+
+        std::array<VkWriteDescriptorSet, 5> descriptorWrites{};
         descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrites[0].dstSet = mDescriptorSets[i];
         descriptorWrites[0].dstBinding = 0;
@@ -130,6 +157,24 @@ void DescriptorSet::createDescriptorSets() {
         descriptorWrites[2].pBufferInfo = &lightBufferInfo;
         descriptorWrites[2].pImageInfo = nullptr; // Optional
         descriptorWrites[2].pTexelBufferView = nullptr; // Optional
+
+        descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[3].dstSet = mDescriptorSets[i];
+        descriptorWrites[3].dstBinding = 3;
+        descriptorWrites[3].dstArrayElement = 0;
+        descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptorWrites[3].descriptorCount = 1;
+        descriptorWrites[3].pImageInfo = &shadowSamplerInfo;
+
+        descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[4].dstSet = mDescriptorSets[i];
+        descriptorWrites[4].dstBinding = 4;
+        descriptorWrites[4].dstArrayElement = 0;
+        descriptorWrites[4].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrites[4].descriptorCount = 1;
+        descriptorWrites[4].pBufferInfo = &directLightBufferInfo;
+        descriptorWrites[4].pImageInfo = nullptr; // Optional
+        descriptorWrites[4].pTexelBufferView = nullptr; // Optional
 
         vkUpdateDescriptorSets(mContext->device(), static_cast<uint32_t>(descriptorWrites.size()),
                                descriptorWrites.data(), 0, nullptr);

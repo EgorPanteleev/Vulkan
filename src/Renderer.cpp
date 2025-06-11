@@ -11,7 +11,8 @@
 #include "Utils.h"
 #include "Image.h"
 
-#define MODEL_PATH PROJECT_PATH"models/Sponza/glTF/Sponza.gltf"
+#define MODEL_PATH PROJECT_PATH"models/dragon/scene.obj"
+//#define MODEL_PATH PROJECT_PATH"models/Sponza/glTF/Sponza.gltf"
 
 #define TEXTURE_PATH PROJECT_PATH"textures/statue.jpg"
 
@@ -24,7 +25,15 @@
 
 Renderer::Renderer() {
     //TODO make all raw pointers unique
-    mCamera = std::make_unique<Camera>(45.0f, 1280.0f / 720.0f, 0.1f, 1000000);
+    glm::vec3 camPos(0, 0, 0);
+    glm::vec3 camTarget(-1, 0, 0);
+    glm::vec3 up(0, 1, 0);
+    float FOV         = 45;
+    float aspectRatio = 1280.0f / 720.0f;
+    float nearPlane   = 0.1f;
+    float farPlane    = 10000.f;
+    mCamera = std::make_unique<Camera>(camPos, camTarget, up,
+                                       FOV, aspectRatio, nearPlane, farPlane);
     mContext = std::make_unique<Context>();
     mTexture = std::make_unique<Image>(mContext.get(), TEXTURE_PATH);
     mSwapChain = std::make_unique<SwapChain>(mContext.get());
@@ -39,12 +48,12 @@ Renderer::Renderer() {
     loadShader(COMPILED_SHADERS_PATH"shadowShader.vert.spv", mShadowVertShaderModule);
     mShadowPipeline = std::make_unique<ShadowPipeline>(mContext.get(), mShadowDescriptorSet.get(), mShadowVertShaderModule);
 
-    mDescriptorSet = std::make_unique<DescriptorSet>(mContext.get(), mTexture.get(), *mUniformBuffers);
+    mDescriptorSet = std::make_unique<DescriptorSet>(mContext.get(), mTexture.get(), mDepthResources.get(), *mUniformBuffers);
     loadShader(COMPILED_SHADERS_PATH"shader.vert.spv", mMainVertShaderModule);
     loadShader(COMPILED_SHADERS_PATH"shader.frag.spv", mFragShaderModule);
     mGraphicsPipeline = std::make_unique<GraphicsPipeline>(mContext.get(), mSwapChain.get(), mDescriptorSet.get(),
                                                            mMainVertShaderModule, mFragShaderModule);
-    mCommandManager = std::make_unique<CommandManager>(mContext.get());
+    mCommandManager = std::make_unique<CommandManager>(mContext.get(), mDepthResources.get());
     mVertexBuffer = std::make_unique<VertexBuffer>(mContext.get(), MODEL_PATH);
     mSyncObjects = std::make_unique<SyncObjects>(mContext.get(), mSwapChain.get());
 
@@ -59,22 +68,28 @@ void processKeyboard(Camera& camera, GLFWwindow* window) {
     float speed = 2.5f * 1;
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        camera.setPosition(camera.position() + camera.forward() * speed);
+        camera.move(speed, 0, 0);
+        //camera.setPosition(camera.position() + camera.forward() * speed);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        camera.setPosition(camera.position() - camera.forward() * speed);
+        camera.move(-speed, 0, 0);
+        //camera.setPosition(camera.position() - camera.forward() * speed);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        camera.setPosition(camera.position() - glm::normalize(glm::cross(camera.forward(), camera.up())) * speed);
+        camera.move(0, -speed, 0);
+        //camera.setPosition(camera.position() - glm::normalize(glm::cross(camera.forward(), camera.up())) * speed);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        camera.setPosition(camera.position() + glm::normalize(glm::cross(camera.forward(), camera.up())) * speed);
+        camera.move(0, speed, 0);
+        //camera.setPosition(camera.position() + glm::normalize(glm::cross(camera.forward(), camera.up())) * speed);
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        camera.setPosition( camera.position() + camera.up() * speed );
+        camera.move(0, 0, speed);
+        //camera.setPosition( camera.position() + camera.up() * speed );
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-        camera.setPosition( camera.position() - camera.up() * speed );
+        camera.move(0, 0, -speed);
+        //camera.setPosition( camera.position() - camera.up() * speed );
     }
 
 }

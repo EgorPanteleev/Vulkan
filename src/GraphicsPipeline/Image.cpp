@@ -12,7 +12,8 @@ Image::Image(Context* context, const std::string& path): mContext(context) {
     createImage(path);
     generateMipMaps(VK_FORMAT_R8G8B8A8_SRGB);
     createImageView();
-    Utils::createSampler(mContext, mSampler, mMipLevels);
+    Utils::createSampler(mContext, mSampler, mMipLevels,
+                         VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_FALSE);
 }
 
 Image::~Image() {

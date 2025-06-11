@@ -26,6 +26,7 @@ public:
 
 private:
     void calculateProjection(float FOV, float aspectRatio, float nearPlane, float farPlane);
+    void initOrientation(const glm::vec3& target);
 
     glm::vec3 mPosition;
     glm::quat mOrientation;

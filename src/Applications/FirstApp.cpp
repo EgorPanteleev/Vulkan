@@ -43,9 +43,12 @@ void mouseMoveCallback(GLFWwindow* window, double xpos, double ypos) {
 
     lastX = xpos;
     lastY = ypos;
+    camera->rotate((float)(offsetY * sensitivity), (float)(-offsetX * sensitivity), 0.f);
+//    camera->rotateYaw((float)(-offsetX * sensitivity));
+//    camera->rotatePitch((float)(offsetY * sensitivity));
 
-    camera->setYaw(camera->yaw() - offsetX * sensitivity);
-    camera->setPitch(glm::clamp(camera->pitch() + offsetY * sensitivity, -89.0, 89.0));
+//    camera->setYaw(camera->yaw() - offsetX * sensitivity);
+//    camera->setPitch(glm::clamp(camera->pitch() + offsetY * sensitivity, -89.0, 89.0));
 }
 
 VulkanApp::VulkanApp(): renderer() {

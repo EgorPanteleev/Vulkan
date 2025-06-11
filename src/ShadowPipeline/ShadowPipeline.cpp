@@ -22,7 +22,7 @@ void ShadowPipeline::createRenderPass() {
     depthAttachment.format = Utils::findDepthFormat(mContext);
     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -35,9 +35,9 @@ void ShadowPipeline::createRenderPass() {
     VkSubpassDependency dependency{};
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
     dependency.dstSubpass = 0;
-    dependency.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     dependency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    dependency.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    dependency.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT;
     dependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
     dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
@@ -172,9 +172,9 @@ void ShadowPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configInf
     rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
     rasterizationInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterizationInfo.depthBiasEnable = VK_TRUE;
-    rasterizationInfo.depthBiasConstantFactor = 1.25f; // Optional
+    rasterizationInfo.depthBiasConstantFactor = 1.0f; // Optional
     rasterizationInfo.depthBiasClamp = 0.0f; // Optional
-    rasterizationInfo.depthBiasSlopeFactor = 1.75f; // Optional
+    rasterizationInfo.depthBiasSlopeFactor = 1.0f; // Optional
     configInfo.rasterizationInfo = rasterizationInfo;
 
     VkPipelineMultisampleStateCreateInfo multisampleInfo{};
@@ -191,8 +191,8 @@ void ShadowPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configInf
     VkPipelineColorBlendStateCreateInfo colorBlendInfo{};
     colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     colorBlendInfo.logicOpEnable = VK_FALSE;
-    colorBlendInfo.attachmentCount = 1;
-    colorBlendInfo.pAttachments = &configInfo.colorBlendAttachment;
+    colorBlendInfo.attachmentCount = 0;
+    colorBlendInfo.pAttachments = nullptr;
     configInfo.colorBlendInfo = colorBlendInfo;
 
     configInfo.dynamicStateEnables = {

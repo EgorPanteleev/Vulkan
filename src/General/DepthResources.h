@@ -19,6 +19,8 @@ public:
     VkImage shadowImage() { return mShadowImage; }
     VkImageView shadowImageView() { return mShadowImageView; }
 
+    void translateShadowImage(VkCommandBuffer commandBuffer, VkImageLayout from, VkImageLayout to);
+
     void recreate(VkExtent2D swapChainExtent);
 private:
     void createDepthResources(VkExtent2D swapChainExtent);

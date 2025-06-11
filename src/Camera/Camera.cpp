@@ -9,13 +9,22 @@ Camera::Camera(): mPosition(0), mOrientation(glm::quat(0, 0, 0, 1)), mUp(0, 0, 1
 
 Camera::Camera(const glm::vec3& pos, const glm::vec3& target, const glm::vec3& up,
                float FOV, float aspectRatio, float nearPlane, float farPlane):
-               mPosition(pos), mOrientation(glm::lookAt(pos, target, up)), mUp(up) {
+               mPosition(pos), mOrientation(0, 0, 0, 1), mUp(up) {
     calculateProjection(FOV, aspectRatio, nearPlane, farPlane);
+    initOrientation(target);
 }
 
 void Camera::calculateProjection(float FOV, float aspectRatio, float nearPlane, float farPlane) {
     mProjectionMatrix = glm::perspective(glm::radians(FOV), aspectRatio, nearPlane, farPlane);
     mProjectionMatrix[1][1] *= -1;
+}
+
+void Camera::initOrientation(const glm::vec3& target) {
+    glm::vec3 forward_ = glm::normalize(target - mPosition);
+    glm::vec3 right_   = glm::normalize(glm::cross(forward_, mUp));
+    glm::vec3 camUp_   = glm::cross(right_, forward_);
+    glm::mat3 rotationMatrix(right_, camUp_, -forward_);
+    mOrientation = glm::quat_cast(rotationMatrix);
 }
 
 glm::mat4 Camera::viewMatrix() const {

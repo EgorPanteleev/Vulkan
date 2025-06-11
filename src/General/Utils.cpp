@@ -330,12 +330,8 @@ namespace Utils {
         return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
     }
 
-    void transitionImageLayout(Context* context, VkImage image, uint32_t mipLevels, VkFormat format,
-                               VkImageLayout oldLayout, VkImageLayout newLayout) {
-        auto commandPool = Utils::createCommandPool(context, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
-
-        VkCommandBuffer commandBuffer = beginSingleTimeCommands(context->device(), commandPool);
-
+    void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, uint32_t mipLevels,
+                               VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         barrier.oldLayout = oldLayout;
@@ -403,6 +399,15 @@ namespace Utils {
                 0, nullptr,
                 1, &barrier
         );
+    }
+
+    void transitionImageLayout(Context* context, VkImage image, uint32_t mipLevels, VkFormat format,
+                               VkImageLayout oldLayout, VkImageLayout newLayout) {
+        auto commandPool = Utils::createCommandPool(context, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
+
+        VkCommandBuffer commandBuffer = beginSingleTimeCommands(context->device(), commandPool);
+
+        transitionImageLayout(commandBuffer, image, mipLevels, format, oldLayout, newLayout);
 
         endSingleTimeCommands(context, commandPool, commandBuffer);
         vkDestroyCommandPool(context->device(), commandPool, nullptr);
@@ -479,22 +484,24 @@ namespace Utils {
         return VK_SAMPLE_COUNT_1_BIT;
     }
 
-    void createSampler(Context* context, VkSampler& sampler, uint32_t mipLevels) {
+    void createSampler(Context* context, VkSampler& sampler, uint32_t mipLevels,
+                       VkSamplerAddressMode adressMode, VkBorderColor borderColor,
+                       VkBool32 compare) {
         VkSamplerCreateInfo samplerInfo{};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         samplerInfo.magFilter = VK_FILTER_LINEAR;
         samplerInfo.minFilter = VK_FILTER_LINEAR;
-        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeU = adressMode;
+        samplerInfo.addressModeV = adressMode;
+        samplerInfo.addressModeW = adressMode;
         samplerInfo.anisotropyEnable = VK_TRUE;
         VkPhysicalDeviceProperties properties{};
         vkGetPhysicalDeviceProperties(context->physicalDevice(), &properties);
         samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
-        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        samplerInfo.borderColor = borderColor;
         samplerInfo.unnormalizedCoordinates = VK_FALSE;
-        samplerInfo.compareEnable = VK_FALSE;
-        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+        samplerInfo.compareEnable = compare;
+        samplerInfo.compareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 
         samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
         samplerInfo.minLod = 0; // Optional

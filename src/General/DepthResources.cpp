@@ -13,6 +13,11 @@ DepthResources::~DepthResources() {
     clear();
 }
 
+void DepthResources::translateShadowImage(VkCommandBuffer commandBuffer, VkImageLayout from, VkImageLayout to) {
+    VkFormat depthFormat = Utils::findDepthFormat(mContext);
+    Utils::transitionImageLayout(commandBuffer, mShadowImage, 1, depthFormat, from, to);
+}
+
 void DepthResources::recreate(VkExtent2D swapChainExtent) {
     clear();
     createDepthResources(swapChainExtent);
@@ -38,7 +43,9 @@ void DepthResources::createDepthResources(VkExtent2D swapChainExtent) {
                                         depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
     Utils::transitionImageLayout(mContext, mShadowImage, 1, depthFormat,
                                  VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-    Utils::createSampler(mContext, mSampler, 1);
+    Utils::createSampler(mContext, mSampler, 1,
+                         VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
+                         VK_TRUE);
 }
 
 void DepthResources::clear() {
