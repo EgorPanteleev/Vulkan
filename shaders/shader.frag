@@ -65,27 +65,18 @@ void main() {
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5; // преобразуем из [-1;1] в [0;1]
 
-    if (projCoords.x < 0.0 || projCoords.x > 1.0 ||
-    projCoords.y < 0.0 || projCoords.y > 1.0 ||
-    projCoords.z > 1.0) {
-        outColor = vec4(1.0, 0.0, 0.0, 1.0); // debug: красный если координаты невалидные
-        return;
-    }
-
-
     float depth = texture(shadowMap, projCoords.xy).r;
     outColor = vec4(vec3(depth), 1.0);
 
+    vec3 viewDir = normalize(lights.viewPos.xyz - fragPos);
+    vec3 result = vec3(0.0);
 
-        vec3 viewDir = normalize(lights.viewPos.xyz - fragPos);
-        vec3 result = vec3(0.0);
-
-        vec3 normal = normalize(fragNormal);
-        vec3 lightDir = normalize(directLight.direction.xyz);
-        vec3 diffuseColor = max(dot(normal, lightDir), 0.0) * directLight.color.xyz;
-        float shadow = calculateShadow(fragPosLightSpace, normal, lightDir);
-        outColor = vec4(diffuseColor * ( 1.0 - shadow ), 1);
-        outColor = vec4( vec3(1) * ( 1.0 - shadow ), 1);
-        //outColor = vec4(diffuseColor, 1);
+    vec3 normal = normalize(fragNormal);
+    vec3 lightDir = normalize(directLight.direction.xyz);
+    vec3 diffuseColor = max(dot(normal, lightDir), 0.0) * directLight.color.xyz;
+    float shadow = calculateShadow(fragPosLightSpace, normal, lightDir);
+    //outColor = vec4(diffuseColor * ( 1.0 - shadow ), 1);
+    //outColor = vec4( vec3(1) * ( 1.0 - shadow ), 1);
+    outColor = vec4(diffuseColor, 1);
 
 }
