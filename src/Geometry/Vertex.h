@@ -13,8 +13,6 @@
 
 class Vertex {
 public:
-    Vertex();
-    Vertex( const glm::vec3& pos, const glm::vec3& color, const glm::vec2& texCoord, const glm::vec3& normal );
     static VkVertexInputBindingDescription getBindingDescription();
     static std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptions();
 
@@ -22,22 +20,25 @@ public:
 
     glm::vec3 pos;
     glm::vec3 color;
-    glm::vec2 texCoord;
+    glm::vec2 texCoord0;
+    glm::vec2 texCoord1;
     glm::vec3 normal;
 };
+
+inline void hashCombine(std::size_t& seed, std::size_t value) {
+    seed ^= value + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
 
 namespace std {
     template<> struct hash<Vertex> {
         size_t operator()(Vertex const& vertex) const {
-            size_t h1 = std::hash<glm::vec3>()(vertex.pos);
-            size_t h2 = std::hash<glm::vec3>()(vertex.color);
-            size_t h3 = std::hash<glm::vec2>()(vertex.texCoord);
-            size_t h4 = std::hash<glm::vec3>()(vertex.normal);
-
-            return ((h1 ^
-                     (h2 << 1)) >> 1) ^
-                   (h3 << 1) ^
-                   (h4 << 1);
+            std::size_t seed = 0;
+            hashCombine(seed, std::hash<glm::vec3>{}(vertex.pos));
+            hashCombine(seed, std::hash<glm::vec3>{}(vertex.color));
+            hashCombine(seed, std::hash<glm::vec2>{}(vertex.texCoord0));
+            hashCombine(seed, std::hash<glm::vec2>{}(vertex.texCoord1));
+            hashCombine(seed, std::hash<glm::vec3>{}(vertex.normal));
+            return seed;
         }
     };
 }

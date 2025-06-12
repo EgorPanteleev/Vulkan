@@ -11,8 +11,8 @@
 #include "Utils.h"
 #include "Image.h"
 
-#define MODEL_PATH PROJECT_PATH"models/dragon/scene.obj"
-//#define MODEL_PATH PROJECT_PATH"models/Sponza/glTF/Sponza.gltf"
+//#define MODEL_PATH PROJECT_PATH"models/dragon/scene.obj"
+#define MODEL_PATH PROJECT_PATH"models/Sponza/glTF/Sponza.gltf"
 
 #define TEXTURE_PATH PROJECT_PATH"textures/statue.jpg"
 

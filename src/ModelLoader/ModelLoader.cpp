@@ -13,9 +13,10 @@ namespace ModelLoader {
     namespace fs = std::filesystem;
 
     static std::unordered_map<std::string, std::function<std::unique_ptr<AbsLoader>(std::string)>> extToLoaderMap = {
-            {".obj" , [](std::string path)  { return std::make_unique<AssimpLoader>(std::move(path)); } },
+            {".obj" , [](std::string path) { return std::make_unique<AssimpLoader>(std::move(path)); } },
             {".gltf", [](std::string path) { return std::make_unique<AssimpLoader>(std::move(path)); } },
             {".glb" , [](std::string path) { return std::make_unique<AssimpLoader>(std::move(path)); } },
+            {".fbx" , [](std::string path) { return std::make_unique<AssimpLoader>(std::move(path)); } },
     };
 
     std::unique_ptr<AbsLoader> createLoader(const std::string& modelpath) {

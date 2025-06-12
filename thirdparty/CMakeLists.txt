@@ -11,3 +11,5 @@ target_include_directories(tinyobjloader INTERFACE ./tinyobjloader/ )
 
 #add_library(tinygltf INTERFACE)
 #target_include_directories(tinygltf INTERFACE ./tinygltf/ )
+
+add_subdirectory(./meshoptimizer)

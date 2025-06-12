@@ -6,9 +6,22 @@
 #define VULKAN_ABSLOADER_H
 
 #include "Vertex.h"
+#include "Material.h"
 
 #include <vector>
 #include <string>
+
+
+
+struct BasicMesh {
+    uint32_t numIndices = 0;
+    uint32_t numVertices = 0;
+    uint32_t baseVertex = 0;
+    uint32_t baseIndex = 0;
+    uint32_t validFaces = 0;
+    int materialIndex = -1;
+    glm::mat4 transformation;
+};
 
 class AbsLoader {
 public:
@@ -16,7 +29,8 @@ public:
         UNKNOWN,
         ASSIMP,
         OBJ,
-        GLTF
+        GLTF,
+        FBX
     };
 
     AbsLoader(std::string modelPath);
@@ -34,6 +48,8 @@ public:
 protected:
     Type mType;
     std::string mModelPath;
+    std::vector<BasicMesh> mMeshes;
+    std::vector<Material> mMaterials;
     std::vector<Vertex> mVertices;
     std::vector<uint32_t> mIndices;
 };
