@@ -26,7 +26,11 @@ private:
     template<typename VertexType>
     void optimizeMesh(std::vector<VertexType>& vertices, std::vector<uint32_t>& indices, uint meshIndex);
 
-    void loadTextures(const aiMaterial* material, uint materialIndex);
+    void loadTextures(uint materialIndex);
+
+    void loadTexture(ModelTexture::Type textureType, uint materialIndex);
+
+    void loadColors(uint materialIndex);
 
     const aiScene* mScene;
 };

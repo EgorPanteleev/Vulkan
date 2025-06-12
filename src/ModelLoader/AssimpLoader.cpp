@@ -63,7 +63,6 @@ uint countValidFaces(const aiMesh* Mesh)
 
 bool AssimpLoader::loadGeometry() {
     mMeshes.resize(mScene->mNumMeshes);
-    mMaterials.resize(mScene->mNumMaterials);
     uint numVertices = 0;
     uint numIndices = 0;
     for (unsigned int i = 0 ; i < mMeshes.size() ; ++i) { //fill meshes data
@@ -95,12 +94,11 @@ bool AssimpLoader::loadGeometry() {
 }
 
 bool AssimpLoader::loadMaterials() {
-    for (unsigned int i = 0 ; i < mScene->mNumMaterials; i++) {
-        const aiMaterial* material = mScene->mMaterials[i];
-        loadTextures(material, i);
-//        LoadColors(material, i);
+    mMaterials.resize(mScene->mNumMaterials);
+    for (uint i = 0 ; i < mScene->mNumMaterials; ++i) {
+        loadTextures(i);
+        loadColors(i);
     }
-
     return true;
 }
 
@@ -185,13 +183,13 @@ void AssimpLoader::optimizeMesh(std::vector<VertexType>& vertices, std::vector<u
                                 optVertexCount, sizeof(VertexType));
     // Optimization #5: create a simplified version of the model
     float threshold = 1.0f;
-    size_t TargetIndexCount = (size_t)(numIndices * threshold);
+    size_t targetIndexCount = (size_t)(numIndices * threshold);
 
     float targetError = 0.0f;
     std::vector<unsigned int> SimplifiedIndices(optIndices.size());
     size_t optIndexCount = meshopt_simplify(SimplifiedIndices.data(), optIndices.data(), numIndices,
                                             &optVertices[0].pos.x, optVertexCount, sizeof(VertexType),
-                                            TargetIndexCount, targetError);
+                                            targetIndexCount, targetError);
 
     static int num_indices = 0;
     num_indices += (int) numIndices;
@@ -207,7 +205,90 @@ void AssimpLoader::optimizeMesh(std::vector<VertexType>& vertices, std::vector<u
     mMeshes[meshIndex].numVertices = (uint) optVertexCount;
 }
 
-void AssimpLoader::loadTextures(const aiMaterial* material, uint materialIndex) {
-    fs::path modelPath(mModelPath);
-    std::string dirPath = modelPath.parent_path();
+void AssimpLoader::loadTextures(uint materialIndex) {
+    for (uint texType = 0; texType < ModelTexture::UNKNOWN; ++texType ) {
+        loadTexture((ModelTexture::Type) texType, materialIndex);
+    }
+}
+
+void AssimpLoader::loadTexture(ModelTexture::Type textureType, uint materialIndex) {
+    const aiMaterial* material = mScene->mMaterials[materialIndex];
+    aiTextureType assimpType = ModelTexture::toAssimpType(textureType);
+    ModelTexture texture;
+    aiString path;
+    if (material->GetTextureCount(assimpType) <= 0) {
+       texture.path = PROJECT_PATH"textures/no_texture.jpeg";
+    } else if (material->GetTexture(assimpType, 0, &path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
+        const aiTexture* aiTex = mScene->GetEmbeddedTexture(path.C_Str());
+        if (aiTex) {
+            texture.embedded = true;
+            texture.bufferSize = aiTex->mWidth; //???
+            texture.data = aiTex->pcData;
+        } else {
+            fs::path modelPath(mModelPath);
+            std::string dirPath = modelPath.parent_path();
+            texture.path = dirPath + path.C_Str();
+        }
+    }
+    mMaterials[materialIndex].mTextures[textureType] = texture;
+}
+
+void AssimpLoader::loadColors(uint materialIndex) {
+    ModelMaterial& material = mMaterials[materialIndex];
+    const aiMaterial* aiMat = mScene->mMaterials[materialIndex];
+
+    material.mName = aiMat->GetName().C_Str();
+
+    aiColor4D ambientColor(0);
+    if (aiMat->Get(AI_MATKEY_COLOR_AMBIENT, ambientColor) == AI_SUCCESS) {
+        material.ambientColor.r = ambientColor.r;
+        material.ambientColor.g = ambientColor.g;
+        material.ambientColor.b = ambientColor.b;
+        material.ambientColor.a = std::min(ambientColor.a, 1.0f);
+    }
+    aiColor4D emissiveColor(0);
+    if (aiMat->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColor) == AI_SUCCESS) {
+        material.ambientColor.r += emissiveColor.r;
+        material.ambientColor.g += emissiveColor.g;
+        material.ambientColor.b += emissiveColor.b;
+        material.ambientColor.a += emissiveColor.a;
+        material.ambientColor.a = std::min(material.ambientColor.a, 1.0f);
+    }
+
+    aiColor4D diffuseColor(0);
+    if (aiMat->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor) == AI_SUCCESS) {
+        material.diffuseColor.r = diffuseColor.r;
+        material.diffuseColor.g = diffuseColor.g;
+        material.diffuseColor.b = diffuseColor.b;
+        material.diffuseColor.a = std::min(diffuseColor.a, 1.0f);
+    }
+
+    aiColor4D specularColor(0.0f, 0.0f, 0.0f, 0.0f);
+    if (aiMat->Get(AI_MATKEY_COLOR_SPECULAR, specularColor) == AI_SUCCESS) {
+        material.specularColor.r = specularColor.r;
+        material.specularColor.g = specularColor.g;
+        material.specularColor.b = specularColor.b;
+        material.specularColor.a = std::min(specularColor.a, 1.0f);
+    }
+
+    float opaquenessThreshold = 0.05f;
+    float opacity = 1.0f;
+
+    if (aiMat->Get(AI_MATKEY_OPACITY, opacity) == AI_SUCCESS) {
+        material.mTransparencyFactor = std::clamp(1.0f - opacity, 0.0f, 1.0f);
+        if (material.mTransparencyFactor >= 1.0f - opaquenessThreshold) {
+            material.mTransparencyFactor = 0.0f;
+        }
+    }
+
+    aiColor4D TransparentColor;
+    if (aiMat->Get(AI_MATKEY_COLOR_TRANSPARENT, TransparentColor) == AI_SUCCESS) {
+        float Opacity = std::max(std::max(TransparentColor.r, TransparentColor.g), TransparentColor.b);
+        material.mTransparencyFactor = std::clamp(Opacity, 0.0f, 1.0f);
+        if (material.mTransparencyFactor >= 1.0f - opaquenessThreshold) {
+            material.mTransparencyFactor = 0.0f;
+        }
+
+        material.mAlphaTest = 0.5f;
+    }
 }

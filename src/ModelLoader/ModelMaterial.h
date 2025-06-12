@@ -9,15 +9,47 @@
 2) load textures as i know
 3) change graphics pipeline to create descriptor set per mesh
 */
-class ModelMaterial {
-public:
-    enum TEXTURE_TYPE {
-        TEX_TYPE_DIFFUSE = 0,
-        TEX_TYPE_NUM = 1
+#include <string>
+#include <array>
+#include <map>
+#include <assimp/material.h>
+#include <glm/glm.hpp>
+
+struct ModelTexture {
+    enum Type {
+        DIFFUSE = 0,
+        UNKNOWN = 1
     };
-private:
-   // Texture* mTextures[TEX_TYPE_NUM];
+
+    ModelTexture(): path(), data(nullptr), bufferSize(0), embedded(false) {}
+
+    static aiTextureType toAssimpType(Type type);
+
+    std::string path;
+    void* data;
+    u_int32_t bufferSize;
+    bool embedded;
 };
 
+static std::map<ModelTexture::Type, aiTextureType> toAssimpTypeMap {
+        { ModelTexture::DIFFUSE, aiTextureType_DIFFUSE },
+        { ModelTexture::UNKNOWN, aiTextureType_UNKNOWN }
+};
+
+struct ModelMaterial {
+    ModelMaterial(): mName(), ambientColor(0), diffuseColor(0), specularColor(0),
+                     mTransparencyFactor(1), mAlphaTest(0) {}
+
+    std::string mName;
+
+    glm::vec4 ambientColor;
+    glm::vec4 diffuseColor;
+    glm::vec4 specularColor;
+
+    float mTransparencyFactor;
+    float mAlphaTest;
+
+    std::array<ModelTexture, ModelTexture::UNKNOWN> mTextures;
+};
 
 #endif //VULKAN_MODELMATERIAL_H

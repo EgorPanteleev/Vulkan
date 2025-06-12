@@ -3,3 +3,7 @@
 //
 
 #include "ModelMaterial.h"
+
+aiTextureType ModelTexture::toAssimpType(Type type) {
+    return toAssimpTypeMap[type];
+}
