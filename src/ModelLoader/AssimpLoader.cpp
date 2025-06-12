@@ -80,12 +80,12 @@ bool AssimpLoader::loadGeometry() {
     mIndices.reserve(numIndices);
 
     for (size_t i = 0 ; i < mMeshes.size() ; ++i) {
-        std::vector<Vertex> vertices;
+        std::vector<ModelVertex> vertices;
         std::vector<uint32_t> indices;
         vertices.reserve(numVertices);
         indices.reserve(numIndices);
-        loadMesh<Vertex>(vertices, indices, i);
-        optimizeMesh<Vertex>(vertices, indices, i);
+        loadMesh<ModelVertex>(vertices, indices, i);
+        optimizeMesh<ModelVertex>(vertices, indices, i);
         mVertices.insert(mVertices.end(), vertices.begin(), vertices.end());
         uint32_t baseVertex = mVertices.size() - vertices.size();
         std::ranges::for_each(indices, [&](uint32_t & ind) { ind += baseVertex; });

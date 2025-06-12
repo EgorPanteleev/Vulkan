@@ -5,14 +5,14 @@
 #include "VertexBuffer.h"
 #include "MessageLogger.h"
 #include "Utils.h"
-#include "ModelLoader.h"
+#include "VulkanModelLoader.h"
 
 VertexBuffer::VertexBuffer(Context* context, const std::string& path): mContext(context) {
-    auto modelLoader = ModelLoader::createLoader(path);
-    modelLoader->load();
+    VulkanModelLoader modelLoader(path);
+    modelLoader.load();
 
-    mVertices = modelLoader->vertices();
-    mIndices = modelLoader->indices();
+    mVertices = modelLoader.vulkanVertices();
+    mIndices = modelLoader.indices();
 
     createVertexBuffer();
     createIndexBuffer();

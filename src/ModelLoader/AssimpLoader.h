@@ -5,9 +5,10 @@
 #ifndef VULKAN_ASSIMPLOADER_H
 #define VULKAN_ASSIMPLOADER_H
 
-#include "AbsLoader.h"
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
+
+#include "AbsLoader.h"
 
 class AssimpLoader: public AbsLoader {
 public:

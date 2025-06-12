@@ -27,7 +27,7 @@ std::array<VkVertexInputAttributeDescription, 4> Vertex::getAttributeDescription
     attributeDescriptions[2].binding = 0;
     attributeDescriptions[2].location = 2;
     attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescriptions[2].offset = offsetof(Vertex, texCoord0);
+    attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
 
     attributeDescriptions[3].binding = 0;
     attributeDescriptions[3].location = 3;
@@ -37,5 +37,5 @@ std::array<VkVertexInputAttributeDescription, 4> Vertex::getAttributeDescription
 }
 
 bool Vertex::operator==(const Vertex& other) const {
-    return pos == other.pos && color == other.color && texCoord0 == other.texCoord0 && texCoord1 == other.texCoord1;
+    return pos == other.pos && color == other.color && texCoord == other.texCoord;
 }

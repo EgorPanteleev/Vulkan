@@ -5,23 +5,12 @@
 #ifndef VULKAN_ABSLOADER_H
 #define VULKAN_ABSLOADER_H
 
-#include "Vertex.h"
-#include "Material.h"
+#include "ModelVertex.h"
+#include "ModelMesh.h"
+#include "ModelMaterial.h"
 
 #include <vector>
 #include <string>
-
-
-
-struct BasicMesh {
-    uint32_t numIndices = 0;
-    uint32_t numVertices = 0;
-    uint32_t baseVertex = 0;
-    uint32_t baseIndex = 0;
-    uint32_t validFaces = 0;
-    int materialIndex = -1;
-    glm::mat4 transformation;
-};
 
 class AbsLoader {
 public:
@@ -37,10 +26,12 @@ public:
     AbsLoader(Type type, std::string modelPath);
     virtual ~AbsLoader() = default;
 
-    Type getType() { return mType; }
+    Type type() { return mType; }
     std::string getTypeString();
 
-    [[nodiscard]] const std::vector<Vertex>& vertices() const { return mVertices; }
+    [[nodiscard]] const std::vector<ModelMesh>& meshes() const { return mMeshes; }
+    [[nodiscard]] const std::vector<ModelMaterial>& materials() const { return mMaterials; }
+    [[nodiscard]] const std::vector<ModelVertex>& vertices() const { return mVertices; }
     [[nodiscard]] const std::vector<uint32_t>& indices() const { return mIndices; }
 
     virtual bool load() = 0;
@@ -48,9 +39,9 @@ public:
 protected:
     Type mType;
     std::string mModelPath;
-    std::vector<BasicMesh> mMeshes;
-    std::vector<Material> mMaterials;
-    std::vector<Vertex> mVertices;
+    std::vector<ModelMesh> mMeshes;
+    std::vector<ModelMaterial> mMaterials;
+    std::vector<ModelVertex> mVertices;
     std::vector<uint32_t> mIndices;
 };
 
