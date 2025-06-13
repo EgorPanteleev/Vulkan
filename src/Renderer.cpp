@@ -9,7 +9,6 @@
 #include "LightUniformBuffer.h"
 #include "DirectionalLightBuffer.h"
 #include "Utils.h"
-#include "Image.h"
 //#define MODEL_PATH PROJECT_PATH"models/Bistro/BistroExterior.fbx"
 //#define MODEL_PATH PROJECT_PATH"models/dragon/scene.obj"
 #define MODEL_PATH PROJECT_PATH"models/Sponza/glTF/Sponza.gltf"
