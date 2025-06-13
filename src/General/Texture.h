@@ -17,13 +17,13 @@ public:
     VkImageView imageView() { return mImageView; }
     VkSampler sampler() { return mSampler; }
 
+    void allocate(int width, int height);
     void load(void* data, int bufferSize);
     void load(const std::string& path);
     void transit(VkImageLayout src, VkImageLayout dst);
+
+    static int calcNumMipMaps(int width, int height);
 private:
-    void createImage(void* data);
-    void createImageView();
-    void createSampler();
     void generateMipMaps(VkFormat imageFormat);
     void load(void* data);
 

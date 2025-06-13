@@ -62,6 +62,8 @@ float calculateShadow(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir) {
 void main() {
     // fragPosLightSpace - координаты фрагмента в пространстве света, передаёшь из вершинного шейдера
 
+    vec4 texColor = texture(texSampler, fragTexCoord);
+
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5; // преобразуем из [-1;1] в [0;1]
 
@@ -78,5 +80,6 @@ void main() {
     //outColor = vec4(diffuseColor * ( 1.0 - shadow ), 1);
     //outColor = vec4( vec3(1) * ( 1.0 - shadow ), 1);
     outColor = vec4(diffuseColor, 1);
+    outColor = texColor;
 
 }

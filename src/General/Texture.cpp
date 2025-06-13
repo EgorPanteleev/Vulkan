@@ -19,6 +19,23 @@ Texture::~Texture() {
     vmaDestroyImage(mContext->allocator(), mImage, mImageAllocation);
 }
 
+void Texture::allocate(int width, int height) {
+    if (mGenerateMipMap) mMipLevels = calcNumMipMaps(width, height);
+    Utils::createImage(mContext->allocator(), mImageAllocation, VMA_MEMORY_USAGE_AUTO,
+                       mImage, mMipLevels, VK_SAMPLE_COUNT_1_BIT,
+                       mTexWidth, mTexHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
+                       VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT );
+
+
+    transit(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+    mImageView = Utils::createImageView(mContext->device(), mImage, mMipLevels, VK_IMAGE_VIEW_TYPE_2D,
+                                        VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+
+    Utils::createSampler(mContext, mSampler, mMipLevels,
+                         VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_FALSE);
+}
+
 void Texture::load(void* data, int bufferSize) {
     void* imageData = stbi_load_from_memory((const stbi_uc*)data, bufferSize,
                                             &mTexWidth, &mTexHeight, &mTexChannels, 0);
@@ -31,22 +48,11 @@ void Texture::load(const std::string& path) {
 }
 
 void Texture::load(void* data) {
-    createImage(data);
-    generateMipMaps(VK_FORMAT_R8G8B8A8_SRGB);
-    createImageView();
-    createSampler();
-}
-
-void Texture::transit(VkImageLayout src, VkImageLayout dst) {
-    Utils::transitionImageLayout(mContext, mImage, mMipLevels, VK_FORMAT_R8G8B8A8_SRGB, src, dst);
-}
-
-void Texture::createImage(void* data) {
+    allocate(mTexWidth, mTexHeight);
     if (!data) {
         throw std::runtime_error("Failed to load texture image!");
     }
     VkDeviceSize imageSize = mTexWidth * mTexHeight * 4;
-    if (mGenerateMipMap) mMipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(mTexWidth, mTexHeight)))) + 1;
     VkBuffer stagingBuffer;
     VmaAllocation allocation;
 
@@ -54,32 +60,21 @@ void Texture::createImage(void* data) {
                         VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingBuffer);
 
     Utils::copyDataToBuffer( mContext->allocator(), allocation, data, static_cast<size_t>(imageSize));
-
-    Utils::createImage(mContext->allocator(), mImageAllocation, VMA_MEMORY_USAGE_AUTO,
-                       mImage, mMipLevels, VK_SAMPLE_COUNT_1_BIT,
-                       mTexWidth, mTexHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
-                       VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT );
-
-
-    transit(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
     Utils::copyBufferToImage(mContext, stagingBuffer, mImage,
                              static_cast<uint32_t>(mTexWidth), static_cast<uint32_t>(mTexHeight));
     if (!mGenerateMipMap)
         transit(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     vmaDestroyBuffer(mContext->allocator(), stagingBuffer, allocation);
+    generateMipMaps(VK_FORMAT_R8G8B8A8_SRGB);
 }
 
-void Texture::createImageView() {
-    mImageView = Utils::createImageView(mContext->device(), mImage, mMipLevels, VK_IMAGE_VIEW_TYPE_2D,
-                                        VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
-
+void Texture::transit(VkImageLayout src, VkImageLayout dst) {
+    Utils::transitionImageLayout(mContext, mImage, mMipLevels, VK_FORMAT_R8G8B8A8_SRGB, src, dst);
 }
 
-void Texture::createSampler() {
-    Utils::createSampler(mContext, mSampler, mMipLevels,
-                         VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_FALSE);
+int Texture::calcNumMipMaps(int width, int height) {
+    return std::floor(std::log2(std::max(width, height))) + 1;
 }
 
 void Texture::generateMipMaps(VkFormat imageFormat) {
