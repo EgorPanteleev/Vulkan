@@ -9,10 +9,11 @@
 
 #include "Context.h"
 #include "Vertex.h"
+#include "VulkanModelLoader.h"
 
 class VertexBuffer {
 public:
-    VertexBuffer(Context* context, const std::string& path);
+    VertexBuffer(Context* context, VulkanModelLoader* loader);
     ~VertexBuffer();
 
     std::vector<Vertex>& vertices() { return mVertices; }
@@ -24,6 +25,7 @@ private:
     void createIndexBuffer();
 
     Context* mContext;
+    VulkanModelLoader* mLoader;
     std::vector<Vertex> mVertices;
     VkBuffer mVertexBuffer;
     VmaAllocation mVertexBufferAllocation;

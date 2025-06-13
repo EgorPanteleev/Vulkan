@@ -7,12 +7,9 @@
 #include "Utils.h"
 #include "VulkanModelLoader.h"
 
-VertexBuffer::VertexBuffer(Context* context, const std::string& path): mContext(context) {
-    VulkanModelLoader modelLoader(path);
-    modelLoader.load();
-
-    mVertices = modelLoader.vulkanVertices();
-    mIndices = modelLoader.indices();
+VertexBuffer::VertexBuffer(Context* context, VulkanModelLoader* loader): mContext(context), mLoader(loader) {
+    mVertices = loader->vulkanVertices();
+    mIndices = loader->indices();
 
     createVertexBuffer();
     createIndexBuffer();

@@ -18,6 +18,7 @@ public:
     VkSampler sampler() { return mSampler; }
 
     void allocate(int width, int height);
+    void destroy();
     void load(void* data, int bufferSize);
     void load(const std::string& path);
     void transit(VkImageLayout src, VkImageLayout dst);

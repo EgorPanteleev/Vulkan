@@ -15,6 +15,7 @@
 #include "ColorResources.h"
 #include "ShadowDescriptorSet.h"
 #include "ShadowPipeline.h"
+#include "VulkanModelLoader.h"
 
 class Renderer {
 public:
@@ -37,6 +38,7 @@ private:
 
     UniquePtr<Camera> mCamera;
     UniquePtr<Context> mContext;
+    UniquePtr<VulkanModelLoader> mLoader;
     UniquePtr<Texture> mTexture;
     UniquePtr<SwapChain> mSwapChain;
     UniquePtr<ColorResources> mColorResources;

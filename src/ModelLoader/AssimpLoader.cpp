@@ -227,7 +227,7 @@ void AssimpLoader::loadTexture(ModelTexture::Type textureType, uint materialInde
         } else {
             fs::path modelPath(mModelPath);
             std::string dirPath = modelPath.parent_path();
-            texture.path = dirPath + path.C_Str();
+            texture.path = dirPath + "/" + path.C_Str();
         }
     }
     mMaterials[materialIndex].mTextures[textureType] = texture;

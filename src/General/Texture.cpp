@@ -14,9 +14,7 @@ Texture::Texture(Context* context, bool generateMipMap): mContext(context), mMip
 }
 
 Texture::~Texture() {
-    vkDestroySampler(mContext->device(), mSampler, nullptr);
-    vkDestroyImageView(mContext->device(), mImageView, nullptr);
-    vmaDestroyImage(mContext->allocator(), mImage, mImageAllocation);
+    destroy();
 }
 
 void Texture::allocate(int width, int height) {
@@ -36,6 +34,12 @@ void Texture::allocate(int width, int height) {
                          VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_FALSE);
 }
 
+void Texture::destroy() {
+    vkDestroySampler(mContext->device(), mSampler, nullptr);
+    vkDestroyImageView(mContext->device(), mImageView, nullptr);
+    vmaDestroyImage(mContext->allocator(), mImage, mImageAllocation);
+}
+
 void Texture::load(void* data, int bufferSize) {
     void* imageData = stbi_load_from_memory((const stbi_uc*)data, bufferSize,
                                             &mTexWidth, &mTexHeight, &mTexChannels, 0);
@@ -48,10 +52,10 @@ void Texture::load(const std::string& path) {
 }
 
 void Texture::load(void* data) {
-    allocate(mTexWidth, mTexHeight);
     if (!data) {
         throw std::runtime_error("Failed to load texture image!");
     }
+    allocate(mTexWidth, mTexHeight);
     VkDeviceSize imageSize = mTexWidth * mTexHeight * 4;
     VkBuffer stagingBuffer;
     VmaAllocation allocation;

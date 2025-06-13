@@ -34,6 +34,8 @@ Renderer::Renderer() {
     mCamera = std::make_unique<Camera>(camPos, camTarget, up,
                                        FOV, aspectRatio, nearPlane, farPlane);
     mContext = std::make_unique<Context>();
+    mLoader = std::make_unique<VulkanModelLoader>(mContext.get(), MODEL_PATH);
+    mLoader->load();
     mTexture = std::make_unique<Texture>(mContext.get(), true);
     mTexture->load(TEXTURE_PATH);
     mSwapChain = std::make_unique<SwapChain>(mContext.get());
@@ -54,7 +56,7 @@ Renderer::Renderer() {
     mGraphicsPipeline = std::make_unique<GraphicsPipeline>(mContext.get(), mSwapChain.get(), mDescriptorSet.get(),
                                                            mMainVertShaderModule, mFragShaderModule);
     mCommandManager = std::make_unique<CommandManager>(mContext.get(), mDepthResources.get());
-    mVertexBuffer = std::make_unique<VertexBuffer>(mContext.get(), MODEL_PATH);
+    mVertexBuffer = std::make_unique<VertexBuffer>(mContext.get(), mLoader.get());
     mSyncObjects = std::make_unique<SyncObjects>(mContext.get(), mSwapChain.get());
 
 
