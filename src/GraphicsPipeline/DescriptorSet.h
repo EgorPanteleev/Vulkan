@@ -7,14 +7,14 @@
 
 #include "Context.h"
 #include "UniformBuffer.h"
-#include "Image.h"
+#include "Texture.h"
 #include "DepthResources.h"
 
 class DescriptorSet {
 public:
     using UniformBuffers = std::vector<std::unique_ptr<UniformBuffer>>;
 
-    DescriptorSet(Context* context, Image* texture, DepthResources* depthResources, const UniformBuffers& uniformBuffers);
+    DescriptorSet(Context* context, Texture* texture, DepthResources* depthResources, const UniformBuffers& uniformBuffers);
     ~DescriptorSet();
 
     VkDescriptorSetLayout& descriptorSetLayout() { return mDescriptorSetLayout; }
@@ -28,7 +28,7 @@ private:
 
     Context* mContext;
 
-    Image* mTexture;
+    Texture* mTexture;
 
     DepthResources* mDepthResources;
 

@@ -330,6 +330,12 @@ namespace Utils {
         return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
     }
 
+    static bool isDepthFormat(VkFormat format) {
+        return format == VK_FORMAT_D32_SFLOAT ||
+               format == VK_FORMAT_D32_SFLOAT_S8_UINT ||
+               format == VK_FORMAT_D24_UNORM_S8_UINT;
+    }
+
     void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, uint32_t mipLevels,
                                VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
         VkImageMemoryBarrier barrier{};
@@ -347,10 +353,14 @@ namespace Utils {
         // Determine aspect mask
         if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ||
             newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+            if (isDepthFormat(format)) {
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-            if (hasStencilComponent(format)) {
-                barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+                if (hasStencilComponent(format)) {
+                    barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+                }
+            } else {
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             }
         } else {
             barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;

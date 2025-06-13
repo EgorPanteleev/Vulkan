@@ -10,7 +10,7 @@
 #include "DirectionalLightBuffer.h"
 #include "Utils.h"
 #include "Image.h"
-
+//#define MODEL_PATH PROJECT_PATH"models/Bistro/BistroExterior.fbx"
 //#define MODEL_PATH PROJECT_PATH"models/dragon/scene.obj"
 #define MODEL_PATH PROJECT_PATH"models/Sponza/glTF/Sponza.gltf"
 
@@ -29,13 +29,14 @@ Renderer::Renderer() {
     glm::vec3 camTarget(-1, 0, 0);
     glm::vec3 up(0, 1, 0);
     float FOV         = 45;
-    float aspectRatio = 1280.0f / 720.0f;
+    float aspectRatio = 1920.0f / 1200.0f;
     float nearPlane   = 0.1f;
     float farPlane    = 10000.f;
     mCamera = std::make_unique<Camera>(camPos, camTarget, up,
                                        FOV, aspectRatio, nearPlane, farPlane);
     mContext = std::make_unique<Context>();
-    mTexture = std::make_unique<Image>(mContext.get(), TEXTURE_PATH);
+    mTexture = std::make_unique<Texture>(mContext.get(), true);
+    mTexture->load(TEXTURE_PATH);
     mSwapChain = std::make_unique<SwapChain>(mContext.get());
     mColorResources = std::make_unique<ColorResources>(mContext.get(), mSwapChain->extent(), mSwapChain->format());
     mDepthResources = std::make_unique<DepthResources>(mContext.get(), mSwapChain->extent());

@@ -5,9 +5,36 @@
 #ifndef VULKAN_TEXTURE_H
 #define VULKAN_TEXTURE_H
 
+#include "Context.h"
 
 class Texture {
+public:
+    Texture(Context* context);
+    Texture(Context* context, bool generateMipMap);
+    ~Texture();
 
+    VkImage image() { return mImage; }
+    VkImageView imageView() { return mImageView; }
+    VkSampler sampler() { return mSampler; }
+
+    void load(void* data, int bufferSize);
+    void load(const std::string& path);
+    void transit(VkImageLayout src, VkImageLayout dst);
+private:
+    void createImage(void* data);
+    void createImageView();
+    void createSampler();
+    void generateMipMaps(VkFormat imageFormat);
+    void load(void* data);
+
+    Context* mContext;
+    VkImage mImage;
+    VkImageView mImageView;
+    VmaAllocation mImageAllocation;
+    VkSampler mSampler;
+    int mMipLevels;
+    int mTexWidth, mTexHeight, mTexChannels;
+    bool mGenerateMipMap;
 };
 
 

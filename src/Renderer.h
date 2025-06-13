@@ -10,7 +10,7 @@
 #include "CommandManager.h"
 #include "SyncObjects.h"
 #include "UniformBuffer.h"
-#include "Image.h"
+#include "Texture.h"
 #include "DepthResources.h"
 #include "ColorResources.h"
 #include "ShadowDescriptorSet.h"
@@ -37,7 +37,7 @@ private:
 
     UniquePtr<Camera> mCamera;
     UniquePtr<Context> mContext;
-    UniquePtr<Image> mTexture;
+    UniquePtr<Texture> mTexture;
     UniquePtr<SwapChain> mSwapChain;
     UniquePtr<ColorResources> mColorResources;
     UniquePtr<DepthResources> mDepthResources;

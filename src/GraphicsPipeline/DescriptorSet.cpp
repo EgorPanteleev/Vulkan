@@ -5,7 +5,7 @@
 #include "DescriptorSet.h"
 #include "MessageLogger.h"
 
-DescriptorSet::DescriptorSet(Context* context, Image* texture, DepthResources* depthResources, const UniformBuffers& uniformBuffers):
+DescriptorSet::DescriptorSet(Context* context, Texture* texture, DepthResources* depthResources, const UniformBuffers& uniformBuffers):
                              mContext(context), mTexture(texture), mDepthResources(depthResources), mUniformBuffers(uniformBuffers) {
     createDescriptorSetLayout();
     createDescriptorPool();
