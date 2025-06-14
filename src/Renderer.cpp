@@ -11,6 +11,7 @@
 #include "Utils.h"
 //#define MODEL_PATH PROJECT_PATH"models/Bistro/BistroExterior.fbx"
 //#define MODEL_PATH PROJECT_PATH"models/dragon/scene.obj"
+//#define MODEL_PATH PROJECT_PATH"models/Sponza/sponza.obj"
 #define MODEL_PATH PROJECT_PATH"models/Sponza/glTF/Sponza.gltf"
 
 #define TEXTURE_PATH PROJECT_PATH"textures/statue.jpg"
@@ -35,7 +36,8 @@ Renderer::Renderer() {
                                        FOV, aspectRatio, nearPlane, farPlane);
     mContext = std::make_unique<Context>();
     mLoader = std::make_unique<VulkanModelLoader>(mContext.get(), MODEL_PATH);
-    mLoader->load();
+    if (!mLoader->load()) exit(-1);
+
     mTexture = std::make_unique<Texture>(mContext.get(), true);
     mTexture->load(TEXTURE_PATH);
     mSwapChain = std::make_unique<SwapChain>(mContext.get());

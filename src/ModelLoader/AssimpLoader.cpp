@@ -23,7 +23,8 @@ namespace fs = std::filesystem;
                            aiProcess_FindDegenerates          | \
                            aiProcess_FindInvalidData          | \
                            aiProcess_GenUVCoords              | \
-                           aiProcess_CalcTangentSpace           )
+                           aiProcess_CalcTangentSpace         | \
+                           aiProcess_FlipUVs                    )
 
 //#define ASSIMP_LOAD_FLAGS (aiProcess_Triangulate | \
 //                           aiProcess_FlipUVs     | \
@@ -36,7 +37,7 @@ bool AssimpLoader::load() {
     Assimp::Importer importer;
     mScene = importer.ReadFile(mModelPath, ASSIMP_LOAD_FLAGS);
     if (!mScene) {
-        std::cerr << "Assimp Error: " << importer.GetErrorString() << std::endl;
+        ERROR << "Assimp Error: " << importer.GetErrorString();
         return false;
     }
 //    m_GlobalInverseTransform = mScene->mRootNode->mTransformation;

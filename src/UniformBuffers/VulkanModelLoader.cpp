@@ -52,7 +52,7 @@ bool VulkanModelLoader::loadMaterials() {
         for (int tex = 0; tex < (int) ModelTexture::UNKNOWN; ++tex) {
             ModelTexture texture = material.mTextures[tex];
             Texture*& vulkanTexture = vulkanTextures[tex];
-            vulkanTexture = new Texture(mContext);
+            vulkanTexture = new Texture(mContext, true);
             if (texture.embedded) {
                 vulkanTexture->load(texture.data, texture.bufferSize);
             } else {

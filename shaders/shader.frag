@@ -86,6 +86,8 @@ void main() {
     //outColor = vec4( vec3(1) * ( 1.0 - shadow ), 1);
     outColor = vec4(diffuseColor, 1);
     //outColor = texColor;
+    outColor = vec4(diffuseColor, 1) * texture(nonuniformEXT(textures[fragTexIndex]), fragTexCoord);
     outColor = texture(nonuniformEXT(textures[fragTexIndex]), fragTexCoord);
 
+    //outColor = vec4(fragTexCoord, 0.0, 1.0);
 }
