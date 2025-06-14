@@ -50,7 +50,7 @@ Renderer::Renderer() {
     loadShader(COMPILED_SHADERS_PATH"shadowShader.vert.spv", mShadowVertShaderModule);
     mShadowPipeline = std::make_unique<ShadowPipeline>(mContext.get(), mShadowDescriptorSet.get(), mShadowVertShaderModule);
 
-    mDescriptorSet = std::make_unique<DescriptorSet>(mContext.get(), mTexture.get(), mDepthResources.get(), *mUniformBuffers);
+    mDescriptorSet = std::make_unique<DescriptorSet>(mContext.get(), mTexture.get(), mLoader.get(), mDepthResources.get(), *mUniformBuffers);
     loadShader(COMPILED_SHADERS_PATH"shader.vert.spv", mMainVertShaderModule);
     loadShader(COMPILED_SHADERS_PATH"shader.frag.spv", mFragShaderModule);
     mGraphicsPipeline = std::make_unique<GraphicsPipeline>(mContext.get(), mSwapChain.get(), mDescriptorSet.get(),

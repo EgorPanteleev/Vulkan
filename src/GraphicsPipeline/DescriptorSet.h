@@ -9,12 +9,14 @@
 #include "UniformBuffer.h"
 #include "Texture.h"
 #include "DepthResources.h"
+#include "VulkanModelLoader.h"
 
 class DescriptorSet {
 public:
     using UniformBuffers = std::vector<std::unique_ptr<UniformBuffer>>;
 
-    DescriptorSet(Context* context, Texture* texture, DepthResources* depthResources, const UniformBuffers& uniformBuffers);
+    DescriptorSet(Context* context, Texture* texture, VulkanModelLoader* loader,
+                  DepthResources* depthResources, const UniformBuffers& uniformBuffers);
     ~DescriptorSet();
 
     VkDescriptorSetLayout& descriptorSetLayout() { return mDescriptorSetLayout; }
@@ -29,6 +31,8 @@ private:
     Context* mContext;
 
     Texture* mTexture;
+
+    VulkanModelLoader* mLoader;
 
     DepthResources* mDepthResources;
 
@@ -46,6 +50,8 @@ private:
      * A descriptor set holds actual resource handles (buffers, textures) that are bound to the shader.
      */
     std::vector<VkDescriptorSet> mDescriptorSets;
+
+    uint32_t maxTextures;
 };
 
 

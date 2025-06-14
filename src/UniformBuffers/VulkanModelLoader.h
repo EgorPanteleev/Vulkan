@@ -21,6 +21,7 @@ public:
     VulkanModelLoader(Context* context, std::string modelPath);
     ~VulkanModelLoader();
     const std::vector<Vertex>& vulkanVertices() { return mVulkanVertices; }
+    const std::vector<VulkanTextures>& vulkanTextures() { return mVulkanTextures; }
     bool load() override;
 
     bool loadGeometry();

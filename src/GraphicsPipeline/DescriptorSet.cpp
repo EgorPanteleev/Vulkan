@@ -5,8 +5,10 @@
 #include "DescriptorSet.h"
 #include "MessageLogger.h"
 
-DescriptorSet::DescriptorSet(Context* context, Texture* texture, DepthResources* depthResources, const UniformBuffers& uniformBuffers):
-                             mContext(context), mTexture(texture), mDepthResources(depthResources), mUniformBuffers(uniformBuffers) {
+DescriptorSet::DescriptorSet(Context* context, Texture* texture, VulkanModelLoader* loader,
+                             DepthResources* depthResources, const UniformBuffers& uniformBuffers):
+                             mContext(context), mTexture(texture), mLoader(loader), mDepthResources(depthResources), mUniformBuffers(uniformBuffers) {
+    maxTextures = mLoader->vulkanTextures().size() * ModelTexture::UNKNOWN;
     createDescriptorSetLayout();
     createDescriptorPool();
     createDescriptorSets();
@@ -53,16 +55,42 @@ void DescriptorSet::createDescriptorSetLayout() {
     directLightLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
     directLightLayoutBinding.pImmutableSamplers = nullptr;
 
+    VkDescriptorSetLayoutBinding texturesBinding{
+            .binding = 5,
+            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            .descriptorCount = maxTextures,
+            .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+    };
 
     std::vector<VkDescriptorSetLayoutBinding> bindings = {uboLayoutBinding,
                                                           samplerLayoutBinding,
                                                           lightUBOLayoutBinding,
                                                           shadowSamplerLayoutBinding,
-                                                          directLightLayoutBinding};
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-    layoutInfo.pBindings = bindings.data();
+                                                          directLightLayoutBinding,
+                                                          texturesBinding};
+
+    std::vector<VkDescriptorBindingFlags> bindingFlags = {
+            0,                                  // binding 0
+            0,                                  // binding 1
+            0,                                  // binding 2
+            0,                                  // binding 3
+            0,                                  // binding 4
+            VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT |
+            VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT // binding 5
+    };
+
+    VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+            .bindingCount = (uint32_t) bindingFlags.size(),
+            .pBindingFlags = bindingFlags.data()
+    };
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo{
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+            .pNext = &bindingFlagsInfo,
+            .bindingCount = (uint32_t) bindings.size(),
+            .pBindings = bindings.data()
+    };
 
     if (vkCreateDescriptorSetLayout(mContext->device(), &layoutInfo, nullptr, &mDescriptorSetLayout) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create descriptor set layout!");
@@ -78,6 +106,7 @@ void DescriptorSet::createDescriptorPool() {
     poolSizes.emplace_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, descriptorCount);
     poolSizes.emplace_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, descriptorCount);
     poolSizes.emplace_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, descriptorCount);
+    poolSizes.emplace_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxTextures * 4); //FIXMES
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -92,17 +121,31 @@ void DescriptorSet::createDescriptorPool() {
 
 void DescriptorSet::createDescriptorSets() {
     std::vector<VkDescriptorSetLayout> layouts(mContext->maxFramesInFlight(), mDescriptorSetLayout);
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = mDescriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(mContext->maxFramesInFlight());
-    allocInfo.pSetLayouts = layouts.data();
+    uint32_t descriptorSetCount = (uint32_t) mContext->maxFramesInFlight();
+    std::vector<uint32_t> variableCounts(descriptorSetCount, maxTextures);
+
+    VkDescriptorSetVariableDescriptorCountAllocateInfo countAllocInfo{
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO,
+            .descriptorSetCount = (uint32_t) mContext->maxFramesInFlight(),
+            .pDescriptorCounts = variableCounts.data()
+    };
+
+    VkDescriptorSetAllocateInfo allocInfo{
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+            .pNext = &countAllocInfo,
+            .descriptorPool = mDescriptorPool,
+            .descriptorSetCount = (uint32_t) mContext->maxFramesInFlight(),
+            .pSetLayouts = layouts.data()
+    };
+
     mDescriptorSets.resize(mContext->maxFramesInFlight());
     if (vkAllocateDescriptorSets(mContext->device(), &allocInfo, mDescriptorSets.data()) != VK_SUCCESS) {
         throw std::runtime_error("Failed to allocate descriptor sets!");
     }
     INFO << "Created descriptor sets!";
 
+
+    //FIXME move to update
     for (size_t i = 0; i < mContext->maxFramesInFlight(); ++i) {
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = mUniformBuffers[0]->uniformBuffers()[i];
@@ -129,7 +172,15 @@ void DescriptorSet::createDescriptorSets() {
         directLightBufferInfo.offset = 0;
         directLightBufferInfo.range = mUniformBuffers[2]->getSize();
 
-        std::array<VkWriteDescriptorSet, 5> descriptorWrites{};
+        std::vector<VkDescriptorImageInfo> textureInfos(maxTextures);
+        const std::vector<VulkanTextures>& vulkanTextures = mLoader->vulkanTextures();
+        for (size_t j = 0; j < maxTextures; ++j) { //FIXME 2d cycle mTextures not always [0]
+            textureInfos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            textureInfos[j].imageView = vulkanTextures[j].mTextures[0]->imageView(); // array of imageViews
+            textureInfos[j].sampler = vulkanTextures[j].mTextures[0]->sampler(); // array of samplers
+        }
+
+        std::array<VkWriteDescriptorSet, 6> descriptorWrites{};
         descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrites[0].dstSet = mDescriptorSets[i];
         descriptorWrites[0].dstBinding = 0;
@@ -175,6 +226,14 @@ void DescriptorSet::createDescriptorSets() {
         descriptorWrites[4].pBufferInfo = &directLightBufferInfo;
         descriptorWrites[4].pImageInfo = nullptr; // Optional
         descriptorWrites[4].pTexelBufferView = nullptr; // Optional
+
+        descriptorWrites[5].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[5].dstSet = mDescriptorSets[i];
+        descriptorWrites[5].dstBinding = 5;
+        descriptorWrites[5].dstArrayElement = 0;
+        descriptorWrites[5].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptorWrites[5].descriptorCount = static_cast<uint32_t>(textureInfos.size());
+        descriptorWrites[5].pImageInfo = textureInfos.data();
 
         vkUpdateDescriptorSets(mContext->device(), static_cast<uint32_t>(descriptorWrites.size()),
                                descriptorWrites.data(), 0, nullptr);
