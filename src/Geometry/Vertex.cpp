@@ -46,14 +46,12 @@ std::vector<VkVertexInputAttributeDescription> Vertex::getAttributeDescriptions(
             }
     };
 
-
-//    attributeDescriptions[4].binding = 0;
-//    attributeDescriptions[4].location = 4;
-//    attributeDescriptions[4].format = VK_FORMAT_R32_UINT;
-//    attributeDescriptions[4].offset = offsetof(Vertex, texIndex);
     return attributeDescriptions;
 }
 
 bool Vertex::operator==(const Vertex& other) const {
-    return pos == other.pos && color == other.color && texCoord == other.texCoord;
+    return pos == other.pos &&
+           color == other.color &&
+           texCoord == other.texCoord &&
+           texIndex == other.texIndex;
 }

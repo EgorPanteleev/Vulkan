@@ -1,4 +1,4 @@
-#version 450
+#version 460
 
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_EXT_descriptor_indexing : enable
@@ -7,8 +7,8 @@ layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in vec3 fragPos;
 layout(location = 3) in vec3 fragNormal;
-layout(location = 4) in vec4 fragPosLightSpace;
-layout(location = 5) flat in uint fragTexIndex;
+layout(location = 4) flat in uint fragTexIndex;
+layout(location = 5) in vec4 fragPosLightSpace;
 
 layout(binding = 1) uniform sampler2D shadowMap;
 

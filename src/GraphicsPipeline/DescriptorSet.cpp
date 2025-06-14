@@ -169,11 +169,11 @@ void DescriptorSet::updateDescriptorSets() {
         };
 
         std::vector<VkDescriptorImageInfo> texturesInfo(maxTextures);
-        const std::vector<VulkanTextures>& vulkanTextures = mLoader->vulkanTextures();
         for (size_t j = 0; j < maxTextures; ++j) { //FIXME 2d cycle mTextures not always [0]
+            auto& textures= mLoader->vulkanTextures()[j].mTextures;
             texturesInfo[j] = {
-                    .sampler = vulkanTextures[j].mTextures[0]->sampler(),
-                    .imageView = vulkanTextures[j].mTextures[0]->imageView(),
+                    .sampler = textures[0]->sampler(),
+                    .imageView = textures[0]->imageView(),
                     .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             };
         }

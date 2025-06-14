@@ -54,7 +54,7 @@ private:
 #define MESSAGE  MessageLogger( std::cout, TerminalColors::GRAY   )
 #define INFO     MessageLogger( std::cout, TerminalColors::CYAN   )
 #define DEBUG    MessageLogger( std::cout, TerminalColors::BLUE   )
-#define WARNING  MessageLogger( std::cerr, TerminalColors::YELLOW )
+#define WARNING  MessageLogger( std::cout, TerminalColors::YELLOW )
 #define ERROR    MessageLogger( std::cerr, TerminalColors::RED    )
 
 

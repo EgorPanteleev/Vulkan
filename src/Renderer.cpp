@@ -24,7 +24,6 @@
 //        "/home/auser/dev/src/Vulkan/models/lamborghini/textures/Countach50_01_InteriorA_.png";
 
 Renderer::Renderer() {
-    //TODO make all raw pointers unique
     glm::vec3 camPos(0, 0, 0);
     glm::vec3 camTarget(-1, 0, 0);
     glm::vec3 up(0, 1, 0);
