@@ -8,6 +8,7 @@ layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in vec3 fragPos;
 layout(location = 3) in vec3 fragNormal;
 layout(location = 4) in vec4 fragPosLightSpace;
+layout(location = 5) flat in uint fragTexIndex;
 
 layout(location = 0) out vec4 outColor;
 
@@ -85,6 +86,6 @@ void main() {
     //outColor = vec4( vec3(1) * ( 1.0 - shadow ), 1);
     outColor = vec4(diffuseColor, 1);
     //outColor = texColor;
-    outColor = texture(nonuniformEXT(textures[2]), fragTexCoord);
+    outColor = texture(nonuniformEXT(textures[fragTexIndex]), fragTexCoord);
 
 }

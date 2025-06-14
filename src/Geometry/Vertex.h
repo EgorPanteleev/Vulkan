@@ -7,14 +7,13 @@
 
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
-#include <array>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/hash.hpp>
+#include <vector>
+
 
 class Vertex {
 public:
     static VkVertexInputBindingDescription getBindingDescription();
-    static std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptions();
+    static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
 
     bool operator==(const Vertex& other) const;
 
@@ -22,6 +21,7 @@ public:
     glm::vec3 color;
     glm::vec2 texCoord;
     glm::vec3 normal;
+    uint32_t texIndex;
 };
 
 #endif //VULKAN_VERTEX_H

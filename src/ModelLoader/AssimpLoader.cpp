@@ -10,6 +10,7 @@
 #include <assimp/postprocess.h>
 #include <meshoptimizer.h>
 #include <filesystem>
+
 namespace fs = std::filesystem;
 
 #define ASSIMP_LOAD_FLAGS (aiProcess_JoinIdenticalVertices    | \
@@ -85,6 +86,8 @@ bool AssimpLoader::loadGeometry() {
         indices.reserve(numIndices);
         loadMesh<ModelVertex>(vertices, indices, i);
         optimizeMesh<ModelVertex>(vertices, indices, i);
+        mMeshes[i].baseVertex = mVertices.size();
+        mMeshes[i].baseIndex = mIndices.size();
         mVertices.insert(mVertices.end(), vertices.begin(), vertices.end());
         uint32_t baseVertex = mVertices.size() - vertices.size();
         std::ranges::for_each(indices, [&](uint32_t & ind) { ind += baseVertex; });

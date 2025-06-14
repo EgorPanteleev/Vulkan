@@ -27,14 +27,19 @@ bool VulkanModelLoader::load() {
 
 bool VulkanModelLoader::loadGeometry() {
     mVulkanVertices.reserve(mVertices.size());
-    for (size_t i = 0; i < mVertices.size(); ++i) {
-        Vertex vert{
-                .pos = mVertices[i].pos,
-                .color = mVertices[i].color,
-                .texCoord = mVertices[i].texCoord0,
-                .normal = mVertices[i].normal,
-        };
-        mVulkanVertices.push_back(vert);
+    for (size_t i = 0; i < mMeshes.size(); ++i) {
+        ModelMesh mesh = mMeshes[i];
+        for (size_t j = 0; j < mesh.numVertices; ++j) {
+            ModelVertex modelVertex = mVertices[mesh.baseVertex + j];
+            Vertex vert{
+                    .pos = modelVertex.pos,
+                    .color = modelVertex.color,
+                    .texCoord = modelVertex.texCoord0,
+                    .normal = modelVertex.normal,
+                    .texIndex = (uint32_t) mesh.materialIndex
+            };
+            mVulkanVertices.push_back(vert);
+        }
     }
     return true;
 }
