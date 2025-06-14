@@ -25,7 +25,6 @@ private:
     void createIndexBuffer();
 
     Context* mContext;
-    VulkanModelLoader* mLoader;
     std::vector<Vertex> mVertices;
     VkBuffer mVertexBuffer;
     VmaAllocation mVertexBufferAllocation;

@@ -14,7 +14,7 @@
 #include <unordered_set>
 #include <set>
 
-Context::Context(): mInstance(VK_NULL_HANDLE), mWindow( 800, 600, "VulkanApp" ), mPhysicalDevice(VK_NULL_HANDLE),
+Context::Context(): mInstance(VK_NULL_HANDLE), mWindow( 960, 600, "VulkanApp" ), mPhysicalDevice(VK_NULL_HANDLE),
                     mDevice(VK_NULL_HANDLE), mGraphicsQueue(VK_NULL_HANDLE), mPresentQueue(VK_NULL_HANDLE) {
     createInstance();
     if (enableValidationLayers)

@@ -7,7 +7,7 @@
 #include "Utils.h"
 #include "VulkanModelLoader.h"
 
-VertexBuffer::VertexBuffer(Context* context, VulkanModelLoader* loader): mContext(context), mLoader(loader) {
+VertexBuffer::VertexBuffer(Context* context, VulkanModelLoader* loader): mContext(context) {
     mVertices = loader->vulkanVertices();
     mIndices = loader->indices();
 

@@ -226,7 +226,7 @@ void AssimpLoader::loadTexture(ModelTexture::Type textureType, uint materialInde
         const aiTexture* aiTex = mScene->GetEmbeddedTexture(path.C_Str());
         if (aiTex) {
             texture.embedded = true;
-            texture.bufferSize = aiTex->mWidth; //???
+            texture.bufferSize = aiTex->mWidth * aiTex->mHeight;
             texture.data = aiTex->pcData;
         } else {
             fs::path modelPath(mModelPath);

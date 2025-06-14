@@ -6,7 +6,7 @@ layout(binding = 0) uniform UniformBufferObject {
     mat4 proj;
 } ubo;
 
-layout(binding = 4) uniform UniformDirectLight {
+layout(binding = 2) uniform UniformDirectLight {
     mat4 view;
     mat4 proj;
     vec4 color;
@@ -32,11 +32,8 @@ void main() {
     gl_Position = ubo.proj * ubo.view * worldPosition;
     fragColor = inColor;
     fragTexCoord = inTexCoord;
-
     fragPosition = worldPosition.xyz;
-
     fragNormal = mat3(transpose(inverse(ubo.model))) * inNormal;
     fragPosLightSpace = directLight.proj * directLight.view * worldPosition;
     fragTexIndex = inTexIndex;
-
 }
