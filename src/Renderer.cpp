@@ -61,10 +61,10 @@ Renderer::Renderer() {
     mSyncObjects = std::make_unique<SyncObjects>(mContext.get(), mSwapChain.get());
 
 
+    mSwapChain->createShadowFrameBuffers(mShadowPipeline->renderPass(), mDepthResources->shadowImageView());
     mSwapChain->createFrameBuffers(mGraphicsPipeline->renderPass(),
                                    mDepthResources->imageView(),
                                    mColorResources->imageView());
-    mSwapChain->createShadowFrameBuffers(mShadowPipeline->renderPass(), mDepthResources->shadowImageView());
 }
 
 void processKeyboard(Camera& camera, GLFWwindow* window) {

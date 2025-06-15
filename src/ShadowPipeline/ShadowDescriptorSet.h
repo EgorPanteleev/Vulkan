@@ -25,6 +25,8 @@ private:
     void createDescriptorSetLayout();
     void createDescriptorPool();
     void createDescriptorSets();
+    void updateDescriptorSets();
+
 
     Context* mContext;
 

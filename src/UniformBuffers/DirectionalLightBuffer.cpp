@@ -9,21 +9,21 @@ DirectionalLightBuffer::DirectionalLightBuffer(Context* context, Camera* camera)
         UniformBuffer(context, camera){
     createUniformBuffers();
 }
-auto lightPos = glm::vec3(0.0f, 10.0f, 100.0f);
+auto lightPos = glm::vec3(0.0f, 1500.0f, 1.0f);
 
 void DirectionalLightBuffer::updateUniformBuffer(uint32_t currentImage, VkExtent2D extent) {
     DirectionalLight lightData = {};
     lightData.color = glm::vec4(1.0f);
     //lightPos += glm::vec3(0,0.01,0);
     auto lightTarget = glm::vec3(0);
-    auto up = glm::vec3(0.0f, 0.0f, 1.0f);
+    auto up = glm::vec3(0.0f, 1.0f, 0.0f);
     lightData.direction = glm::vec4(glm::normalize(lightTarget - lightPos), 1.0f);
     lightData.view = glm::lookAt(lightPos, lightPos + glm::vec3(lightData.direction), up);
 
     float nearPlane = 0.1f;
-    float farPlane = 100.0f;
-    float xOrthoHalfSize = 320.0f;
-    float yOrthoHalfSize = 320.0f;
+    float farPlane = 2000.0f;
+    float xOrthoHalfSize = 1000.0f;
+    float yOrthoHalfSize = 1000.0f;
 
     lightData.proj = glm::ortho(
             -xOrthoHalfSize, xOrthoHalfSize,
