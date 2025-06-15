@@ -8,8 +8,7 @@
 #include "UniformBuffer.h"
 
 struct alignas(16) DirectionalLight {
-    glm::mat4 view;
-    glm::mat4 proj;
+    glm::mat4 VPMatrix;
     glm::vec4 color;
     glm::vec4 direction;
     //float shadowBias;

@@ -187,9 +187,9 @@ void ShadowPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configInf
             .cullMode = VK_CULL_MODE_BACK_BIT,
             .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
             .depthBiasEnable = VK_TRUE,
-            .depthBiasConstantFactor = 1.0f,
+            .depthBiasConstantFactor = 1.25f,
             .depthBiasClamp = 0.0f,
-            .depthBiasSlopeFactor = 1.0f,
+            .depthBiasSlopeFactor = 1.75f,
             .lineWidth = 1.0f
     };
     configInfo.rasterizationInfo = rasterizationInfo;

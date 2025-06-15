@@ -7,8 +7,7 @@ layout(binding = 0) uniform UniformBufferObject {
 } ubo;
 
 layout(binding = 2) uniform DirectLight {
-    mat4 view;
-    mat4 proj;
+    mat4 VPMatrix;
     vec4 color;
     vec4 direction;
 } directLight;
@@ -34,6 +33,6 @@ void main() {
     fragTexCoord = inTexCoord;
     fragPosition = worldPosition.xyz;
     fragNormal = mat3(ubo.model) * inNormal;
-    fragPosLightSpace = directLight.proj * directLight.view * worldPosition;
+    fragPosLightSpace = directLight.VPMatrix * worldPosition;
     fragTexIndex = inTexIndex;
 }
