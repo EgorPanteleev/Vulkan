@@ -13,8 +13,7 @@ layout(location = 5) in vec4 fragPosLightSpace;
 layout(binding = 1) uniform sampler2D shadowMap;
 
 layout(binding = 2) uniform DirectLight {
-    mat4 view;
-    mat4 proj;
+    mat4 VPMatrix;
     vec4 color;
     vec4 direction;
 } directLight;
@@ -78,4 +77,5 @@ void main() {
     //outColor = texColor * diffuseColor;
     //outColor = vec4(texColor.xyz * (1 -shadow), 1);
     outColor = vec4(vec3(depth), 1.0);
+    //outColor = vec4(texColor.xyz * diffuseColor.xyz * (1 -shadow), 1);
 }
