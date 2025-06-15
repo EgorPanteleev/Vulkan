@@ -74,6 +74,7 @@ void main() {
 
     vec3 viewDir = normalize(pointLights.viewPos.xyz - fragPos);
     vec4 diffuseColor = vec4(max(dot(normal, lightDir), 0.0) * directLight.color.xyz, 1);
+    //outColor = texColor;
     //outColor = texColor * diffuseColor;
     //outColor = vec4(texColor.xyz * (1 -shadow), 1);
     outColor = vec4(vec3(depth), 1.0);

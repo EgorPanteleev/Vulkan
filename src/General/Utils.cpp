@@ -336,74 +336,104 @@ namespace Utils {
                format == VK_FORMAT_D24_UNORM_S8_UINT;
     }
 
+    static VkImageAspectFlags determineAspectMask(VkImageLayout newLayout, VkFormat format) {
+        VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_NONE;
+        bool depthFormat = isDepthFormat(format);
+        bool stencilComponent = hasStencilComponent(format);
+
+        switch(newLayout) {
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+                if (!depthFormat) {
+                    aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    break;
+                }
+                aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                if (stencilComponent) aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+                aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                break;
+            default:
+                throw std::invalid_argument("Unsupported new layout!");
+        };
+        return aspectMask;
+    }
+
+    static void determineSrcMaskStage(VkImageLayout oldLayout, VkAccessFlags& srcAccessMask,
+                                               VkPipelineStageFlags& srcStage) {
+        switch(oldLayout) {
+            case VK_IMAGE_LAYOUT_UNDEFINED:
+                srcAccessMask = VK_ACCESS_NONE;
+                srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+                srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+                srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                srcStage = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+                break;
+            default:
+                MESSAGE << oldLayout;
+                throw std::invalid_argument("Unsupported old layout!");
+        }
+    }
+
+    static void determineDstMaskStage(VkImageLayout newLayout, VkAccessFlags& dstAccessMask,
+                                               VkPipelineStageFlags& dstStage) {
+        switch(newLayout) {
+            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+                dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+                dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+                dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+                                VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                dstStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+                break;
+            default:
+                throw std::invalid_argument("Unsupported new layout!");
+        }
+    }
+
+
     void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, uint32_t mipLevels,
                                VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
-        VkImageMemoryBarrier barrier{};
-        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barrier.oldLayout = oldLayout;
-        barrier.newLayout = newLayout;
-        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.image = image;
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = mipLevels;
-        barrier.subresourceRange.baseArrayLayer = 0;
-        barrier.subresourceRange.layerCount = 1;
+        VkAccessFlags srcAccessMask;
+        VkPipelineStageFlags srcStage;
+        determineSrcMaskStage(oldLayout, srcAccessMask, srcStage);
 
-        // Determine aspect mask
-        if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ||
-            newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-            if (isDepthFormat(format)) {
-                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+        VkAccessFlags dstAccessMask;
+        VkPipelineStageFlags dstStage;
+        determineDstMaskStage(newLayout, dstAccessMask, dstStage);
 
-                if (hasStencilComponent(format)) {
-                    barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+        VkImageMemoryBarrier barrier{
+                .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                .srcAccessMask = srcAccessMask,
+                .dstAccessMask = dstAccessMask,
+                .oldLayout = oldLayout,
+                .newLayout = newLayout,
+                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .image = image,
+                .subresourceRange = {
+                        .aspectMask = determineAspectMask(newLayout, format),
+                        .baseMipLevel = 0,
+                        .levelCount = mipLevels,
+                        .baseArrayLayer = 0,
+                        .layerCount = 1
                 }
-            } else {
-                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            }
-        } else {
-            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        }
-
-        VkPipelineStageFlags sourceStage;
-        VkPipelineStageFlags destinationStage;
-
-        if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-            barrier.srcAccessMask = 0;
-            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        }
-        else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-            sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-            destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        }
-        else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-            barrier.srcAccessMask = 0;
-            barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        }
-        else if (oldLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-            barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-            sourceStage = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-            destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        }
-        else {
-            throw std::invalid_argument("unsupported layout transition!");
-        }
+        };
 
         vkCmdPipelineBarrier(
                 commandBuffer,
-                sourceStage, destinationStage,
+                srcStage, dstStage,
                 0,
                 0, nullptr,
                 0, nullptr,
