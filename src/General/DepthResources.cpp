@@ -42,7 +42,7 @@ void DepthResources::createDepthResources(VkExtent2D swapChainExtent) {
     mShadowImageView = Utils::createImageView(mContext->device(), mShadowImage, 1, VK_IMAGE_VIEW_TYPE_2D,
                                         depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
     Utils::transitionImageLayout(mContext, mShadowImage, 1, depthFormat,
-                                 VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+                                 VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
     Utils::createSampler(mContext, mSampler, 1,
                          VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
                          VK_TRUE);

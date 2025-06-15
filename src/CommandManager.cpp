@@ -51,10 +51,6 @@ void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline*
     if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
         throw std::runtime_error("Failed to begin recording command buffer!");
     }
-    VkFormat depthFormat = Utils::findDepthFormat(mContext);
-    Utils::transitionImageLayout(commandBuffer, mDepthResources->shadowImage(), 1, depthFormat,
-                                 VK_IMAGE_LAYOUT_UNDEFINED,
-                                 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
     // SHADOW PASS BEGIN
     VkRenderPassBeginInfo shadowPassInfo{};
@@ -102,10 +98,6 @@ void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline*
     vkCmdEndRenderPass(commandBuffer);
     // SHADOW PASS END
 
-    // Transition Shadow Map to Read-Only Optimal for Sampling
-    Utils::transitionImageLayout(commandBuffer, mDepthResources->shadowImage(), 1, depthFormat,
-                                 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

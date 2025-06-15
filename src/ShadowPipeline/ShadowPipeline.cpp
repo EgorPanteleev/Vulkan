@@ -26,7 +26,7 @@ void ShadowPipeline::createRenderPass() {
             .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
             .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
             .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-            .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+            .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
     };
 
     VkAttachmentReference depthAttachmentRef{
@@ -37,9 +37,9 @@ void ShadowPipeline::createRenderPass() {
     VkSubpassDependency dependency{
             .srcSubpass = VK_SUBPASS_EXTERNAL,
             .dstSubpass = 0,
-            .srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            .srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
             .dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-            .srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT,
+            .srcAccessMask = VK_ACCESS_SHADER_READ_BIT,
             .dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
             .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
     };
