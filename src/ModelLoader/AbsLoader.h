@@ -8,16 +8,10 @@
 #include "ModelVertex.h"
 #include "ModelMesh.h"
 #include "ModelMaterial.h"
+#include "BBox.h"
 
 #include <vector>
 #include <string>
-
-struct BBox {
-    BBox(): min(FLT_MAX), max(-FLT_MAX) {}
-
-    glm::vec3 min;
-    glm::vec3 max;
-};
 
 class AbsLoader {
 public:
@@ -35,6 +29,7 @@ public:
 
     Type type() { return mType; }
     std::string getTypeString();
+    BBox bbox() { return mBBox; }
 
     [[nodiscard]] const std::vector<ModelMesh>& meshes() const { return mMeshes; }
     [[nodiscard]] const std::vector<ModelMaterial>& materials() const { return mMaterials; }

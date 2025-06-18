@@ -6,6 +6,7 @@
 #define VULKAN_DIRECTIONALLIGHT_H
 
 #include "UniformBuffer.h"
+#include "BBox.h"
 
 struct alignas(16) DirectionalLight {
     glm::mat4 VPMatrix;
@@ -16,12 +17,14 @@ struct alignas(16) DirectionalLight {
 
 class DirectionalLightBuffer: public UniformBuffer {
 public:
-    DirectionalLightBuffer(Context* context, Camera* camera);
+    DirectionalLightBuffer(Context* context, Camera* camera, const BBox& sceneBBox, const glm::vec3& dir);
     virtual ~DirectionalLightBuffer() {};
 
     void updateUniformBuffer(uint32_t currentImage, VkExtent2D extent) override;
     VkDeviceSize getSize() const override { return sizeof(DirectionalLight); }
 protected:
+    BBox mSceneBBox;
+    glm::vec3 mDirection;
 };
 
 

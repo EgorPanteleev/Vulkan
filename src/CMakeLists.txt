@@ -6,6 +6,7 @@ add_compile_definitions(GLM_FORCE_RADIANS)
 
 add_subdirectory(Camera)
 add_subdirectory(Message)
+add_subdirectory(Math)
 add_subdirectory(Geometry)
 add_subdirectory(ModelLoader)
 

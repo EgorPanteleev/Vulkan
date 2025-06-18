@@ -8,19 +8,18 @@
 
 #include "MessageLogger.h"
 
-DirectionalLightBuffer::DirectionalLightBuffer(Context* context, Camera* camera):
-        UniformBuffer(context, camera){
+DirectionalLightBuffer::DirectionalLightBuffer(Context* context, Camera* camera, const BBox& sceneBBox, const glm::vec3& dir):
+        UniformBuffer(context, camera), mSceneBBox(sceneBBox), mDirection(dir){
     createUniformBuffers();
 }
 
 void DirectionalLightBuffer::updateUniformBuffer(uint32_t currentImage, VkExtent2D extent) {
-    glm::vec3 min = {-1920.95, -126.442, -1182.81};
-    glm::vec3 max = {1799.91, 1429.43, 1105.43};
-    glm::vec3 direction = glm::normalize(glm::vec3(-0.0f, -2.0f, -0.4f));
+    glm::vec3 min = mSceneBBox.min;
+    glm::vec3 max = mSceneBBox.max;
 
     glm::vec3 center = (min + max) * 0.5f;
     float radius = glm::length(max - center);
-    glm::vec eye = center - direction * radius;
+    glm::vec eye = center - mDirection * radius;
 
     glm::vec3 up = {0.0f, 1.0f, 1.0f};
     glm::mat4 view = glm::lookAt(
@@ -68,7 +67,7 @@ void DirectionalLightBuffer::updateUniformBuffer(uint32_t currentImage, VkExtent
     DirectionalLight lightData = {
             .VPMatrix = proj * view,
             .color = glm::vec4(1.0f),
-            .direction = glm::vec4(direction, 1.0f)
+            .direction = glm::vec4(mDirection, 1.0f)
     };
     // light.shadowBias = 0.005f;
 

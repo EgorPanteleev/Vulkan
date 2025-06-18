@@ -45,7 +45,8 @@ Renderer::Renderer() {
     mUniformBuffers = std::make_unique<UniformBuffers>();
     mUniformBuffers->emplace_back(std::make_unique<ModelUniformBuffer>(mContext.get(), mCamera.get()));
     mUniformBuffers->emplace_back(std::make_unique<LightUniformBuffer>(mContext.get(), mCamera.get()));
-    mUniformBuffers->emplace_back(std::make_unique<DirectionalLightBuffer>(mContext.get(), mCamera.get()));
+    mUniformBuffers->emplace_back(std::make_unique<DirectionalLightBuffer>(mContext.get(), mCamera.get(),
+                                                                           mLoader->bbox(), glm::vec3(0.0f, -2.0f, -0.4f)));
 
     mShadowDescriptorSet = std::make_unique<ShadowDescriptorSet>(mContext.get(), mDepthResources.get(), *mUniformBuffers);
     loadShader(COMPILED_SHADERS_PATH"shadowShader.vert.spv", mShadowVertShaderModule);
