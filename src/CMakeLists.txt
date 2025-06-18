@@ -1,5 +1,8 @@
 add_compile_definitions(PROJECT_PATH="${CMAKE_SOURCE_DIR}/")
 add_compile_definitions(BINARY_PATH="${CMAKE_BINARY_DIR}/")
+add_compile_definitions(GLM_FORCE_DEPTH_ZERO_TO_ONE)
+#add_compile_definitions(GLM_FORCE_RIGHT_HANDED)
+add_compile_definitions(GLM_FORCE_RADIANS)
 
 add_subdirectory(Camera)
 add_subdirectory(Message)

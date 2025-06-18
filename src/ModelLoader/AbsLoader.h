@@ -12,6 +12,13 @@
 #include <vector>
 #include <string>
 
+struct BBox {
+    BBox(): min(FLT_MAX), max(-FLT_MAX) {}
+
+    glm::vec3 min;
+    glm::vec3 max;
+};
+
 class AbsLoader {
 public:
     enum Type {
@@ -37,12 +44,15 @@ public:
     virtual bool load() = 0;
 
 protected:
+    void computeBBox();
+
     Type mType;
     std::string mModelPath;
     std::vector<ModelMesh> mMeshes;
     std::vector<ModelMaterial> mMaterials;
     std::vector<ModelVertex> mVertices;
     std::vector<uint32_t> mIndices;
+    BBox mBBox;
 };
 
 

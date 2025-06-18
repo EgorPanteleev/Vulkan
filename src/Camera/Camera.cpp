@@ -16,6 +16,7 @@ Camera::Camera(const glm::vec3& pos, const glm::vec3& target, const glm::vec3& u
 
 void Camera::calculateProjection(float FOV, float aspectRatio, float nearPlane, float farPlane) {
     mProjectionMatrix = glm::perspective(glm::radians(FOV), aspectRatio, nearPlane, farPlane);
+    //mProjectionMatrix = glm::ortho(-2000.f, 2000.f, -2000.f, 2000.f, -2000.f, 2000.f);
     mProjectionMatrix[1][1] *= -1;
 }
 

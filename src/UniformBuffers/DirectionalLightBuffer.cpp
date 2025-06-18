@@ -5,39 +5,71 @@
 #include "DirectionalLightBuffer.h"
 
 #include <cstring>
+
+#include "MessageLogger.h"
+
 DirectionalLightBuffer::DirectionalLightBuffer(Context* context, Camera* camera):
         UniformBuffer(context, camera){
     createUniformBuffers();
 }
 
 void DirectionalLightBuffer::updateUniformBuffer(uint32_t currentImage, VkExtent2D extent) {
-    DirectionalLight lightData = {};
-    lightData.color = glm::vec4(1.0f);
-    auto lightPos = glm::vec3(0.0f, 1500.0f, 0.0f);
-    auto direction =  glm::vec3(0.0f, -1.0f, 0.0f);
-    lightData.direction = glm::vec4(direction, 1.0f);
-    auto up = glm::vec3(-1.0f, 0.0f, 0.0f);
+    glm::vec3 min = {-1920.95, -126.442, -1182.81};
+    glm::vec3 max = {1799.91, 1429.43, 1105.43};
+    glm::vec3 direction = glm::normalize(glm::vec3(-0.0f, -2.0f, -0.4f));
 
+    glm::vec3 center = (min + max) * 0.5f;
+    float radius = glm::length(max - center);
+    glm::vec eye = center - direction * radius;
+
+    glm::vec3 up = {0.0f, 1.0f, 1.0f};
     glm::mat4 view = glm::lookAt(
-            lightPos,
-            lightPos + direction,
+            eye,
+            center,
             up
     );
 
-    float nearPlane = 10.0f;
-    float farPlane = 2000.0f;
-    float xOrthoHalfSize = 2000.0f;
-    float yOrthoHalfSize = 3000.0f;
+    std::vector<glm::vec3> corners = {
+            {min.x, min.y, min.z},
+            {min.x, min.y, max.z},
+            {min.x, max.y, min.z},
+            {min.x, max.y, max.z},
+            {max.x, min.y, min.z},
+            {max.x, min.y, max.z},
+            {max.x, max.y, min.z},
+            {max.x, max.y, max.z},
+    };
 
-    glm::mat4 proj = glm::ortho(
-            -xOrthoHalfSize, xOrthoHalfSize,
-            -yOrthoHalfSize, yOrthoHalfSize,
-            nearPlane, farPlane
-    );
+    glm::vec3 lightMin(FLT_MAX);
+    glm::vec3 lightMax(-FLT_MAX);
 
-    proj[1][1] *= -1.0f;
+    for (const auto& corner: corners) {
+        glm::vec4 v = view * glm::vec4(corner, 1.0f);
+        lightMin.x = std::min(lightMin.x, v.x);
+        lightMin.y = std::min(lightMin.y, v.y);
+        lightMin.z = std::min(lightMin.z, v.z);
+        lightMax.x = std::max(lightMax.x, v.x);
+        lightMax.y = std::max(lightMax.y, v.y);
+        lightMax.z = std::max(lightMax.z, v.z);
+    }
 
-    lightData.VPMatrix = proj * view;
+    float padding = 0.0f;
+    float left = lightMin.x - padding;
+    float right = lightMax.x + padding;
+    float bottom = lightMin.y - padding;
+    float top = lightMax.y + padding;
+    float near = -lightMax.z;
+    float far = -lightMin.z;
+
+    glm::mat4 proj = glm::ortho(left, right, bottom, top, near, far);
+//    glm::mat4 proj = glm::perspective(glm::radians(45.0f), 1.6f, near, far);
+    //proj[1][1] *= -1.0f;
+
+    DirectionalLight lightData = {
+            .VPMatrix = proj * view,
+            .color = glm::vec4(1.0f),
+            .direction = glm::vec4(direction, 1.0f)
+    };
     // light.shadowBias = 0.005f;
 
     std::memcpy(mUniformBuffersMapped[currentImage], &lightData, getSize());

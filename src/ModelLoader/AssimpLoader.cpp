@@ -94,6 +94,10 @@ bool AssimpLoader::loadGeometry() {
         std::ranges::for_each(indices, [&](uint32_t & ind) { ind += baseVertex; });
         mIndices.insert(mIndices.end(), indices.begin(), indices.end());
     }
+    computeBBox();
+    INFO << "Scene size:";
+    INFO <<  "min - (" << mBBox.min.x << ", " << mBBox.min.y << ", " << mBBox.min.z << ")";
+    INFO <<  "max - (" << mBBox.max.x << ", " << mBBox.max.y << ", " << mBBox.max.z << ")";
     return true;
 }
 

@@ -99,7 +99,7 @@ void ShadowPipeline::createGraphicsPipeline(VkShaderModule& vertShaderModule) {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
             .depthTestEnable = VK_TRUE,
             .depthWriteEnable = VK_TRUE,
-            .depthCompareOp = VK_COMPARE_OP_LESS,
+            .depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL,
             .depthBoundsTestEnable = VK_FALSE,
             .stencilTestEnable = VK_FALSE,
             .front = {},
@@ -187,9 +187,9 @@ void ShadowPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configInf
             .cullMode = VK_CULL_MODE_BACK_BIT,
             .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
             .depthBiasEnable = VK_TRUE,
-            .depthBiasConstantFactor = 1.25f,
+            .depthBiasConstantFactor = 4.0f,
             .depthBiasClamp = 0.0f,
-            .depthBiasSlopeFactor = 1.75f,
+            .depthBiasSlopeFactor = 1.5f,
             .lineWidth = 1.0f
     };
     configInfo.rasterizationInfo = rasterizationInfo;
