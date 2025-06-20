@@ -6,6 +6,9 @@
 #include "Utils.h"
 #include "DescriptorSet.h"
 
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_vulkan.h>
+#include "VkImGui.h"
 CommandManager::CommandManager(Context* context, DepthResources* depthResources):
                                mContext(context), mDepthResources(depthResources) {
     createCommandPool();
@@ -39,7 +42,7 @@ void CommandManager::createCommandBuffers() {
 
 void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline* graphicsPipeline, ShadowPipeline* shadowPipeline,
                                          DescriptorSet* descriptorSet, ShadowDescriptorSet* shadowDescriptorSet,
-                                         VertexBuffer* vertexBuffer, uint32_t imageIndex) {
+                                         VertexBuffer* vertexBuffer, uint32_t imageIndex, VkImGui* imGui) {
     uint32_t currentFrame = swapChain->currentFrame();
     auto commandBuffer = mCommandBuffers[ currentFrame ];
     vkResetCommandBuffer( commandBuffer, 0 );
@@ -143,6 +146,8 @@ void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline*
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(vertexBuffer->indices().size()), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
+
+    if ( imGui ) imGui->render(commandBuffer, imageIndex);
 
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
         throw std::runtime_error("Failed to record command buffer!");

@@ -21,7 +21,7 @@ public:
     [[nodiscard]] bool shouldClose() const {  return glfwWindowShouldClose( mWindow ); }
 
     void setResized(bool resized) { mFrameBufferResized = resized; }
-    bool frameBufferResized() { return mFrameBufferResized; }
+    bool frameBufferResized() const { return mFrameBufferResized; }
 
     GLFWwindow* window() { return mWindow; }
 private:

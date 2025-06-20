@@ -3,12 +3,16 @@
 //
 
 #include "Renderer.h"
-#include "Clock.h"
+#include "Timer.h"
 #include "MessageLogger.h"
 #include "ModelUniformBuffer.h"
 #include "LightUniformBuffer.h"
 #include "DirectionalLightBuffer.h"
 #include "Utils.h"
+
+#include <imgui.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_vulkan.h>
 //#define MODEL_PATH PROJECT_PATH"models/Bistro/BistroExterior.fbx"
 //#define MODEL_PATH PROJECT_PATH"models/dragon/scene.obj"
 //#define MODEL_PATH PROJECT_PATH"models/Sponza/sponza.obj"
@@ -66,36 +70,10 @@ Renderer::Renderer() {
     mSwapChain->createFrameBuffers(mGraphicsPipeline->renderPass(),
                                    mDepthResources->imageView(),
                                    mColorResources->imageView());
-}
 
-void processKeyboard(Camera& camera, GLFWwindow* window) {
-    float speed = 2.5f * 1;
-
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        camera.move(speed, 0, 0);
-        //camera.setPosition(camera.position() + camera.forward() * speed);
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        camera.move(-speed, 0, 0);
-        //camera.setPosition(camera.position() - camera.forward() * speed);
-    }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        camera.move(0, -speed, 0);
-        //camera.setPosition(camera.position() - glm::normalize(glm::cross(camera.forward(), camera.up())) * speed);
-    }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        camera.move(0, speed, 0);
-        //camera.setPosition(camera.position() + glm::normalize(glm::cross(camera.forward(), camera.up())) * speed);
-    }
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        camera.move(0, 0, speed);
-        //camera.setPosition( camera.position() + camera.up() * speed );
-    }
-    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-        camera.move(0, 0, -speed);
-        //camera.setPosition( camera.position() - camera.up() * speed );
-    }
-
+    mVkImGui = std::make_unique<VkImGui>(mContext.get(), mSwapChain.get());
+    mSwapChain->createImGuiFrameBuffers(mVkImGui->renderPass());
+    mImGuiUsage = false;
 }
 
 Renderer::~Renderer() {
@@ -109,25 +87,16 @@ void Renderer::run() {
 }
 
 void Renderer::mainLoop() {
-    bool fpsCounted = true;
-    Clock clock;
-    int frames = 0;
+    FpsCounter fpsCounter;
+    double deltaTime = 0;
     while ( !mContext->window().shouldClose() ) {
         glfwPollEvents();
-        if (fpsCounted) {
-            clock.start();
-            fpsCounted = false;
-        }
         drawFrame();
-        processKeyboard( *mCamera, mContext->window().window() );
-        ++frames;
-        clock.stop();
-        if (clock.duration() > 0.1) {
-            std::string title = "FPS: " + std::to_string(frames / clock.duration());
-            glfwSetWindowTitle(mContext->window().window(), title.c_str());
-            fpsCounted = true;
-            frames = 0;
-        }
+        fpsCounter.update();
+        deltaTime = 1e3 / fpsCounter.fps();
+//        INFO << deltaTime;
+        if (mProcessKeyboard) mProcessKeyboard(mContext->glfwWindow(), mCamera.get(), deltaTime);
+        glfwSetWindowTitle(mContext->window().window(), std::to_string(fpsCounter.fps()).c_str());
     }
     vkDeviceWaitIdle( mContext->device() );
 }
@@ -152,10 +121,21 @@ void Renderer::drawFrame() {
         uniformBuffer->updateUniformBuffer(mSwapChain->currentFrame(), mSwapChain->extent() );
     }
 
+    VkImGui* gui = nullptr;
+    if ( mImGuiUsage ) {
+        gui = mVkImGui.get();
+        mVkImGui->beginFrame();
+        //VkImGui::demo();
+
+        ImGui::Text("asd");
+
+        mVkImGui->endFrame();
+    }
+
     mCommandManager->recordCommandBuffer( mSwapChain.get(), mGraphicsPipeline.get(), mShadowPipeline.get(),
-                                         mDescriptorSet.get(), mShadowDescriptorSet.get(), mVertexBuffer.get(), imageIndex );
+                                         mDescriptorSet.get(), mShadowDescriptorSet.get(), mVertexBuffer.get(), imageIndex, gui);
     auto submitResult = mCommandManager->submitCommandBuffer( mSwapChain.get(), mSyncObjects.get(), &imageIndex );
-    
+
     if (submitResult == VK_ERROR_OUT_OF_DATE_KHR ||
             submitResult == VK_SUBOPTIMAL_KHR || mContext->window().frameBufferResized()) {
         mContext->window().setResized(false);
@@ -175,6 +155,10 @@ void Renderer::recreateSwapChain() {
     mDepthResources->recreate(mSwapChain->extent());
     mSwapChain->createFrameBuffers(mGraphicsPipeline->renderPass(),
                                    mDepthResources->imageView(), mColorResources->imageView());
+    mSwapChain->createShadowFrameBuffers(mShadowPipeline->renderPass(), mDepthResources->shadowImageView());
+    mSwapChain->createImGuiFrameBuffers(mVkImGui->renderPass());
+
+    INFO << "Swapchain recreated!";
 }
 
 void Renderer::loadShader(const std::string& shaderPath, VkShaderModule& module) {

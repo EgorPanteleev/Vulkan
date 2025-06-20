@@ -8,10 +8,6 @@
 #include <stdexcept>
 #include <iostream>
 
-static void frameBufferResizeCallback(GLFWwindow* glfwWindow, int width, int height) {
-    auto window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfwWindow));
-    window->setResized(true);
-}
 
 Window::Window( int w, int h, const std::string& name ): mFrameBufferResized(false) {
     initWindow( w, h, name );
@@ -28,8 +24,6 @@ void Window::initWindow( int w, int h, const std::string& name) {
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
     mWindow = glfwCreateWindow( w, h, name.c_str(), nullptr, nullptr);
-    glfwSetWindowUserPointer(mWindow, this);
-    glfwSetFramebufferSizeCallback(mWindow, frameBufferResizeCallback);
 }
 
 void Window::createWindowSurface( VkInstance instance, VkSurfaceKHR& surface ) {

@@ -9,7 +9,10 @@ target_include_directories(vma INTERFACE ./VulkanMemoryAllocator/include/)
 add_library(tinyobjloader INTERFACE)
 target_include_directories(tinyobjloader INTERFACE ./tinyobjloader/ )
 
-#add_library(tinygltf INTERFACE)
-#target_include_directories(tinygltf INTERFACE ./tinygltf/ )
+#static Library
+file(GLOB IMGUI_SOURCES "./imgui/*.cpp" "./imgui/backends/*vulkan.cpp" "./imgui/backends/*glfw.cpp")
+file(GLOB IMGUI_HEADERS "./imgui/*.h" "./imgui/backends/*vulkan.h" "./imgui/backends/*glfw.h")
+add_library(imgui STATIC ${IMGUI_SOURCES} ${IMGUI_HEADERS})
+target_include_directories(imgui PUBLIC ./imgui/)
 
 add_subdirectory(./meshoptimizer)

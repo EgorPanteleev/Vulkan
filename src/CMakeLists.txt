@@ -14,8 +14,9 @@ add_subdirectory(General)
 add_subdirectory(UniformBuffers)
 add_subdirectory(ShadowPipeline)
 add_subdirectory(GraphicsPipeline)
+add_subdirectory(ImGuiPipeline)
 
-set(Libs Camera General GraphicsPipeline ShadowPipeline)
+set(Libs Camera General GraphicsPipeline ShadowPipeline ImGuiPipeline)
 
 #static Library
 file(GLOB SOURCES "*.cpp")

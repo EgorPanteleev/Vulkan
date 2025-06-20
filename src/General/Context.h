@@ -24,6 +24,7 @@ public:
      */
     VkInstance instance() { return mInstance; }
     Window& window() { return mWindow; }
+    GLFWwindow* glfwWindow() { return mWindow.window(); }
     VkSurfaceKHR surface() { return mSurface; }
     VkPhysicalDevice physicalDevice() { return mPhysicalDevice; }
     VkDevice device() { return mDevice; }

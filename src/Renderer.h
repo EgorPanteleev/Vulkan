@@ -16,6 +16,7 @@
 #include "ShadowDescriptorSet.h"
 #include "ShadowPipeline.h"
 #include "VulkanModelLoader.h"
+#include "VkImGui.h"
 
 class Renderer {
 public:
@@ -25,7 +26,13 @@ public:
     void run();
 
     Context* context() { return mContext.get(); }
-    Camera* camera() {return mCamera.get(); }
+    Camera* camera() { return mCamera.get(); }
+    Window* window() { return &mContext->window(); }
+
+    void setImGuiUsage(bool use) { mImGuiUsage = use; }
+    bool imGuiUsage() const { return mImGuiUsage; }
+
+    void setKeyboardCallBack(void (*processKeyboard)(GLFWwindow* window, Camera* camera, double deltaTime)) { mProcessKeyboard = processKeyboard; }
 private:
     using UniformBuffers = std::vector<std::unique_ptr<UniformBuffer>>;
     template <typename Type>
@@ -51,11 +58,16 @@ private:
     UniquePtr<CommandManager> mCommandManager;
     UniquePtr<VertexBuffer> mVertexBuffer;
     UniquePtr<SyncObjects> mSyncObjects;
+    UniquePtr<VkImGui> mVkImGui;
 
     VkShaderModule mShadowVertShaderModule;
 
     VkShaderModule mMainVertShaderModule;
     VkShaderModule mFragShaderModule;
+
+    bool mImGuiUsage;
+
+    void (*mProcessKeyboard)(GLFWwindow* window, Camera* camera, double deltaTime);
 };
 
 
