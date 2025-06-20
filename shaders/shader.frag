@@ -1,7 +1,6 @@
 #version 460
 
 #extension GL_EXT_nonuniform_qualifier : enable
-#extension GL_EXT_descriptor_indexing : enable
 
 layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
@@ -31,24 +30,7 @@ layout(binding = 4) uniform sampler2D textures[];
 
 layout(location = 0) out vec4 outColor;
 
-vec3 calculateBlinnPhong(vec3 normal, vec3 fragPos, vec3 viewDir, vec3 lightPos, vec3 lightColor) {
-    // Ambient lighting
-    float ambientStrength = 0.1;
-    vec3 ambient = ambientStrength * lightColor;
 
-    // Diffuse lighting
-    vec3 lightDir = normalize(lightPos - fragPos);
-    float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = diff * lightColor;
-
-    // Specular lighting (Blinn-Phong)
-    float specularStrength = 0.5;
-    vec3 halfwayDir = normalize(lightDir + viewDir);
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
-    vec3 specular = specularStrength * spec * lightColor;
-
-    return ambient + diffuse + specular;
-}
 
 float calculateShadow(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir) {
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -78,10 +60,25 @@ void main() {
     float shadow = calculateShadow(fragPosLightSpace, normal, lightDir);
 
     vec3 viewDir = normalize(pointLights.viewPos.xyz - fragPos);
-    vec4 diffuseColor = vec4(max(dot(normal, lightDir), 0.0) * directLight.color.xyz, 1);
+    // Diffuse
+    vec3 diffuse = max(dot(normal, lightDir), 0.0) * directLight.color.xyz;
+    // Ambient
+    float ambientStrength = 0.03f;
+    vec3 ambientColor = vec3(1.0f, 1.0f, 1.0f); //(0.8, 0.9, 1.0)
+    vec3 ambient = ambientStrength * ambientColor;
+    // Specular (Blinn-Phong)
+    float shininess = 4;
+    float specularStrength = 0.2;
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
+    vec3 specular = specularStrength * spec * directLight.color.xyz;
+
+    vec3 result = (ambient + (diffuse + specular) * (1 - shadow))* texColor.xyz;
+    outColor = vec4(result, 1);
+
     //outColor = texColor;
     //outColor = texColor * diffuseColor;
     //outColor = vec4(texColor.xyz * (1 - shadow), 1);
     //outColor = vec4(vec3(depth), 1.0);
-    outColor = vec4(texColor.xyz * diffuseColor.xyz * (1 - shadow), 1);
+    //outColor = vec4(texColor.xyz * diffuseColor.xyz * (1 - shadow), 1);
 }
