@@ -39,8 +39,8 @@ private:
     using UniquePtr = std::unique_ptr<Type>;
 
     void mainLoop();
-    void beginFrame(uint32_t& imageIndex);
-    void endFrame(uint32_t& imageIndex);
+    void beginFrame();
+    void endFrame();
     void render();
     void recreateSwapChain();
     void loadShader(const std::string& shaderPath, VkShaderModule& module);

@@ -17,17 +17,18 @@ public:
      *  Getters
      */
     VkSwapchainKHR swapChain() { return mSwapChain; }
-    VkFormat format() { return mFormat; }
-    VkExtent2D extent() { return mExtent; }
+    VkFormat format() const { return mFormat; }
+    VkExtent2D extent() const { return mExtent; }
     std::vector<VkImage>& images() { return mImages; }
     std::vector<VkImageView>& imageViews() { return mImageViews; }
     std::vector<VkFramebuffer>& frameBuffers() { return mFrameBuffers; }
     std::vector<VkFramebuffer>& shadowFrameBuffers() { return mShadowFrameBuffers; }
     std::vector<VkFramebuffer>& imGuiFrameBuffers() { return mImGuiFrameBuffers; }
+    uint32_t imageIndex() const { return mImageIndex; }
     /**
     * Work with images
     */
-    VkResult acquireNextImage(uint32_t* imageIndex, VkSemaphore imageAvailableSemaphore, VkFence inFlightFence);
+    VkResult acquireNextImage(VkSemaphore imageAvailableSemaphore, VkFence inFlightFence);
     /**
     * Creating frame buffers
     */
@@ -57,6 +58,7 @@ private:
     std::vector<VkFramebuffer> mFrameBuffers;
     std::vector<VkFramebuffer> mShadowFrameBuffers;
     std::vector<VkFramebuffer> mImGuiFrameBuffers;
+    uint32_t mImageIndex;
 };
 
 

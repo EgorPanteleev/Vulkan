@@ -141,12 +141,12 @@ void SwapChain::createImageViews() {
 }
 
 
-VkResult SwapChain::acquireNextImage(uint32_t* imageIndex, VkSemaphore imageAvailableSemaphore, VkFence inFlightFence) {
+VkResult SwapChain::acquireNextImage(VkSemaphore imageAvailableSemaphore, VkFence inFlightFence) {
     vkWaitForFences(mContext->device(), 1, &inFlightFence, VK_TRUE, UINT64_MAX);
 
     VkResult result = vkAcquireNextImageKHR(mContext->device(), mSwapChain, UINT64_MAX,
                                              imageAvailableSemaphore,
-                                             VK_NULL_HANDLE, imageIndex);
+                                             VK_NULL_HANDLE, &mImageIndex);
 
     return result;
 }

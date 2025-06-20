@@ -100,12 +100,11 @@ void Renderer::run() {
 void Renderer::mainLoop() {
     FpsCounter fpsCounter;
     double deltaTime = 0;
-    uint32_t imageIndex;
     while ( !mContext->window().shouldClose() ) {
         glfwPollEvents();
-        beginFrame(imageIndex);
+        beginFrame();
         render();
-        endFrame(imageIndex);
+        endFrame();
         fpsCounter.update();
         deltaTime = 1e3 / fpsCounter.fps();
 //        INFO << deltaTime;
@@ -117,10 +116,9 @@ void Renderer::mainLoop() {
 
 glm::vec3 dir = glm::vec3(0.0f, -1.0f, -0.2f);
 //FIXME image index, frame??
-void Renderer::beginFrame(uint32_t& imageIndex) {
-    auto acquireResult = mSwapChain->acquireNextImage(&imageIndex,
-                                                      mSyncObjects->imageAvailableSemaphore(mCurrentFrame),
-                                                      mSyncObjects->inFlightFence(mCurrentFrame));
+void Renderer::beginFrame() {
+    auto acquireResult = mSwapChain->acquireNextImage(mSyncObjects->imageAvailableSemaphore(mCurrentFrame),
+                                                               mSyncObjects->inFlightFence(mCurrentFrame));
 
     if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR ) {
         recreateSwapChain();
@@ -131,7 +129,7 @@ void Renderer::beginFrame(uint32_t& imageIndex) {
 
 }
 
-void Renderer::endFrame(uint32_t& imageIndex) {
+void Renderer::endFrame() {
     VkImGui* gui = nullptr;
     if ( mImGuiUsage ) gui = mVkImGui.get();
     CommandManagerRecordInfo commandManagerRecordInfo{
@@ -140,7 +138,7 @@ void Renderer::endFrame(uint32_t& imageIndex) {
             .shadowPipeline = mShadowPipeline.get(),
             .vkImGui = gui,
             .vertexBuffer = mVertexBuffer.get(),
-            .imageIndex = imageIndex,
+            .imageIndex = mSwapChain->imageIndex(),
             .currentFrame = mCurrentFrame
     };
     mCommandManager->recordCommandBuffer(commandManagerRecordInfo);
@@ -150,7 +148,7 @@ void Renderer::endFrame(uint32_t& imageIndex) {
     CommandManagerSubmitInfo commandManagerSubmitInfo{
             .swapChain = mSwapChain.get(),
             .syncObjects = mSyncObjects.get(),
-            .imageIndex = imageIndex,
+            .imageIndex = mSwapChain->imageIndex(),
             .currentFrame = mCurrentFrame
     };
     auto submitResult = mCommandManager->submitCommandBuffer(commandManagerSubmitInfo);
