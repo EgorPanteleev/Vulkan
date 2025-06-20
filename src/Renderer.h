@@ -42,6 +42,7 @@ private:
     void drawFrame();
     void recreateSwapChain();
     void loadShader(const std::string& shaderPath, VkShaderModule& module);
+    void processKeyboard(double deltaTime);
 
     UniquePtr<Camera> mCamera;
     UniquePtr<Context> mContext;

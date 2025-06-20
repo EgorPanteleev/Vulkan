@@ -95,7 +95,7 @@ void Renderer::mainLoop() {
         fpsCounter.update();
         deltaTime = 1e3 / fpsCounter.fps();
 //        INFO << deltaTime;
-        if (mProcessKeyboard) mProcessKeyboard(mContext->glfwWindow(), mCamera.get(), deltaTime);
+        processKeyboard(deltaTime);
         glfwSetWindowTitle(mContext->window().window(), std::to_string(fpsCounter.fps()).c_str());
     }
     vkDeviceWaitIdle( mContext->device() );
@@ -164,4 +164,9 @@ void Renderer::recreateSwapChain() {
 void Renderer::loadShader(const std::string& shaderPath, VkShaderModule& module) {
     auto shaderCode = Utils::readFile(shaderPath);
     Utils::createShaderModule(mContext->device(), shaderCode, &module);
+}
+
+void Renderer::processKeyboard(double deltaTime) {
+    if (mProcessKeyboard)
+        mProcessKeyboard(mContext->glfwWindow(), mCamera.get(), deltaTime);
 }
