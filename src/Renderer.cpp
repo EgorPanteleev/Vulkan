@@ -56,7 +56,8 @@ Renderer::Renderer(): mCurrentFrame(0) {
     ShadowPipelineCreateInfo shadowPipelineCreateInfo {
             .context = mContext.get(),
             .uniformBuffers = *mUniformBuffers,
-            .vertShaderModule = mShadowVertShaderModule
+            .vertShaderModule = mShadowVertShaderModule,
+            .extent = mDepthResources->shadowMapExtent()
     };
     mShadowPipeline = std::make_unique<ShadowPipeline>(shadowPipelineCreateInfo);
 
@@ -77,7 +78,7 @@ Renderer::Renderer(): mCurrentFrame(0) {
     mSyncObjects = std::make_unique<SyncObjects>(mContext.get(), mSwapChain.get());
 
 
-    mSwapChain->createShadowFrameBuffers(mShadowPipeline->renderPass(), mDepthResources->shadowImageView());
+    mSwapChain->createShadowFrameBuffers(mShadowPipeline->renderPass(), mDepthResources->shadowImageView(), mDepthResources->shadowMapExtent());
     mSwapChain->createFrameBuffers(mGraphicsPipeline->renderPass(),
                                    mDepthResources->imageView(),
                                    mColorResources->imageView());
@@ -196,7 +197,7 @@ void Renderer::recreateSwapChain() {
     mDepthResources->recreate(mSwapChain->extent());
     mSwapChain->createFrameBuffers(mGraphicsPipeline->renderPass(),
                                    mDepthResources->imageView(), mColorResources->imageView());
-    mSwapChain->createShadowFrameBuffers(mShadowPipeline->renderPass(), mDepthResources->shadowImageView());
+    mSwapChain->createShadowFrameBuffers(mShadowPipeline->renderPass(), mDepthResources->shadowImageView(), mDepthResources->shadowMapExtent());
     mSwapChain->createImGuiFrameBuffers(mVkImGui->renderPass());
 
     INFO << "Swapchain recreated!";

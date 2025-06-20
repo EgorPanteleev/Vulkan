@@ -5,7 +5,7 @@
 #include "DepthResources.h"
 #include "Utils.h"
 
-DepthResources::DepthResources(Context* context, VkExtent2D swapChainExtent): mContext(context) {
+DepthResources::DepthResources(Context* context, VkExtent2D swapChainExtent): mContext(context), mShadowMapExtent(2048, 2048) {
     createDepthResources(swapChainExtent);
 }
 
@@ -37,7 +37,7 @@ void DepthResources::createDepthResources(VkExtent2D swapChainExtent) {
 
 
     Utils::createImage(mContext->allocator(), mShadowImageAllocation, VMA_MEMORY_USAGE_AUTO,
-                       mShadowImage, 1, VK_SAMPLE_COUNT_1_BIT, 1024, 1024, depthFormat,
+                       mShadowImage, 1, VK_SAMPLE_COUNT_1_BIT, mShadowMapExtent.width, mShadowMapExtent.height, depthFormat,
                        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
     mShadowImageView = Utils::createImageView(mContext->device(), mShadowImage, 1, VK_IMAGE_VIEW_TYPE_2D,
                                         depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);

@@ -12,6 +12,7 @@ struct ShadowPipelineCreateInfo {
     Context* context;
     const UniformBuffers& uniformBuffers;
     VkShaderModule& vertShaderModule;
+    VkExtent2D extent;
 };
 
 struct ShadowPipelineRenderInfo {
@@ -47,6 +48,7 @@ private:
     VkRenderPass mRenderPass;
     VkPipelineLayout mPipelineLayout;
     VkPipeline mGraphicsPipeline;
+    VkExtent2D mShadowMapExtent;
 };
 
 

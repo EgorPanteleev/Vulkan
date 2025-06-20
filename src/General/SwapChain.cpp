@@ -164,10 +164,9 @@ void SwapChain::createFrameBuffers(VkRenderPass renderPass, VkImageView depthIma
     INFO << "Created frame buffers!";
 }
 
-void SwapChain::createShadowFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView) {
+void SwapChain::createShadowFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView, VkExtent2D shadowExtent) {
     size_t shadowSize = 1;
     mShadowFrameBuffers.resize( shadowSize );
-    VkExtent2D shadowExtent = {1024, 1024};
     for (size_t i = 0; i < shadowSize; ++i) {
         std::vector<VkImageView> attachments = {
                 depthImageView

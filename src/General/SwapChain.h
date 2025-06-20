@@ -33,7 +33,7 @@ public:
     * Creating frame buffers
     */
     void createFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView, VkImageView colorImageView);
-    void createShadowFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView);
+    void createShadowFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView, VkExtent2D shadowExtent);
     void createImGuiFrameBuffers(VkRenderPass renderPass);
 private:
     /**

@@ -6,7 +6,7 @@
 #include "Utils.h"
 
 ShadowPipeline::ShadowPipeline(ShadowPipelineCreateInfo& createInfo):
-                               mContext(createInfo.context) {
+                               mContext(createInfo.context), mShadowMapExtent(createInfo.extent) {
     createDescriptorSet(createInfo);
     createRenderPass();
     createPipelineLayout();
@@ -165,19 +165,18 @@ void ShadowPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configInf
     };
     configInfo.inputAssemblyInfo = inputAssemblyInfo;
 
-    VkExtent2D shadowMapExtent = {1024, 1024};
     VkViewport viewport{
             .x = 0.0f,
             .y = 0.0f,
-            .width = (float)shadowMapExtent.width,
-            .height = (float)shadowMapExtent.height,
+            .width = (float)mShadowMapExtent.width,
+            .height = (float)mShadowMapExtent.height,
             .minDepth = 0.0f,
             .maxDepth = 1.0f
     };
 
     VkRect2D scissor{
             .offset = {0, 0},
-            .extent = shadowMapExtent
+            .extent = mShadowMapExtent
     };
 
     VkPipelineViewportStateCreateInfo viewportInfo{
@@ -249,7 +248,7 @@ void ShadowPipeline::render(ShadowPipelineRenderInfo& renderInfo) {
             .framebuffer = renderInfo.frameBuffer,
             .renderArea = {
                     .offset = {0, 0},
-                    .extent = {1024, 1024}
+                    .extent = mShadowMapExtent
             },
             .clearValueCount = 1,
             .pClearValues = &shadowClearValue
@@ -263,8 +262,8 @@ void ShadowPipeline::render(ShadowPipelineRenderInfo& renderInfo) {
     VkViewport shadowViewport{
             .x = 0.0f,
             .y = 0.0f,
-            .width = static_cast<float>(1024),
-            .height = static_cast<float>(1024),
+            .width = static_cast<float>(mShadowMapExtent.width),
+            .height = static_cast<float>(mShadowMapExtent.height),
             .minDepth = 0.0f,
             .maxDepth = 1.0f,
     };
@@ -272,7 +271,7 @@ void ShadowPipeline::render(ShadowPipelineRenderInfo& renderInfo) {
 
     VkRect2D shadowScissor{
         .offset = {0, 0},
-        .extent = {1024, 1024}
+        .extent = mShadowMapExtent
     };
     vkCmdSetScissor(renderInfo.commandBuffer, 0, 1, &shadowScissor);
 
