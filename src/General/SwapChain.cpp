@@ -6,7 +6,7 @@
 #include "Utils.h"
 
 SwapChain::SwapChain(Context* context):
-                     mContext(context), mCurrentFrame(0) {
+                     mContext(context) {
     recreate();
 }
 
@@ -35,10 +35,6 @@ void SwapChain::clear() {
         vkDestroyImageView(mContext->device(), imageView, nullptr);
     }
     mImageViews.clear();
-}
-
-void SwapChain::updateCurrentFrame() {
-    mCurrentFrame = (mCurrentFrame + 1) % mContext->maxFramesInFlight();
 }
 
 void SwapChain::createSwapChain() {
@@ -147,7 +143,6 @@ void SwapChain::createImageViews() {
 
 VkResult SwapChain::acquireNextImage(uint32_t* imageIndex, VkSemaphore imageAvailableSemaphore, VkFence inFlightFence) {
     vkWaitForFences(mContext->device(), 1, &inFlightFence, VK_TRUE, UINT64_MAX);
-    vkResetFences(mContext->device(), 1, &inFlightFence);
 
     VkResult result = vkAcquireNextImageKHR(mContext->device(), mSwapChain, UINT64_MAX,
                                              imageAvailableSemaphore,

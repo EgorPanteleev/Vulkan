@@ -39,10 +39,13 @@ private:
     using UniquePtr = std::unique_ptr<Type>;
 
     void mainLoop();
-    void drawFrame();
+    void beginFrame(uint32_t& imageIndex);
+    void endFrame(uint32_t& imageIndex);
+    void render();
     void recreateSwapChain();
     void loadShader(const std::string& shaderPath, VkShaderModule& module);
     void processKeyboard(double deltaTime);
+    void updateCurrentFrame() { mCurrentFrame = (mCurrentFrame + 1) % mContext->maxFramesInFlight(); }
 
     UniquePtr<Camera> mCamera;
     UniquePtr<Context> mContext;
@@ -65,8 +68,8 @@ private:
     VkShaderModule mMainVertShaderModule;
     VkShaderModule mFragShaderModule;
 
+    uint32_t mCurrentFrame;
     bool mImGuiUsage;
-
     void (*mProcessKeyboard)(GLFWwindow* window, Camera* camera, double deltaTime);
 };
 

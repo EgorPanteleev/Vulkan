@@ -27,7 +27,7 @@
 //static std::string TEXTURE_PATH =
 //        "/home/auser/dev/src/Vulkan/models/lamborghini/textures/Countach50_01_InteriorA_.png";
 
-Renderer::Renderer() {
+Renderer::Renderer(): mCurrentFrame(0) {
     glm::vec3 camPos(0, 0, 0);
     glm::vec3 camTarget(-1, 0, 0);
     glm::vec3 up(0, 1, 0);
@@ -54,9 +54,9 @@ Renderer::Renderer() {
 
     loadShader(COMPILED_SHADERS_PATH"shadowShader.vert.spv", mShadowVertShaderModule);
     ShadowPipelineCreateInfo shadowPipelineCreateInfo {
-        .context = mContext.get(),
-        .uniformBuffers = *mUniformBuffers,
-        .vertShaderModule = mShadowVertShaderModule
+            .context = mContext.get(),
+            .uniformBuffers = *mUniformBuffers,
+            .vertShaderModule = mShadowVertShaderModule
     };
     mShadowPipeline = std::make_unique<ShadowPipeline>(shadowPipelineCreateInfo);
 
@@ -100,9 +100,12 @@ void Renderer::run() {
 void Renderer::mainLoop() {
     FpsCounter fpsCounter;
     double deltaTime = 0;
+    uint32_t imageIndex;
     while ( !mContext->window().shouldClose() ) {
         glfwPollEvents();
-        drawFrame();
+        beginFrame(imageIndex);
+        render();
+        endFrame(imageIndex);
         fpsCounter.update();
         deltaTime = 1e3 / fpsCounter.fps();
 //        INFO << deltaTime;
@@ -113,12 +116,11 @@ void Renderer::mainLoop() {
 }
 
 glm::vec3 dir = glm::vec3(0.0f, -1.0f, -0.2f);
-
-void Renderer::drawFrame() {
-    uint32_t imageIndex;
+//FIXME image index, frame??
+void Renderer::beginFrame(uint32_t& imageIndex) {
     auto acquireResult = mSwapChain->acquireNextImage(&imageIndex,
-                                 mSyncObjects->imageAvailableSemaphore(mSwapChain->currentFrame()),
-                                 mSyncObjects->inFlightFence(mSwapChain->currentFrame()));
+                                                      mSyncObjects->imageAvailableSemaphore(mCurrentFrame),
+                                                      mSyncObjects->inFlightFence(mCurrentFrame));
 
     if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR ) {
         recreateSwapChain();
@@ -127,17 +129,50 @@ void Renderer::drawFrame() {
         throw std::runtime_error("Failed to acquire swap chain image!");
     }
 
-    // Only reset the fence if we are submitting work
-    vkResetFences(mContext->device(), 1, &mSyncObjects->inFlightFence(mSwapChain->currentFrame()));
+}
 
+void Renderer::endFrame(uint32_t& imageIndex) {
+    VkImGui* gui = nullptr;
+    if ( mImGuiUsage ) gui = mVkImGui.get();
+    CommandManagerRecordInfo commandManagerRecordInfo{
+            .swapChain = mSwapChain.get(),
+            .graphicsPipeline = mGraphicsPipeline.get(),
+            .shadowPipeline = mShadowPipeline.get(),
+            .vkImGui = gui,
+            .vertexBuffer = mVertexBuffer.get(),
+            .imageIndex = imageIndex,
+            .currentFrame = mCurrentFrame
+    };
+    mCommandManager->recordCommandBuffer(commandManagerRecordInfo);
+
+    vkResetFences(mContext->device(), 1, &mSyncObjects->inFlightFence(mCurrentFrame));
+
+    CommandManagerSubmitInfo commandManagerSubmitInfo{
+            .swapChain = mSwapChain.get(),
+            .syncObjects = mSyncObjects.get(),
+            .imageIndex = imageIndex,
+            .currentFrame = mCurrentFrame
+    };
+    auto submitResult = mCommandManager->submitCommandBuffer(commandManagerSubmitInfo);
+
+    if (submitResult == VK_ERROR_OUT_OF_DATE_KHR ||
+        submitResult == VK_SUBOPTIMAL_KHR || mContext->window().frameBufferResized()) {
+        mContext->window().setResized(false);
+        recreateSwapChain();
+        return;
+    } else if (submitResult != VK_SUCCESS) {
+        throw std::runtime_error("Failed to submit command buffer!");
+    }
+    updateCurrentFrame();
+}
+
+void Renderer::render() {
     ((DirectionalLightBuffer*)((*mUniformBuffers)[2].get()))->setDirection(glm::normalize(dir));
     for ( auto& uniformBuffer: *mUniformBuffers ) {
-        uniformBuffer->updateUniformBuffer(mSwapChain->currentFrame(), mSwapChain->extent() );
+        uniformBuffer->updateUniformBuffer(mCurrentFrame, mSwapChain->extent() );
     }
 
-    VkImGui* gui = nullptr;
     if ( mImGuiUsage ) {
-        gui = mVkImGui.get();
         mVkImGui->beginFrame();
         //VkImGui::demo();
         ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
@@ -154,19 +189,6 @@ void Renderer::drawFrame() {
         ImGui::End();
         mVkImGui->endFrame();
     }
-
-    mCommandManager->recordCommandBuffer( mSwapChain.get(), mGraphicsPipeline.get(), mShadowPipeline.get(), mVertexBuffer.get(), imageIndex, gui);
-    auto submitResult = mCommandManager->submitCommandBuffer( mSwapChain.get(), mSyncObjects.get(), &imageIndex );
-
-    if (submitResult == VK_ERROR_OUT_OF_DATE_KHR ||
-            submitResult == VK_SUBOPTIMAL_KHR || mContext->window().frameBufferResized()) {
-        mContext->window().setResized(false);
-        recreateSwapChain();
-        return;
-    } else if (submitResult != VK_SUCCESS) {
-        throw std::runtime_error("Failed to submit command buffer!");
-    }
-    mSwapChain->updateCurrentFrame();
 }
 
 void Renderer::recreateSwapChain() {

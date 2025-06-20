@@ -40,9 +40,8 @@ void CommandManager::createCommandBuffers() {
     INFO << "Created command buffers";
 }
 
-void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline* graphicsPipeline, ShadowPipeline* shadowPipeline,
-                                         VertexBuffer* vertexBuffer, uint32_t imageIndex, VkImGui* vkImGui) {
-    uint32_t currentFrame = swapChain->currentFrame();
+void CommandManager::recordCommandBuffer(CommandManagerRecordInfo& recordInfo) {
+    uint32_t currentFrame = recordInfo.currentFrame;
     auto commandBuffer = mCommandBuffers[currentFrame];
     vkResetCommandBuffer(commandBuffer, 0);
     VkCommandBufferBeginInfo beginInfo{
@@ -56,49 +55,49 @@ void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline*
 
     ShadowPipelineRenderInfo shadowPipelineRenderInfo {
         .commandBuffer = commandBuffer,
-        .frameBuffer = swapChain->shadowFrameBuffers()[0],
-        .vertexBuffer = vertexBuffer->vertexBuffer(),
-        .indexBuffer = vertexBuffer->indexBuffer(),
-        .indexCount = (uint32_t)vertexBuffer->indices().size(),
+        .frameBuffer = recordInfo.swapChain->shadowFrameBuffers()[0],
+        .vertexBuffer = recordInfo.vertexBuffer->vertexBuffer(),
+        .indexBuffer = recordInfo.vertexBuffer->indexBuffer(),
+        .indexCount = (uint32_t)recordInfo.vertexBuffer->indices().size(),
         .currentFrame = currentFrame
     };
-    shadowPipeline->render(shadowPipelineRenderInfo);
+    recordInfo.shadowPipeline->render(shadowPipelineRenderInfo);
 
     GraphicsPipelineRenderInfo graphicsPipelineRenderInfo{
             .commandBuffer = commandBuffer,
-            .frameBuffer = swapChain->frameBuffers()[imageIndex],
-            .vertexBuffer = vertexBuffer->vertexBuffer(),
-            .indexBuffer = vertexBuffer->indexBuffer(),
-            .indexCount = (uint32_t)vertexBuffer->indices().size(),
+            .frameBuffer = recordInfo.swapChain->frameBuffers()[recordInfo.imageIndex],
+            .vertexBuffer = recordInfo.vertexBuffer->vertexBuffer(),
+            .indexBuffer = recordInfo.vertexBuffer->indexBuffer(),
+            .indexCount = (uint32_t)recordInfo.vertexBuffer->indices().size(),
             .currentFrame = currentFrame,
-            .extent = swapChain->extent()
+            .extent = recordInfo.swapChain->extent()
     };
-    graphicsPipeline->render(graphicsPipelineRenderInfo);
+    recordInfo.graphicsPipeline->render(graphicsPipelineRenderInfo);
 
-    if ( vkImGui ) vkImGui->render(commandBuffer, imageIndex);
+    if ( recordInfo.vkImGui ) recordInfo.vkImGui->render(commandBuffer, recordInfo.imageIndex);
 
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
         throw std::runtime_error("Failed to record command buffer!");
     }
 }
 
-VkResult CommandManager::submitCommandBuffer(SwapChain* swapChain, SyncObjects* syncObjects, uint32_t* imageIndex) {
-    uint32_t currentFrame = swapChain->currentFrame();
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+VkResult CommandManager::submitCommandBuffer(CommandManagerSubmitInfo& submitInfo) {
+    uint32_t currentFrame = submitInfo.currentFrame;
+    VkSubmitInfo vkSubmitInfo{};
+    vkSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = { syncObjects->imageAvailableSemaphore( currentFrame ) };
+    VkSemaphore waitSemaphores[] = { submitInfo.syncObjects->imageAvailableSemaphore( currentFrame ) };
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = waitSemaphores;
-    submitInfo.pWaitDstStageMask = waitStages;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &mCommandBuffers[currentFrame];
-    VkSemaphore signalSemaphores[] = { syncObjects->renderFinishedSemaphore( *imageIndex ) };
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = signalSemaphores;
+    vkSubmitInfo.waitSemaphoreCount = 1;
+    vkSubmitInfo.pWaitSemaphores = waitSemaphores;
+    vkSubmitInfo.pWaitDstStageMask = waitStages;
+    vkSubmitInfo.commandBufferCount = 1;
+    vkSubmitInfo.pCommandBuffers = &mCommandBuffers[currentFrame];
+    VkSemaphore signalSemaphores[] = { submitInfo.syncObjects->renderFinishedSemaphore( submitInfo.imageIndex ) };
+    vkSubmitInfo.signalSemaphoreCount = 1;
+    vkSubmitInfo.pSignalSemaphores = signalSemaphores;
 
-    if (vkQueueSubmit( mContext->graphicsQueue(), 1, &submitInfo, syncObjects->inFlightFence( currentFrame ) ) != VK_SUCCESS) {
+    if (vkQueueSubmit( mContext->graphicsQueue(), 1, &vkSubmitInfo, submitInfo.syncObjects->inFlightFence( currentFrame ) ) != VK_SUCCESS) {
         throw std::runtime_error("Failed to submit draw command buffer!");
     }
 
@@ -107,11 +106,11 @@ VkResult CommandManager::submitCommandBuffer(SwapChain* swapChain, SyncObjects* 
 
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
-    VkSwapchainKHR swapChains[] = { swapChain->swapChain() };
+    VkSwapchainKHR swapChains[] = { submitInfo.swapChain->swapChain() };
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
-    presentInfo.pImageIndices = imageIndex;
-    presentInfo.pResults = nullptr; // Optional
+    presentInfo.pImageIndices = &submitInfo.imageIndex;
+    presentInfo.pResults = nullptr;
     auto result = vkQueuePresentKHR( mContext->presentQueue(), &presentInfo );
     return result;
 }
