@@ -54,7 +54,6 @@ private:
     UniquePtr<UniformBuffers> mUniformBuffers;
     UniquePtr<ShadowDescriptorSet> mShadowDescriptorSet;
     UniquePtr<ShadowPipeline> mShadowPipeline;
-    UniquePtr<DescriptorSet> mDescriptorSet;
     UniquePtr<GraphicsPipeline> mGraphicsPipeline;
     UniquePtr<CommandManager> mCommandManager;
     UniquePtr<VertexBuffer> mVertexBuffer;

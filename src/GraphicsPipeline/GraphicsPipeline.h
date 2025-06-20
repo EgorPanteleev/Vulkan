@@ -10,6 +10,17 @@
 #include "DescriptorSet.h"
 #include "Utils.h"
 
+
+struct GraphicsPipelineCreateInfo {
+    Context* context;
+    SwapChain* swapChain;
+    VulkanModelLoader* loader;
+    DepthResources* depthResources;
+    const UniformBuffers& uniformBuffers;
+    VkShaderModule vertShaderModule;
+    VkShaderModule fragShaderModule;
+};
+
 struct GraphicsPipelineRenderInfo {
     VkCommandBuffer commandBuffer;
     VkFramebuffer frameBuffer;
@@ -22,8 +33,7 @@ struct GraphicsPipelineRenderInfo {
 
 class GraphicsPipeline {
 public:
-    GraphicsPipeline(Context* context, SwapChain* swapChain, DescriptorSet* descriptorSet,
-                     VkShaderModule& mVertShaderModule, VkShaderModule& mFragShaderModule);
+    GraphicsPipeline(GraphicsPipelineCreateInfo& createInfo);
     ~GraphicsPipeline();
     /**
     * Getters
@@ -32,9 +42,12 @@ public:
     VkPipelineLayout pipelineLayout() { return mPipelineLayout; }
     VkPipeline graphicsPipeline() { return mGraphicsPipeline; }
 
+    DescriptorSet* descriptorSet() { return mDescriptorSet; }
+
     void render(GraphicsPipelineRenderInfo& renderInfo);
 
 private:
+    void createDescriptorSet(GraphicsPipelineCreateInfo& createInfo);
     /**
      * Creating render pass
      */
@@ -42,7 +55,7 @@ private:
     /**
      * Creating pipeline layout
      */
-    void createPipelineLayout(DescriptorSet* descriptorSet);
+    void createPipelineLayout();
     /**
      * Creating graphics pipeline
      */

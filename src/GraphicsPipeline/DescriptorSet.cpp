@@ -5,9 +5,9 @@
 #include "DescriptorSet.h"
 #include "MessageLogger.h"
 
-DescriptorSet::DescriptorSet(Context* context, Texture* texture, VulkanModelLoader* loader,
-                             DepthResources* depthResources, const UniformBuffers& uniformBuffers):
-                             mContext(context), mTexture(texture), mLoader(loader), mDepthResources(depthResources), mUniformBuffers(uniformBuffers) {
+DescriptorSet::DescriptorSet(DescriptorSetCreateInfo& createInfo):
+                             mContext(createInfo.context), mLoader(createInfo.loader),
+                             mDepthResources(createInfo.depthResources), mUniformBuffers(createInfo.uniformBuffers) {
     maxTextures = mLoader->vulkanTextures().size() * ModelTexture::UNKNOWN;
     createDescriptorSetLayout();
     createDescriptorPool();

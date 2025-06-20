@@ -56,11 +56,18 @@ Renderer::Renderer() {
     loadShader(COMPILED_SHADERS_PATH"shadowShader.vert.spv", mShadowVertShaderModule);
     mShadowPipeline = std::make_unique<ShadowPipeline>(mContext.get(), mShadowDescriptorSet.get(), mShadowVertShaderModule);
 
-    mDescriptorSet = std::make_unique<DescriptorSet>(mContext.get(), mTexture.get(), mLoader.get(), mDepthResources.get(), *mUniformBuffers);
     loadShader(COMPILED_SHADERS_PATH"shader.vert.spv", mMainVertShaderModule);
     loadShader(COMPILED_SHADERS_PATH"shader.frag.spv", mFragShaderModule);
-    mGraphicsPipeline = std::make_unique<GraphicsPipeline>(mContext.get(), mSwapChain.get(), mDescriptorSet.get(),
-                                                           mMainVertShaderModule, mFragShaderModule);
+    GraphicsPipelineCreateInfo graphicsPipelineCreateInfo{
+            .context = mContext.get(),
+            .swapChain = mSwapChain.get(),
+            .loader = mLoader.get(),
+            .depthResources = mDepthResources.get(),
+            .uniformBuffers = *mUniformBuffers,
+            .vertShaderModule = mMainVertShaderModule,
+            .fragShaderModule = mFragShaderModule
+    };
+    mGraphicsPipeline = std::make_unique<GraphicsPipeline>(graphicsPipelineCreateInfo);
     mCommandManager = std::make_unique<CommandManager>(mContext.get(), mDepthResources.get());
     mVertexBuffer = std::make_unique<VertexBuffer>(mContext.get(), mLoader.get());
     mSyncObjects = std::make_unique<SyncObjects>(mContext.get(), mSwapChain.get());
@@ -145,8 +152,7 @@ void Renderer::drawFrame() {
         mVkImGui->endFrame();
     }
 
-    mCommandManager->recordCommandBuffer( mSwapChain.get(), mGraphicsPipeline.get(), mShadowPipeline.get(),
-                                         mDescriptorSet.get(), mShadowDescriptorSet.get(), mVertexBuffer.get(), imageIndex, gui);
+    mCommandManager->recordCommandBuffer( mSwapChain.get(), mGraphicsPipeline.get(), mShadowPipeline.get(), mVertexBuffer.get(), imageIndex, gui);
     auto submitResult = mCommandManager->submitCommandBuffer( mSwapChain.get(), mSyncObjects.get(), &imageIndex );
 
     if (submitResult == VK_ERROR_OUT_OF_DATE_KHR ||

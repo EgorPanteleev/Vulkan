@@ -4,21 +4,31 @@
 
 #include "GraphicsPipeline.h"
 #include "Utils.h"
-#include "VertexBuffer.h"
 
 
-GraphicsPipeline::GraphicsPipeline(Context* context, SwapChain* swapChain, DescriptorSet* descriptorSet,
-                                   VkShaderModule& vertShaderModule, VkShaderModule& fragShaderModule):
-                                   mContext(context), mSwapChain(swapChain), mDescriptorSet(descriptorSet) {
+GraphicsPipeline::GraphicsPipeline(GraphicsPipelineCreateInfo& createInfo):
+                                   mContext(createInfo.context), mSwapChain(createInfo.swapChain) {
+    createDescriptorSet(createInfo);
     createRenderPass();
-    createPipelineLayout(descriptorSet);
-    createGraphicsPipeline( vertShaderModule, fragShaderModule );
+    createPipelineLayout();
+    createGraphicsPipeline( createInfo.vertShaderModule, createInfo.fragShaderModule );
 }
 
 GraphicsPipeline::~GraphicsPipeline(){
+    delete mDescriptorSet;
     vkDestroyPipeline(mContext->device(), mGraphicsPipeline, nullptr);
     vkDestroyPipelineLayout(mContext->device(), mPipelineLayout, nullptr);
     vkDestroyRenderPass(mContext->device(), mRenderPass, nullptr);
+}
+
+void GraphicsPipeline::createDescriptorSet(GraphicsPipelineCreateInfo& createInfo) {
+    DescriptorSetCreateInfo descriptorSetCreateInfo{
+            .context = createInfo.context,
+            .loader = createInfo.loader,
+            .depthResources = createInfo.depthResources,
+            .uniformBuffers = createInfo.uniformBuffers
+    };
+    mDescriptorSet = new DescriptorSet(descriptorSetCreateInfo);
 }
 
 void GraphicsPipeline::createRenderPass() {
@@ -173,11 +183,11 @@ void GraphicsPipeline::createGraphicsPipeline(VkShaderModule& vertShaderModule, 
     INFO << "Created graphics pipeline!";
 }
 
-void GraphicsPipeline::createPipelineLayout(DescriptorSet* descriptorSet) {
+void GraphicsPipeline::createPipelineLayout() {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
             .setLayoutCount = 1,
-            .pSetLayouts = &descriptorSet->descriptorSetLayout(),
+            .pSetLayouts = &mDescriptorSet->descriptorSetLayout(),
             .pushConstantRangeCount = 0,
             .pPushConstantRanges = nullptr
     };

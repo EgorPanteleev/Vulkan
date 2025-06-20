@@ -41,8 +41,7 @@ void CommandManager::createCommandBuffers() {
 }
 
 void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline* graphicsPipeline, ShadowPipeline* shadowPipeline,
-                                         DescriptorSet* descriptorSet, ShadowDescriptorSet* shadowDescriptorSet,
-                                         VertexBuffer* vertexBuffer, uint32_t imageIndex, VkImGui* imGui) {
+                                         VertexBuffer* vertexBuffer, uint32_t imageIndex, VkImGui* vkImGui) {
     uint32_t currentFrame = swapChain->currentFrame();
     auto commandBuffer = mCommandBuffers[currentFrame];
     vkResetCommandBuffer(commandBuffer, 0);
@@ -76,7 +75,7 @@ void CommandManager::recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline*
     };
     graphicsPipeline->render(graphicsPipelineRenderInfo);
 
-    if ( imGui ) imGui->render(commandBuffer, imageIndex);
+    if ( vkImGui ) vkImGui->render(commandBuffer, imageIndex);
 
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
         throw std::runtime_error("Failed to record command buffer!");
