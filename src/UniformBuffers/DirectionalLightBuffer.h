@@ -22,6 +22,8 @@ public:
 
     void updateUniformBuffer(uint32_t currentImage, VkExtent2D extent) override;
     VkDeviceSize getSize() const override { return sizeof(DirectionalLight); }
+
+    void setDirection(const glm::vec3 dir) { mDirection = dir; }
 protected:
     BBox mSceneBBox;
     glm::vec3 mDirection;

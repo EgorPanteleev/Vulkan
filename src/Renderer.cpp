@@ -101,6 +101,8 @@ void Renderer::mainLoop() {
     vkDeviceWaitIdle( mContext->device() );
 }
 
+glm::vec3 dir = glm::vec3(0.0f, -2.0f, -0.4f);
+
 void Renderer::drawFrame() {
     uint32_t imageIndex;
     auto acquireResult = mSwapChain->acquireNextImage(&imageIndex,
@@ -117,6 +119,8 @@ void Renderer::drawFrame() {
     // Only reset the fence if we are submitting work
     vkResetFences(mContext->device(), 1, &mSyncObjects->inFlightFence(mSwapChain->currentFrame()));
 
+    dir = glm::normalize(dir);
+    ((DirectionalLightBuffer*)((*mUniformBuffers)[2].get()))->setDirection(dir);
     for ( auto& uniformBuffer: *mUniformBuffers ) {
         uniformBuffer->updateUniformBuffer(mSwapChain->currentFrame(), mSwapChain->extent() );
     }
@@ -126,9 +130,17 @@ void Renderer::drawFrame() {
         gui = mVkImGui.get();
         mVkImGui->beginFrame();
         //VkImGui::demo();
+        ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(500, 200), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowBgAlpha(0.4);
+        ImGui::Begin("Settings");
+        ImVec2 mousePos = ImGui::GetMousePos();
+        ImGui::Text("Mouse pos: %.1f x %.1f", mousePos.x, mousePos.y);
 
-        ImGui::Text("asd");
+        ImGui::Separator();
+        ImGui::DragFloat3("Light direction", &dir.x, 0.005f, -1.0f, 1.0f);
 
+        ImGui::End();
         mVkImGui->endFrame();
     }
 
