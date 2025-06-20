@@ -115,7 +115,7 @@ void Renderer::mainLoop() {
 }
 
 glm::vec3 dir = glm::vec3(0.0f, -1.0f, -0.2f);
-//FIXME image index, frame??
+
 void Renderer::beginFrame() {
     auto acquireResult = mSwapChain->acquireNextImage(mSyncObjects->imageAvailableSemaphore(mCurrentFrame),
                                                                mSyncObjects->inFlightFence(mCurrentFrame));
