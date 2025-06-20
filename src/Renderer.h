@@ -47,6 +47,7 @@ private:
     void processKeyboard(double deltaTime);
     void updateCurrentFrame() { mCurrentFrame = (mCurrentFrame + 1) % mContext->maxFramesInFlight(); }
 
+    /// Render implementation
     UniquePtr<Camera> mCamera;
     UniquePtr<Context> mContext;
     UniquePtr<VulkanModelLoader> mLoader;
@@ -62,14 +63,15 @@ private:
     UniquePtr<VertexBuffer> mVertexBuffer;
     UniquePtr<SyncObjects> mSyncObjects;
     UniquePtr<VkImGui> mVkImGui;
-
     VkShaderModule mShadowVertShaderModule;
-
     VkShaderModule mMainVertShaderModule;
     VkShaderModule mFragShaderModule;
 
-    uint32_t mCurrentFrame;
+    /// Temporary information
     bool mImGuiUsage;
+    uint32_t mCurrentFrame;
+
+    /// CallBacks
     void (*mProcessKeyboard)(GLFWwindow* window, Camera* camera, double deltaTime);
 };
 

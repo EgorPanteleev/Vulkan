@@ -172,7 +172,6 @@ void Renderer::render() {
 
     if ( mImGuiUsage ) {
         mVkImGui->beginFrame();
-        //VkImGui::demo();
         ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(500, 200), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowBgAlpha(0.4);

@@ -140,7 +140,6 @@ void VkImGui::beginFrame() {
 }
 
 void VkImGui::endFrame() {
-    //ImGui::End();
     ImGui::Render();
     mDrawData = ImGui::GetDrawData();
 }
