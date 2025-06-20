@@ -136,6 +136,7 @@ void Renderer::drawFrame() {
         ImGui::Begin("Settings");
         ImVec2 mousePos = ImGui::GetMousePos();
         ImGui::Text("Mouse pos: %.1f x %.1f", mousePos.x, mousePos.y);
+        ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
 
         ImGui::Separator();
         ImGui::DragFloat3("Light direction", &dir.x, 0.005f, -1.0f, 1.0f);

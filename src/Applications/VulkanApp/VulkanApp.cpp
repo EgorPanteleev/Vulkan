@@ -11,7 +11,7 @@ double lastX = 0.0f, lastY = 0.0f;
 
 static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
     ImGui_ImplGlfw_ScrollCallback(window, xoffset, xoffset);
-    if (ImGui::GetIO().WantCaptureMouse) return;
+    //if (ImGui::GetIO().WantCaptureMouse) return;
 
     auto renderer = reinterpret_cast<Renderer*>(glfwGetWindowUserPointer(window));
     Camera* camera = renderer->camera();
@@ -20,7 +20,7 @@ static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
 
 static void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods) {
     ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
-    if (ImGui::GetIO().WantCaptureKeyboard) return;
+    //if (ImGui::GetIO().WantCaptureKeyboard) return;
 
     auto renderer = reinterpret_cast<Renderer*>(glfwGetWindowUserPointer(window));
 
@@ -31,7 +31,7 @@ static void keyCallBack(GLFWwindow* window, int key, int scancode, int action, i
 
 static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
     ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
-    if (ImGui::GetIO().WantCaptureMouse) return;
+    //if (ImGui::GetIO().WantCaptureMouse) return;
 
     if (button == GLFW_MOUSE_BUTTON_RIGHT) {
         if (action == GLFW_PRESS) {
@@ -45,7 +45,7 @@ static void mouseButtonCallback(GLFWwindow* window, int button, int action, int 
 
 static void mouseMoveCallback(GLFWwindow* window, double xpos, double ypos) {
     ImGui_ImplGlfw_CursorPosCallback(window, xpos, ypos);
-    if (ImGui::GetIO().WantCaptureMouse) return;
+    //if (ImGui::GetIO().WantCaptureMouse) return;
 
     auto renderer = reinterpret_cast<Renderer*>(glfwGetWindowUserPointer(window));
     Camera* camera = renderer->camera();
