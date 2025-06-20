@@ -9,7 +9,7 @@
 
 GraphicsPipeline::GraphicsPipeline(Context* context, SwapChain* swapChain, DescriptorSet* descriptorSet,
                                    VkShaderModule& vertShaderModule, VkShaderModule& fragShaderModule):
-                                   mContext(context), mSwapChain(swapChain) {
+                                   mContext(context), mSwapChain(swapChain), mDescriptorSet(descriptorSet) {
     createRenderPass();
     createPipelineLayout(descriptorSet);
     createGraphicsPipeline( vertShaderModule, fragShaderModule );
@@ -292,4 +292,57 @@ void GraphicsPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configI
             .pDynamicStates = configInfo.dynamicStateEnables.data()
     };
     configInfo.dynamicStateInfo = dynamicStateInfo;
+}
+
+void GraphicsPipeline::render(GraphicsPipelineRenderInfo& renderInfo) {
+    std::vector<VkClearValue> clearValues = {
+            {.color = {{0.2f, 0.2f, 0.2f, 1.0f}},},
+            {.depthStencil = {1.0f, 0}}
+    };
+
+    VkRenderPassBeginInfo renderPassInfo{
+            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+            .renderPass = mRenderPass,
+            .framebuffer = renderInfo.frameBuffer,
+            .renderArea = {
+                    .offset = {0, 0},
+                    .extent = renderInfo.extent
+            },
+            .clearValueCount = (uint32_t) clearValues.size(),
+            .pClearValues = clearValues.data(),
+    };
+    vkCmdBeginRenderPass(renderInfo.commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    vkCmdBindPipeline(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline );
+
+    VkViewport viewport{
+            .x = 0.0f,
+            .y = 0.0f,
+            .width = static_cast<float>(renderInfo.extent.width),
+            .height = static_cast<float>(renderInfo.extent.height),
+            .minDepth = 0.0f,
+            .maxDepth = 1.0f
+    };
+    vkCmdSetViewport(renderInfo.commandBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor{
+            .offset = {0, 0},
+            .extent = renderInfo.extent,
+    };
+    vkCmdSetScissor(renderInfo.commandBuffer, 0, 1, &scissor);
+
+    vkCmdBindPipeline(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
+
+    VkBuffer vertexBuffers[] = {renderInfo.vertexBuffer};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(renderInfo.commandBuffer, 0, 1, vertexBuffers, offsets);
+
+    vkCmdBindIndexBuffer(renderInfo.commandBuffer, renderInfo.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+    vkCmdBindDescriptorSets(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout,
+                            0, 1, &mDescriptorSet->descriptorSets()[renderInfo.currentFrame], 0, nullptr);
+
+    vkCmdDrawIndexed(renderInfo.commandBuffer, renderInfo.indexCount, 1, 0, 0, 0);
+
+    vkCmdEndRenderPass(renderInfo.commandBuffer);
 }

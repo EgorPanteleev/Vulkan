@@ -6,7 +6,7 @@
 #include "Utils.h"
 
 ShadowPipeline::ShadowPipeline(Context* context, ShadowDescriptorSet* descriptorSet, VkShaderModule& vertShaderModule):
-                               mContext(context) {
+                               mContext(context), mDescriptorSet(descriptorSet) {
     createRenderPass();
     createPipelineLayout(descriptorSet);
     createGraphicsPipeline(vertShaderModule);
@@ -226,4 +226,56 @@ void ShadowPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configInf
             .pDynamicStates = configInfo.dynamicStateEnables.data()
     };
     configInfo.dynamicStateInfo = dynamicStateInfo;
+}
+
+
+void ShadowPipeline::render(ShadowPipelineRenderInfo& renderInfo) {
+    VkClearValue shadowClearValue{
+            .depthStencil = {1.0f, 0}
+    };
+    VkRenderPassBeginInfo shadowPassInfo{
+            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+            .renderPass = mRenderPass,
+            .framebuffer = renderInfo.frameBuffer,
+            .renderArea = {
+                    .offset = {0, 0},
+                    .extent = {1024, 1024}
+            },
+            .clearValueCount = 1,
+            .pClearValues = &shadowClearValue
+    };
+
+    vkCmdBeginRenderPass(renderInfo.commandBuffer, &shadowPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    vkCmdBindPipeline(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
+
+    // Set viewport and scissor for shadow pipeline
+    VkViewport shadowViewport{
+            .x = 0.0f,
+            .y = 0.0f,
+            .width = static_cast<float>(1024),
+            .height = static_cast<float>(1024),
+            .minDepth = 0.0f,
+            .maxDepth = 1.0f,
+    };
+    vkCmdSetViewport(renderInfo.commandBuffer, 0, 1, &shadowViewport);
+
+    VkRect2D shadowScissor{
+        .offset = {0, 0},
+        .extent = {1024, 1024}
+    };
+    vkCmdSetScissor(renderInfo.commandBuffer, 0, 1, &shadowScissor);
+
+    VkBuffer vertexBuffers[] = {renderInfo.vertexBuffer};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(renderInfo.commandBuffer, 0, 1, vertexBuffers, offsets);
+
+    vkCmdBindIndexBuffer(renderInfo.commandBuffer, renderInfo.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+    vkCmdBindDescriptorSets(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout,
+                            0, 1, &mDescriptorSet->descriptorSets()[renderInfo.currentFrame], 0, nullptr);
+
+    vkCmdDrawIndexed(renderInfo.commandBuffer, renderInfo.indexCount, 1, 0, 0, 0);
+
+    vkCmdEndRenderPass(renderInfo.commandBuffer);
 }

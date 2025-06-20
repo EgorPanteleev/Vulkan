@@ -8,6 +8,15 @@
 #include "ShadowDescriptorSet.h"
 #include "Utils.h"
 
+struct ShadowPipelineRenderInfo {
+    VkCommandBuffer commandBuffer;
+    VkFramebuffer frameBuffer;
+    VkBuffer vertexBuffer;
+    VkBuffer indexBuffer;
+    uint32_t indexCount;
+    uint32_t currentFrame;
+};
+
 class ShadowPipeline {
 public:
     ShadowPipeline(Context* context, ShadowDescriptorSet* descriptorSet, VkShaderModule& vertShaderModule);
@@ -17,6 +26,8 @@ public:
     VkPipelineLayout pipelineLayout() { return mPipelineLayout; }
     VkPipeline graphicsPipeline() { return mGraphicsPipeline; }
 
+    void render(ShadowPipelineRenderInfo& renderInfo);
+
 private:
     void createRenderPass();
     void createPipelineLayout(ShadowDescriptorSet* descriptorSet);
@@ -24,6 +35,7 @@ private:
     void getPipelineConfigInfo( Utils::PipelineConfigInfo& configInfo );
 
     Context* mContext;
+    ShadowDescriptorSet* mDescriptorSet;
     VkRenderPass mRenderPass;
     VkPipelineLayout mPipelineLayout;
     VkPipeline mGraphicsPipeline;
