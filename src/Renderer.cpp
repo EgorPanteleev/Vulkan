@@ -52,9 +52,13 @@ Renderer::Renderer() {
     mUniformBuffers->emplace_back(std::make_unique<DirectionalLightBuffer>(mContext.get(), mCamera.get(),
                                                                            mLoader->bbox(), glm::vec3(0.0f, -2.0f, -0.4f)));
 
-    mShadowDescriptorSet = std::make_unique<ShadowDescriptorSet>(mContext.get(), mDepthResources.get(), *mUniformBuffers);
     loadShader(COMPILED_SHADERS_PATH"shadowShader.vert.spv", mShadowVertShaderModule);
-    mShadowPipeline = std::make_unique<ShadowPipeline>(mContext.get(), mShadowDescriptorSet.get(), mShadowVertShaderModule);
+    ShadowPipelineCreateInfo shadowPipelineCreateInfo {
+        .context = mContext.get(),
+        .uniformBuffers = *mUniformBuffers,
+        .vertShaderModule = mShadowVertShaderModule
+    };
+    mShadowPipeline = std::make_unique<ShadowPipeline>(shadowPipelineCreateInfo);
 
     loadShader(COMPILED_SHADERS_PATH"shader.vert.spv", mMainVertShaderModule);
     loadShader(COMPILED_SHADERS_PATH"shader.frag.spv", mFragShaderModule);
@@ -108,7 +112,7 @@ void Renderer::mainLoop() {
     vkDeviceWaitIdle( mContext->device() );
 }
 
-glm::vec3 dir = glm::vec3(0.0f, -2.0f, -0.4f);
+glm::vec3 dir = glm::vec3(0.0f, -1.0f, -0.2f);
 
 void Renderer::drawFrame() {
     uint32_t imageIndex;
@@ -126,8 +130,7 @@ void Renderer::drawFrame() {
     // Only reset the fence if we are submitting work
     vkResetFences(mContext->device(), 1, &mSyncObjects->inFlightFence(mSwapChain->currentFrame()));
 
-    dir = glm::normalize(dir);
-    ((DirectionalLightBuffer*)((*mUniformBuffers)[2].get()))->setDirection(dir);
+    ((DirectionalLightBuffer*)((*mUniformBuffers)[2].get()))->setDirection(glm::normalize(dir));
     for ( auto& uniformBuffer: *mUniformBuffers ) {
         uniformBuffer->updateUniformBuffer(mSwapChain->currentFrame(), mSwapChain->extent() );
     }

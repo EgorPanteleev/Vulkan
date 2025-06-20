@@ -15,10 +15,10 @@ GraphicsPipeline::GraphicsPipeline(GraphicsPipelineCreateInfo& createInfo):
 }
 
 GraphicsPipeline::~GraphicsPipeline(){
-    delete mDescriptorSet;
     vkDestroyPipeline(mContext->device(), mGraphicsPipeline, nullptr);
     vkDestroyPipelineLayout(mContext->device(), mPipelineLayout, nullptr);
     vkDestroyRenderPass(mContext->device(), mRenderPass, nullptr);
+    delete mDescriptorSet;
 }
 
 void GraphicsPipeline::createDescriptorSet(GraphicsPipelineCreateInfo& createInfo) {

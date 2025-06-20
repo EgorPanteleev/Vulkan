@@ -5,10 +5,9 @@
 #include "ShadowDescriptorSet.h"
 #include "MessageLogger.h"
 
-ShadowDescriptorSet::ShadowDescriptorSet(Context* context, DepthResources* depthResources,
-                                   const UniformBuffers& uniformBuffers):
-                                   mContext(context), mDepthResources(depthResources),
-                                   mUniformBuffers(uniformBuffers) {
+ShadowDescriptorSet::ShadowDescriptorSet(ShadowDescriptorSetCreateInfo& createInfo):
+                                   mContext(createInfo.context),
+                                   mUniformBuffers(createInfo.uniformBuffers) {
     createDescriptorSetLayout();
     createDescriptorPool();
     createDescriptorSets();

@@ -9,12 +9,18 @@
 #include "UniformBuffer.h"
 #include "DepthResources.h"
 
+using UniformBuffers = std::vector<std::unique_ptr<UniformBuffer>>;
+
+struct ShadowDescriptorSetCreateInfo {
+    Context* context;
+    const UniformBuffers& uniformBuffers;
+};
+
 class ShadowDescriptorSet {
 public:
     using UniformBuffers = std::vector<std::unique_ptr<UniformBuffer>>;
 
-    ShadowDescriptorSet(Context* context, DepthResources* depthResources,
-                  const UniformBuffers& uniformBuffers);
+    ShadowDescriptorSet(ShadowDescriptorSetCreateInfo& createInfo);
     ~ShadowDescriptorSet();
 
     VkDescriptorSetLayout& descriptorSetLayout() { return mDescriptorSetLayout; }
@@ -29,8 +35,6 @@ private:
 
 
     Context* mContext;
-
-    DepthResources* mDepthResources;
 
     const UniformBuffers& mUniformBuffers;
     /**
