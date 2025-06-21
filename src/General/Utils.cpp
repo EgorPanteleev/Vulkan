@@ -494,7 +494,7 @@ namespace Utils {
     }
 
     void copyBufferToImage(Context* context, VkBuffer buffer, VkImage image,
-                           uint32_t width, uint32_t height ) {
+                           uint32_t width, uint32_t height, int mipLevel) {
         auto commandPool = Utils::createCommandPool(context, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
 
         VkCommandBuffer commandBuffer = beginSingleTimeCommands(context->device(), commandPool);
@@ -505,7 +505,7 @@ namespace Utils {
         region.bufferImageHeight = 0;
 
         region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        region.imageSubresource.mipLevel = 0;
+        region.imageSubresource.mipLevel = mipLevel;
         region.imageSubresource.baseArrayLayer = 0;
         region.imageSubresource.layerCount = 1;
 

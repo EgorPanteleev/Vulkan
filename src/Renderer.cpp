@@ -15,7 +15,6 @@
 #include <backends/imgui_impl_vulkan.h>
 //#define MODEL_PATH PROJECT_PATH"models/Bistro/BistroExterior.fbx"
 //#define MODEL_PATH PROJECT_PATH"models/dragon/scene.obj"
-//#define MODEL_PATH PROJECT_PATH"models/Sponza/sponza.obj"
 #define MODEL_PATH PROJECT_PATH"models/Sponza/glTF/Sponza.gltf"
 
 #define TEXTURE_PATH PROJECT_PATH"textures/statue.jpg"

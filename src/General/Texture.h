@@ -17,7 +17,7 @@ public:
     VkImageView imageView() { return mImageView; }
     VkSampler sampler() { return mSampler; }
 
-    void allocate(int width, int height);
+    void allocate();
     void destroy();
     void load(void* data, int bufferSize);
     void load(const std::string& path);
@@ -25,14 +25,17 @@ public:
 
     static int calcNumMipMaps(int width, int height);
 private:
-    void generateMipMaps(VkFormat imageFormat);
-    void load(void* data);
+    void generateMipMaps();
+    void load(void* data, VkExtent2D extent, int mipLevel);
+    bool loadCommon(const std::string& path);
+    bool loadCompressed(const std::string& path);
 
     Context* mContext;
     VkImage mImage;
     VkImageView mImageView;
     VmaAllocation mImageAllocation;
     VkSampler mSampler;
+    VkFormat mFormat;
     int mMipLevels;
     int mTexWidth, mTexHeight, mTexChannels;
     bool mGenerateMipMap;

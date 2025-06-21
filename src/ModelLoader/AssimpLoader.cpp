@@ -223,11 +223,13 @@ void AssimpLoader::loadTexture(ModelTexture::Type textureType, uint materialInde
     const aiMaterial* material = mScene->mMaterials[materialIndex];
     aiTextureType assimpType = ModelTexture::toAssimpType(textureType);
     ModelTexture texture;
-    aiString path;
+    aiString aiPath;
     if (material->GetTextureCount(assimpType) <= 0) {
        texture.path = PROJECT_PATH"textures/no_texture.jpeg";
-    } else if (material->GetTexture(assimpType, 0, &path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
-        const aiTexture* aiTex = mScene->GetEmbeddedTexture(path.C_Str());
+    } else if (material->GetTexture(assimpType, 0, &aiPath, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
+        std::string path = aiPath.C_Str();
+        std::replace(path.begin(), path.end(), '\\', '/');
+        const aiTexture* aiTex = mScene->GetEmbeddedTexture(path.c_str());
         if (aiTex) {
             texture.embedded = true;
             texture.bufferSize = aiTex->mWidth * aiTex->mHeight;
@@ -235,7 +237,7 @@ void AssimpLoader::loadTexture(ModelTexture::Type textureType, uint materialInde
         } else {
             fs::path modelPath(mModelPath);
             std::string dirPath = modelPath.parent_path();
-            texture.path = dirPath + "/" + path.C_Str();
+            texture.path = dirPath + "/" + path;
         }
     }
     mMaterials[materialIndex].mTextures[textureType] = texture;

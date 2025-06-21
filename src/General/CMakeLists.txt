@@ -3,7 +3,7 @@ project(General)
 find_package(Vulkan REQUIRED)
 find_package(glfw3 REQUIRED)
 
-set(ThirdPartyLibs vma stbImage)
+set(ThirdPartyLibs vma stbImage gli)
 set(Libs Message Geometry)
 
 #static Library
