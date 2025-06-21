@@ -30,34 +30,31 @@ layout(binding = 4) uniform sampler2D textures[];
 
 layout(location = 0) out vec4 outColor;
 
-
-
-float calculateShadow(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir) {
+const int PCF_SAMPLES = 3;
+const float BIAS = 0.005;
+float calculateShadowPCF(vec4 fragPosLightSpace) {
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     projCoords.xy = projCoords.xy * 0.5 + 0.5;
-    float closestDepth = texture(shadowMap, projCoords.xy).r;
-    float bias = max(0.001, 0.005 * (1.0 - dot(normal, lightDir)));
-//    float bias = 0.005;
-    float currentDepth = projCoords.z - bias;
-    return currentDepth > closestDepth ? 1.0 : 0.0;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    float currentDepth = projCoords.z - BIAS;
+    float shadow = 0;
+    for (int x = -PCF_SAMPLES / 2; x <= PCF_SAMPLES / 2; ++x) {
+        for (int y = -PCF_SAMPLES / 2; y <= PCF_SAMPLES / 2; ++y) {
+            vec2 offset = texelSize * vec2(x, y);
+            float closestDepth = texture(shadowMap, projCoords.xy + offset).r;
+            shadow += currentDepth > closestDepth ? 1.0 : 0.0;
+        }
+    }
+    return shadow / (PCF_SAMPLES * PCF_SAMPLES);
 }
 
 void main() {
     vec4 texColor = texture(nonuniformEXT(textures[fragTexIndex]), fragTexCoord);
 
-    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    projCoords.xy = projCoords.xy * 0.5 + 0.5;
-
-    if (any(lessThan(projCoords, vec3(0.0))) || any(greaterThan(projCoords, vec3(1.0)))) {
-        outColor = vec4(1, 0, 0, 1);
-        return;
-    }
-
     vec3 lightDir = normalize(-directLight.direction.xyz);
     vec3 normal = normalize(fragNormal);
 
-    float depth = texture(shadowMap, projCoords.xy).r;
-    float shadow = calculateShadow(fragPosLightSpace, normal, lightDir);
+    float shadow = calculateShadowPCF(fragPosLightSpace);
 
     vec3 viewDir = normalize(pointLights.viewPos.xyz - fragPos);
     // Diffuse
@@ -79,6 +76,5 @@ void main() {
     //outColor = texColor;
     //outColor = texColor * diffuseColor;
     //outColor = vec4(texColor.xyz * (1 - shadow), 1);
-    //outColor = vec4(vec3(depth), 1.0);
     //outColor = vec4(texColor.xyz * diffuseColor.xyz * (1 - shadow), 1);
 }
