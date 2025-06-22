@@ -125,6 +125,19 @@ void AssimpLoader::loadMesh(std::vector<VertexType>& vertices, std::vector<uint3
             vert.normal = glm::vec3(0.0f, 1.0f, 0.0f);
         }
 
+        if (mesh->mTangents) {
+            const aiVector3D& tangent = mesh->mTangents[i];
+            glm::vec3 computedBitangent = glm::cross(vert.normal, glm::vec3(tangent.x, tangent.y, tangent.z));
+
+            auto B = mesh->mBitangents[i];
+
+            float w = (dot(computedBitangent, glm::vec3(B.x, B.y, B.z)) < 0.0f) ? -1.0f : 1.0f;
+
+            vert.tangent = glm::vec4(tangent.x, tangent.y, tangent.z, w);
+        } else {
+            vert.tangent = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+        }
+
         if (mesh->HasTextureCoords(0)) {
             const aiVector3D& texCoord = mesh->mTextureCoords[0][i];
             vert.texCoord0 = glm::vec2(texCoord.x, texCoord.y);
@@ -224,17 +237,21 @@ void AssimpLoader::loadTexture(ModelTexture::Type textureType, uint materialInde
     aiTextureType assimpType = ModelTexture::toAssimpType(textureType);
     ModelTexture texture;
     aiString aiPath;
+    MESSAGE << "tex type - " << textureType;
     if (material->GetTextureCount(assimpType) <= 0) {
        texture.path = PROJECT_PATH"textures/no_texture.jpeg";
+       MESSAGE << "no tex";
     } else if (material->GetTexture(assimpType, 0, &aiPath, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
         std::string path = aiPath.C_Str();
         std::replace(path.begin(), path.end(), '\\', '/');
         const aiTexture* aiTex = mScene->GetEmbeddedTexture(path.c_str());
         if (aiTex) {
+            MESSAGE << "embedded";
             texture.embedded = true;
             texture.bufferSize = aiTex->mWidth * aiTex->mHeight;
             texture.data = aiTex->pcData;
         } else {
+            MESSAGE << "path";
             fs::path modelPath(mModelPath);
             std::string dirPath = modelPath.parent_path();
             texture.path = dirPath + "/" + path;

@@ -21,6 +21,7 @@ public:
     glm::vec3 color;
     glm::vec2 texCoord;
     glm::vec3 normal;
+    glm::vec4 tangent;
     uint32_t texIndex;
 };
 

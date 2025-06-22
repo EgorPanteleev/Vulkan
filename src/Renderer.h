@@ -51,7 +51,6 @@ private:
     UniquePtr<Camera> mCamera;
     UniquePtr<Context> mContext;
     UniquePtr<VulkanModelLoader> mLoader;
-    UniquePtr<Texture> mTexture;
     UniquePtr<SwapChain> mSwapChain;
     UniquePtr<ColorResources> mColorResources;
     UniquePtr<DepthResources> mDepthResources;

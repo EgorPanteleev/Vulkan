@@ -4,7 +4,7 @@ find_package(Vulkan REQUIRED)
 find_package(glfw3 REQUIRED)
 
 set(ThirdPartyLibs vma stbImage gli)
-set(Libs Message Geometry)
+set(Libs Message Geometry ModelLoader)
 
 #static Library
 file(GLOB SOURCES "*.cpp")

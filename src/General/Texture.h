@@ -6,6 +6,7 @@
 #define VULKAN_TEXTURE_H
 
 #include "Context.h"
+#include "ModelMaterial.h"
 
 class Texture {
 public:
@@ -19,8 +20,8 @@ public:
 
     void allocate();
     void destroy();
-    void load(void* data, int bufferSize);
-    void load(const std::string& path);
+    void load(void* data, int bufferSize, ModelTexture::Type texType);
+    void load(const std::string& path, ModelTexture::Type texType);
     void transit(VkImageLayout src, VkImageLayout dst);
 
     static int calcNumMipMaps(int width, int height);

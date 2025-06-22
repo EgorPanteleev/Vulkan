@@ -13,6 +13,7 @@ struct ModelVertex {
     glm::vec2 texCoord0;
     glm::vec2 texCoord1;
     glm::vec3 normal;
+    glm::vec4 tangent;
 };
 
 

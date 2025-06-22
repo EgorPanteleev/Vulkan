@@ -36,7 +36,8 @@ bool VulkanModelLoader::loadGeometry() {
                     .color = modelVertex.color,
                     .texCoord = modelVertex.texCoord0,
                     .normal = modelVertex.normal,
-                    .texIndex = (uint32_t) mesh.materialIndex
+                    .tangent = modelVertex.tangent,
+                    .texIndex = (uint32_t) mesh.materialIndex * ModelTexture::UNKNOWN
             };
             mVulkanVertices.push_back(vert);
         }
@@ -54,9 +55,9 @@ bool VulkanModelLoader::loadMaterials() {
             Texture*& vulkanTexture = vulkanTextures[tex];
             vulkanTexture = new Texture(mContext, true);
             if (texture.embedded) {
-                vulkanTexture->load(texture.data, texture.bufferSize);
+                vulkanTexture->load(texture.data, texture.bufferSize, (ModelTexture::Type)tex);
             } else {
-                vulkanTexture->load(texture.path);
+                vulkanTexture->load(texture.path, (ModelTexture::Type)tex);
             }
         }
     }

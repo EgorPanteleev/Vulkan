@@ -4,9 +4,11 @@
 
 #include "Texture.h"
 #include "Utils.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include <gli/gli.hpp>
+
 
 Texture::Texture(Context* context): mContext(context), mMipLevels(1), mGenerateMipMap(false) {
 }
@@ -40,10 +42,29 @@ void Texture::destroy() {
     vmaDestroyImage(mContext->allocator(), mImage, mImageAllocation);
 }
 
-void Texture::load(void* data, int bufferSize) {
+//FIXME refactor load
+
+static VkFormat modelTexToVulkanFormat(ModelTexture::Type modelTexType) {
+    VkFormat res;
+    switch(modelTexType) {
+        case ModelTexture::Type::DIFFUSE:
+            res = VK_FORMAT_R8G8B8A8_SRGB;
+            break;
+        case ModelTexture::Type::NORMAL:
+            res = VK_FORMAT_R8G8B8A8_UNORM;
+            break;
+        default:
+            res = VK_FORMAT_R8G8B8A8_SRGB;
+            break;
+    }
+    return res;
+}
+
+void Texture::load(void* data, int bufferSize, ModelTexture::Type texType) {
     void* imageData = stbi_load_from_memory((const stbi_uc*)data, bufferSize,
                                             &mTexWidth, &mTexHeight, &mTexChannels, 0);
     allocate();
+    mFormat = modelTexToVulkanFormat(texType);
     load(imageData, {(uint32_t)mTexWidth, (uint32_t)mTexHeight}, 0);
 }
 
@@ -79,7 +100,8 @@ static int formatToSize(VkFormat format, VkExtent2D extent) {
     return res;
 }
 
-void Texture::load(const std::string& path) {
+void Texture::load(const std::string& path, ModelTexture::Type texType) {
+    mFormat = modelTexToVulkanFormat(texType);
     bool status = loadCommon(path);
     if (!status) status = loadCompressed(path);
     if (!status) throw std::runtime_error("Failed to load texture!");
@@ -88,7 +110,7 @@ void Texture::load(const std::string& path) {
 bool Texture::loadCommon(const std::string& path) {
     void* pixels = stbi_load(path.c_str(), &mTexWidth, &mTexHeight, &mTexChannels, STBI_rgb_alpha);
     if (!pixels) return false;
-    mFormat = VK_FORMAT_R8G8B8A8_SRGB;
+    //mFormat = VK_FORMAT_R8G8B8A8_UNORM;
     if (mGenerateMipMap) mMipLevels = calcNumMipMaps(mTexWidth, mTexHeight);
     allocate();
     load(pixels, {(uint32_t)mTexWidth, (uint32_t)mTexHeight}, 0);

@@ -6,8 +6,12 @@ layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in vec3 fragPos;
 layout(location = 3) in vec3 fragNormal;
-layout(location = 4) flat in uint fragTexIndex;
-layout(location = 5) in vec4 fragPosLightSpace;
+layout(location = 4) in vec3 fragTangent;
+layout(location = 5) in vec3 fragBitangent;
+layout(location = 6) flat in uint fragAlbedoIndex;
+layout(location = 7) flat in uint fragNormalIndex;
+layout(location = 8) in vec4 fragPosLightSpace;
+
 
 layout(binding = 1) uniform sampler2D shadowMap;
 
@@ -49,10 +53,15 @@ float calculateShadowPCF(vec4 fragPosLightSpace) {
 }
 
 void main() {
-    vec4 texColor = texture(nonuniformEXT(textures[fragTexIndex]), fragTexCoord);
+    vec4 texColor = texture(nonuniformEXT(textures[fragAlbedoIndex]), fragTexCoord);
+    vec3 texNormal = texture(nonuniformEXT(textures[fragNormalIndex]), fragTexCoord).rgb;
+    texNormal = normalize(texNormal * 2.0 - 1.0);
+    mat3 TBN = mat3(fragTangent, fragBitangent, fragNormal);
+    texNormal = TBN * texNormal;
 
     vec3 lightDir = normalize(-directLight.direction.xyz);
-    vec3 normal = normalize(fragNormal);
+//    vec3 normal = normalize(fragNormal);
+    vec3 normal = texNormal;
 
     float shadow = calculateShadowPCF(fragPosLightSpace);
 
@@ -77,4 +86,7 @@ void main() {
     //outColor = texColor * diffuseColor;
     //outColor = vec4(texColor.xyz * (1 - shadow), 1);
     //outColor = vec4(texColor.xyz * diffuseColor.xyz * (1 - shadow), 1);
+
+//    vec3 color = normalize(normal) * 0.5 + 0.5;
+//    outColor = vec4(color, 1.0);
 }

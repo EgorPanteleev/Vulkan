@@ -40,8 +40,6 @@ Renderer::Renderer(): mCurrentFrame(0) {
     mLoader = std::make_unique<VulkanModelLoader>(mContext.get(), MODEL_PATH);
     if (!mLoader->load()) exit(-1);
 
-    mTexture = std::make_unique<Texture>(mContext.get(), true);
-    mTexture->load(TEXTURE_PATH);
     mSwapChain = std::make_unique<SwapChain>(mContext.get());
     mColorResources = std::make_unique<ColorResources>(mContext.get(), mSwapChain->extent(), mSwapChain->format());
     mDepthResources = std::make_unique<DepthResources>(mContext.get(), mSwapChain->extent());
