@@ -17,6 +17,7 @@ GraphicsPipeline::GraphicsPipeline(GraphicsPipelineCreateInfo& createInfo):
 GraphicsPipeline::~GraphicsPipeline(){
     vkDestroyPipeline(mContext->device(), mGraphicsPipeline, nullptr);
     vkDestroyPipelineLayout(mContext->device(), mPipelineLayout, nullptr);
+    vkDestroyPipelineCache(mContext->device(), mPipelineCache, nullptr);
     vkDestroyRenderPass(mContext->device(), mRenderPass, nullptr);
     delete mDescriptorSet;
 }
@@ -177,7 +178,14 @@ void GraphicsPipeline::createGraphicsPipeline(VkShaderModule& vertShaderModule, 
             .basePipelineIndex = -1
     };
 
-    if (vkCreateGraphicsPipelines(mContext->device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &mGraphicsPipeline) != VK_SUCCESS) {
+    VkPipelineCacheCreateInfo cacheCreateInfo = {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
+            .initialDataSize = 0,
+            .pInitialData = nullptr,
+    };
+    vkCreatePipelineCache(mContext->device(), &cacheCreateInfo, nullptr, &mPipelineCache);
+
+    if (vkCreateGraphicsPipelines(mContext->device(), mPipelineCache, 1, &pipelineInfo, nullptr, &mGraphicsPipeline) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create graphics pipeline!");
     }
     INFO << "Created graphics pipeline!";
