@@ -31,13 +31,14 @@ layout(location = 8) out vec4 fragPosLightSpace;
 
 
 void main() {
+    mat3 normalMatrix = transpose(inverse(mat3(ubo.model)));
     vec4 worldPosition = ubo.model * vec4(inPosition, 1.0);
     gl_Position = ubo.proj * ubo.view * worldPosition;
     fragColor = inColor;
     fragTexCoord = inTexCoord;
     fragPosition = worldPosition.xyz;
-    fragNormal = normalize(mat3(ubo.model) * inNormal);
-    fragTangent = normalize(mat3(ubo.model) * inTangent.xyz);
+    fragNormal = normalize(normalMatrix * inNormal);
+    fragTangent = normalize(normalMatrix * inTangent.xyz);
     fragBitangent = cross(fragNormal, fragTangent) * inTangent.w;
     fragPosLightSpace = directLight.VPMatrix * worldPosition;
     fragAlbedoIndex = inTexIndex;

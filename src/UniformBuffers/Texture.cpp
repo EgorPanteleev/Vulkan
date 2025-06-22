@@ -155,7 +155,11 @@ VkFormat Texture::toVkFormat(gli::texture::format_type gliFormat) {
         case gli::FORMAT_RGBA_DXT5_UNORM_BLOCK16:
             res = VK_FORMAT_BC3_UNORM_BLOCK;
             break;
+        case gli::FORMAT_RG_ATI2N_UNORM_BLOCK16:
+            res = VK_FORMAT_BC5_UNORM_BLOCK;
+            break;
         default:
+            INFO << "ID: " << gliFormat;
             throw std::runtime_error("Unsupported gli format!");
     }
     return res;

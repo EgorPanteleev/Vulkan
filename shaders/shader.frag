@@ -79,7 +79,7 @@ void main() {
     float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
     vec3 specular = specularStrength * spec * directLight.color.xyz;
 
-    vec3 result = (ambient + (diffuse + specular) * (1 - shadow))* texColor.xyz;
+    vec3 result = (ambient + (diffuse + specular) * (1 - shadow)) * texColor.xyz;
     outColor = vec4(result, 1);
 
     //outColor = texColor;
