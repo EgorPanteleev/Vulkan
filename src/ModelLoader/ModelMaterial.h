@@ -24,7 +24,7 @@ struct ModelTexture {
 
     std::string path;
     void* data;
-    u_int32_t bufferSize;
+    uint32_t bufferSize;
     bool embedded;
 };
 

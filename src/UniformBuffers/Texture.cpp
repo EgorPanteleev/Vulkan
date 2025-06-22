@@ -7,13 +7,9 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#include <gli/gli.hpp>
 
 
 Texture::Texture(Context* context): mContext(context), mMipLevels(1), mGenerateMipMap(false) {
-}
-
-Texture::Texture(Context* context, bool generateMipMap): mContext(context), mMipLevels(1), mGenerateMipMap(generateMipMap) {
 }
 
 Texture::~Texture() {
@@ -42,46 +38,28 @@ void Texture::destroy() {
     vmaDestroyImage(mContext->allocator(), mImage, mImageAllocation);
 }
 
-//FIXME refactor load
-
-static VkFormat modelTexToVulkanFormat(ModelTexture::Type modelTexType) {
-    VkFormat res;
-    switch(modelTexType) {
-        case ModelTexture::Type::DIFFUSE:
-            res = VK_FORMAT_R8G8B8A8_SRGB;
-            break;
-        case ModelTexture::Type::NORMAL:
-            res = VK_FORMAT_R8G8B8A8_UNORM;
-            break;
-        default:
-            res = VK_FORMAT_R8G8B8A8_SRGB;
-            break;
-    }
-    return res;
+void Texture::load(TextureLoadInfo& loadInfo) {
+    if (loadInfo.data) loadByData(loadInfo);
+    else if (!loadInfo.path.empty()) loadByPath(loadInfo);
+    else throw std::runtime_error("Can't load texture with given load info!");
 }
 
-void Texture::load(void* data, int bufferSize, ModelTexture::Type texType) {
-    void* imageData = stbi_load_from_memory((const stbi_uc*)data, bufferSize,
+void Texture::loadByData(TextureLoadInfo& loadInfo) {
+    void* imageData = stbi_load_from_memory((const stbi_uc*)loadInfo.data, loadInfo.bufferSize,
                                             &mTexWidth, &mTexHeight, &mTexChannels, 0);
     allocate();
-    mFormat = modelTexToVulkanFormat(texType);
-    load(imageData, {(uint32_t)mTexWidth, (uint32_t)mTexHeight}, 0);
+    mFormat = toVkFormat(loadInfo.texType);
+    mGenerateMipMap = loadInfo.generateMipMap;
+    VkExtent2D texExtent = {(uint32_t)mTexWidth, (uint32_t)mTexHeight};
+    load(imageData, texExtent, 0);
 }
 
-static VkFormat gliToVulkanFormat(gli::texture::format_type gliFormat) {
-    VkFormat res;
-    switch(gliFormat) {
-        case gli::FORMAT_RGBA_DXT1_UNORM_BLOCK8:
-            res = VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
-            break;
-        case gli::FORMAT_RGBA_DXT5_UNORM_BLOCK16:
-            res = VK_FORMAT_BC3_UNORM_BLOCK;
-            break;
-        default:
-            res = VK_FORMAT_R8G8B8A8_SRGB;
-            break;
-    }
-    return res;
+void Texture::loadByPath(TextureLoadInfo& loadInfo) {
+    mFormat = toVkFormat(loadInfo.texType);
+    mGenerateMipMap = loadInfo.generateMipMap;
+    bool status = loadCommon(loadInfo.path);
+    if (!status) status = loadCompressed(loadInfo.path);
+    if (!status) throw std::runtime_error("Failed to load texture!");
 }
 
 static int formatToSize(VkFormat format, VkExtent2D extent) {
@@ -100,17 +78,10 @@ static int formatToSize(VkFormat format, VkExtent2D extent) {
     return res;
 }
 
-void Texture::load(const std::string& path, ModelTexture::Type texType) {
-    mFormat = modelTexToVulkanFormat(texType);
-    bool status = loadCommon(path);
-    if (!status) status = loadCompressed(path);
-    if (!status) throw std::runtime_error("Failed to load texture!");
-}
 
 bool Texture::loadCommon(const std::string& path) {
     void* pixels = stbi_load(path.c_str(), &mTexWidth, &mTexHeight, &mTexChannels, STBI_rgb_alpha);
     if (!pixels) return false;
-    //mFormat = VK_FORMAT_R8G8B8A8_UNORM;
     if (mGenerateMipMap) mMipLevels = calcNumMipMaps(mTexWidth, mTexHeight);
     allocate();
     load(pixels, {(uint32_t)mTexWidth, (uint32_t)mTexHeight}, 0);
@@ -123,7 +94,7 @@ bool Texture::loadCompressed(const std::string& path) {
     mMipLevels = (int) tex.levels();
     mGenerateMipMap = false; // Compressed images doesnt support generating mipMaps
     int layer = 0; int face = 0;
-    mFormat = gliToVulkanFormat(tex.format());
+    mFormat = toVkFormat(tex.format());
     mTexWidth = tex.extent().x;
     mTexHeight = tex.extent().y;
     allocate();
@@ -158,6 +129,36 @@ void Texture::transit(VkImageLayout src, VkImageLayout dst) {
 
 int Texture::calcNumMipMaps(int width, int height) {
     return std::floor(std::log2(std::max(width, height))) + 1;
+}
+
+VkFormat Texture::toVkFormat(ModelTexture::Type modelTexType) {
+    VkFormat res;
+    switch(modelTexType) {
+        case ModelTexture::Type::DIFFUSE:
+            res = VK_FORMAT_R8G8B8A8_SRGB;
+            break;
+        case ModelTexture::Type::NORMAL:
+            res = VK_FORMAT_R8G8B8A8_UNORM;
+            break;
+        default:
+            throw std::runtime_error("Unsupported model texture format!");
+    }
+    return res;
+}
+
+VkFormat Texture::toVkFormat(gli::texture::format_type gliFormat) {
+    VkFormat res;
+    switch(gliFormat) {
+        case gli::FORMAT_RGBA_DXT1_UNORM_BLOCK8:
+            res = VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
+            break;
+        case gli::FORMAT_RGBA_DXT5_UNORM_BLOCK16:
+            res = VK_FORMAT_BC3_UNORM_BLOCK;
+            break;
+        default:
+            throw std::runtime_error("Unsupported gli format!");
+    }
+    return res;
 }
 
 void Texture::generateMipMaps() {

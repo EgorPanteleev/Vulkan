@@ -53,12 +53,15 @@ bool VulkanModelLoader::loadMaterials() {
         for (int tex = 0; tex < (int) ModelTexture::UNKNOWN; ++tex) {
             ModelTexture texture = material.mTextures[tex];
             Texture*& vulkanTexture = vulkanTextures[tex];
-            vulkanTexture = new Texture(mContext, true);
-            if (texture.embedded) {
-                vulkanTexture->load(texture.data, texture.bufferSize, (ModelTexture::Type)tex);
-            } else {
-                vulkanTexture->load(texture.path, (ModelTexture::Type)tex);
-            }
+            vulkanTexture = new Texture(mContext);
+            TextureLoadInfo loadInfo{
+                .data = texture.data,
+                .bufferSize = texture.bufferSize,
+                .path = texture.path,
+                .texType = (ModelTexture::Type) tex,
+                .generateMipMap = true
+            };
+            vulkanTexture->load(loadInfo);
         }
     }
     return true;

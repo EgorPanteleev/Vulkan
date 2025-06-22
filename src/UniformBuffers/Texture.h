@@ -8,10 +8,19 @@
 #include "Context.h"
 #include "ModelMaterial.h"
 
+#include <gli/gli.hpp>
+
+struct TextureLoadInfo{
+    void* data = nullptr;
+    uint32_t bufferSize = 0;
+    std::string path;
+    ModelTexture::Type texType = ModelTexture::Type::UNKNOWN;
+    bool generateMipMap = false;
+};
+
 class Texture {
 public:
     Texture(Context* context);
-    Texture(Context* context, bool generateMipMap);
     ~Texture();
 
     VkImage image() { return mImage; }
@@ -20,13 +29,16 @@ public:
 
     void allocate();
     void destroy();
-    void load(void* data, int bufferSize, ModelTexture::Type texType);
-    void load(const std::string& path, ModelTexture::Type texType);
+    void load(TextureLoadInfo& loadInfo);
     void transit(VkImageLayout src, VkImageLayout dst);
 
     static int calcNumMipMaps(int width, int height);
+    static VkFormat toVkFormat(ModelTexture::Type modelTexType);
+    static VkFormat toVkFormat(gli::texture::format_type gliFormat);
 private:
     void generateMipMaps();
+    void loadByData(TextureLoadInfo& loadInfo);
+    void loadByPath(TextureLoadInfo& loadInfo);
     void load(void* data, VkExtent2D extent, int mipLevel);
     bool loadCommon(const std::string& path);
     bool loadCompressed(const std::string& path);
@@ -37,6 +49,7 @@ private:
     VmaAllocation mImageAllocation;
     VkSampler mSampler;
     VkFormat mFormat;
+
     int mMipLevels;
     int mTexWidth, mTexHeight, mTexChannels;
     bool mGenerateMipMap;
