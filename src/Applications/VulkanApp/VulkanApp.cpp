@@ -90,7 +90,7 @@ static void processKeyboard(GLFWwindow* window, Camera* camera, double deltaTime
     }
 }
 
-VulkanApp::VulkanApp(): mRenderer() {
+VulkanApp::VulkanApp(const std::string& modelPath): mRenderer(modelPath) {
 }
 
 void VulkanApp::run() {

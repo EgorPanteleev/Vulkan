@@ -10,7 +10,7 @@
 
 class VulkanApp {
 public:
-    VulkanApp();
+    VulkanApp(const std::string& modelPath);
     void run();
 private:
     void setCallBacks();

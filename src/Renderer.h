@@ -20,7 +20,7 @@
 
 class Renderer {
 public:
-    Renderer();
+    Renderer(const std::string& modelPath);
     ~Renderer();
 
     void run();

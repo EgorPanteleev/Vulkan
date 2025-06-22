@@ -13,20 +13,9 @@
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
-//#define MODEL_PATH PROJECT_PATH"models/Bistro/BistroExterior.fbx"
-//#define MODEL_PATH PROJECT_PATH"models/dragon/scene.obj"
-#define MODEL_PATH PROJECT_PATH"models/Sponza/glTF/Sponza.gltf"
 
-#define TEXTURE_PATH PROJECT_PATH"textures/statue.jpg"
 
-#define COMPILED_SHADERS_PATH BINARY_PATH"compiled_shaders/"
-
-//static std::string MODEL_PATH =
-//        "/home/auser/dev/src/Vulkan/models/lamborghini/source/2022_Lamborghini_Countach_LPI_800-4_LBWK_3D_Assetto/ksp_lambo_countach_lbwk/lambo_countach_2022.obj";
-//static std::string TEXTURE_PATH =
-//        "/home/auser/dev/src/Vulkan/models/lamborghini/textures/Countach50_01_InteriorA_.png";
-
-Renderer::Renderer(): mCurrentFrame(0) {
+Renderer::Renderer(const std::string& modelPath): mCurrentFrame(0) {
     glm::vec3 camPos(0, 0, 0);
     glm::vec3 camTarget(-1, 0, 0);
     glm::vec3 up(0, 1, 0);
@@ -37,7 +26,7 @@ Renderer::Renderer(): mCurrentFrame(0) {
     mCamera = std::make_unique<Camera>(camPos, camTarget, up,
                                        FOV, aspectRatio, nearPlane, farPlane);
     mContext = std::make_unique<Context>();
-    mLoader = std::make_unique<VulkanModelLoader>(mContext.get(), MODEL_PATH);
+    mLoader = std::make_unique<VulkanModelLoader>(mContext.get(), modelPath);
     if (!mLoader->load()) exit(-1);
 
     mSwapChain = std::make_unique<SwapChain>(mContext.get());
