@@ -10,7 +10,7 @@
 
 class VulkanApp {
 public:
-    VulkanApp(const std::string& modelPath);
+    VulkanApp(const std::string& modelPath, CameraCreateInfo& cameraCreateInfo);
     void run();
 private:
     void setCallBacks();

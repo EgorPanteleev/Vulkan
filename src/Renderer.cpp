@@ -9,22 +9,11 @@
 #include "LightUniformBuffer.h"
 #include "DirectionalLightBuffer.h"
 #include "Utils.h"
-
-#include <imgui.h>
-#include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
 
 
-Renderer::Renderer(const std::string& modelPath): mCurrentFrame(0) {
-    glm::vec3 camPos(0, 0, 0);
-    glm::vec3 camTarget(-1, 0, 0);
-    glm::vec3 up(0, 1, 0);
-    float FOV         = 45;
-    float aspectRatio = 1920.0f / 1200.0f;
-    float nearPlane   = 0.1f;
-    float farPlane    = 10000.f;
-    mCamera = std::make_unique<Camera>(camPos, camTarget, up,
-                                       FOV, aspectRatio, nearPlane, farPlane);
+Renderer::Renderer(const std::string& modelPath, CameraCreateInfo& cameraCreateInfo): mCurrentFrame(0) {
+    mCamera = std::make_unique<Camera>(cameraCreateInfo);
     mContext = std::make_unique<Context>();
     mLoader = std::make_unique<VulkanModelLoader>(mContext.get(), modelPath);
     if (!mLoader->load()) exit(-1);

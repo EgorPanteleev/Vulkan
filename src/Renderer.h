@@ -20,7 +20,7 @@
 
 class Renderer {
 public:
-    Renderer(const std::string& modelPath);
+    Renderer(const std::string& modelPath, CameraCreateInfo& cameraCreateInfo);
     ~Renderer();
 
     void run();

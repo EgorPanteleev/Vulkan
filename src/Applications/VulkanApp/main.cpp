@@ -8,7 +8,17 @@
 //#define MODEL_PATH PROJECT_PATH"models/Bistro/BistroExterior.fbx"
 
 int main() {
-    VulkanApp app(MODEL_PATH);
+    CameraCreateInfo cameraCreateInfo{
+        .pos = glm::vec3(0),
+        .target = glm::vec3(-1, 0, 0),
+        .up = glm::vec3(0, 1, 0),
+        .FOV = 45.0f,
+        .aspectRatio = 1920.0f / 1200.0f,
+        .nearPlane = 0.1f,
+        .farPlane = 10000.f
+    };
+
+    VulkanApp app(MODEL_PATH, cameraCreateInfo);
     try {
         app.run();
     } catch (const std::exception& e) {
