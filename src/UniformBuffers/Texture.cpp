@@ -45,13 +45,13 @@ void Texture::load(TextureLoadInfo& loadInfo) {
 }
 
 void Texture::loadByData(TextureLoadInfo& loadInfo) {
-    void* imageData = stbi_load_from_memory((const stbi_uc*)loadInfo.data, loadInfo.bufferSize,
-                                            &mTexWidth, &mTexHeight, &mTexChannels, 0);
-    allocate();
     mFormat = toVkFormat(loadInfo.texType);
+    mTexWidth = loadInfo.width;
+    mTexHeight = loadInfo.height;
+    allocate();
     mGenerateMipMap = loadInfo.generateMipMap;
     VkExtent2D texExtent = {(uint32_t)mTexWidth, (uint32_t)mTexHeight};
-    load(imageData, texExtent, 0);
+    load(loadInfo.data, texExtent, 0);
 }
 
 void Texture::loadByPath(TextureLoadInfo& loadInfo) {
@@ -135,12 +135,16 @@ VkFormat Texture::toVkFormat(ModelTexture::Type modelTexType) {
     VkFormat res;
     switch(modelTexType) {
         case ModelTexture::Type::DIFFUSE:
+        case ModelTexture::Type::SPECULAR:
+        case ModelTexture::Type::SHININESS:
+        case ModelTexture::Type::AMBIENT:
             res = VK_FORMAT_R8G8B8A8_SRGB;
             break;
         case ModelTexture::Type::NORMAL:
             res = VK_FORMAT_R8G8B8A8_UNORM;
             break;
         default:
+            INFO << "ID: " << modelTexType;
             throw std::runtime_error("Unsupported model texture format!");
     }
     return res;

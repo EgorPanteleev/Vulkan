@@ -13,25 +13,34 @@
 
 struct ModelTexture {
     enum Type {
-        DIFFUSE = 0,
-        NORMAL  = 1,
-        UNKNOWN = 2
+        DIFFUSE   = 0,
+        SPECULAR  = 1,
+        SHININESS = 2,
+        AMBIENT   = 3,
+        NORMAL    = 4,
+        UNKNOWN   = 5
     };
 
-    ModelTexture(): path(), data(nullptr), bufferSize(0), embedded(false) {}
+    ModelTexture(): path(), data(nullptr), width(0), height(0), embedded(false) {}
+
+    bool empty() { return path.empty() && !data; }
 
     static aiTextureType toAssimpType(Type type);
 
     std::string path;
     void* data;
-    uint32_t bufferSize;
+    int width;
+    int height;
     bool embedded;
 };
 
 static std::map<ModelTexture::Type, aiTextureType> toAssimpTypeMap {
-        { ModelTexture::DIFFUSE, aiTextureType_DIFFUSE },
-        { ModelTexture::NORMAL , aiTextureType_NORMALS },
-        { ModelTexture::UNKNOWN, aiTextureType_UNKNOWN }
+        { ModelTexture::DIFFUSE  , aiTextureType_DIFFUSE   },
+        { ModelTexture::SPECULAR , aiTextureType_SPECULAR  },
+        { ModelTexture::SHININESS, aiTextureType_SHININESS },
+        { ModelTexture::AMBIENT  , aiTextureType_AMBIENT   },
+        { ModelTexture::NORMAL   , aiTextureType_NORMALS   },
+        { ModelTexture::UNKNOWN  , aiTextureType_UNKNOWN   }
 };
 
 struct ModelMaterial {

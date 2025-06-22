@@ -8,9 +8,13 @@ layout(location = 2) in vec3 fragPos;
 layout(location = 3) in vec3 fragNormal;
 layout(location = 4) in vec3 fragTangent;
 layout(location = 5) in vec3 fragBitangent;
-layout(location = 6) flat in uint fragAlbedoIndex;
-layout(location = 7) flat in uint fragNormalIndex;
-layout(location = 8) in vec4 fragPosLightSpace;
+layout(location = 6) in vec4 fragPosLightSpace;
+//Textures
+layout(location = 7)  flat in uint fragDiffuseIndex;
+layout(location = 8)  flat in uint fragSpecularIndex;
+layout(location = 9)  flat in uint fragShininessIndex;
+layout(location = 10) flat in uint fragAmbientIndex;
+layout(location = 11) flat in uint fragNormalIndex;
 
 
 layout(binding = 1) uniform sampler2D shadowMap;
@@ -53,7 +57,10 @@ float calculateShadowPCF(vec4 fragPosLightSpace) {
 }
 
 void main() {
-    vec4 texColor = texture(nonuniformEXT(textures[fragAlbedoIndex]), fragTexCoord);
+    vec3 texColor = texture(nonuniformEXT(textures[fragDiffuseIndex]), fragTexCoord).rgb;
+    float texSpecular = texture(nonuniformEXT(textures[fragSpecularIndex]), fragTexCoord).r;
+    float texShininess = texture(nonuniformEXT(textures[fragShininessIndex]), fragTexCoord).r;
+    vec3 texAmbient = texture(nonuniformEXT(textures[fragAmbientIndex]), fragTexCoord).rgb;
     vec3 texNormal = texture(nonuniformEXT(textures[fragNormalIndex]), fragTexCoord).rgb;
     texNormal = normalize(texNormal * 2.0 - 1.0);
     mat3 TBN = mat3(fragTangent, fragBitangent, fragNormal);
@@ -79,13 +86,13 @@ void main() {
     float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
     vec3 specular = specularStrength * spec * directLight.color.xyz;
 
-    vec3 result = (ambient + (diffuse + specular) * (1 - shadow)) * texColor.xyz;
+    vec3 result = (ambient + (diffuse + specular) * (1 - shadow)) * texColor;
     outColor = vec4(result, 1);
 
-    //outColor = texColor;
-    //outColor = texColor * diffuseColor;
-    //outColor = vec4(texColor.xyz * (1 - shadow), 1);
-    //outColor = vec4(texColor.xyz * diffuseColor.xyz * (1 - shadow), 1);
+//    outColor = vec4(texColor, 1);
+//    outColor = vec4(texColor, 1) * diffuseColor;
+//    outColor = vec4(texColor * (1 - shadow), 1);
+//    outColor = vec4(texColor * diffuseColor.xyz * (1 - shadow), 1);
 
 //    vec3 color = normalize(normal) * 0.5 + 0.5;
 //    outColor = vec4(color, 1.0);

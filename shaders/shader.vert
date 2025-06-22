@@ -25,10 +25,21 @@ layout(location = 2) out vec3 fragPosition;
 layout(location = 3) out vec3 fragNormal;
 layout(location = 4) out vec3 fragTangent;
 layout(location = 5) out vec3 fragBitangent;
-layout(location = 6) out flat uint fragAlbedoIndex;
-layout(location = 7) out flat uint fragNormalIndex;
-layout(location = 8) out vec4 fragPosLightSpace;
+layout(location = 6) out vec4 fragPosLightSpace;
+//Textures
+layout(location = 7)  out flat uint fragDiffuseIndex;
+layout(location = 8)  out flat uint fragSpecularIndex;
+layout(location = 9)  out flat uint fragShininessIndex;
+layout(location = 10) out flat uint fragAmbientIndex;
+layout(location = 11) out flat uint fragNormalIndex;
 
+
+//        DIFFUSE   = 0,
+//        SPECULAR  = 1,
+//        SHININESS = 2,
+//        AMBIENT   = 3,
+//        NORMAL    = 4,
+//        UNKNOWN   = 5
 
 void main() {
     mat3 normalMatrix = transpose(inverse(mat3(ubo.model)));
@@ -41,6 +52,9 @@ void main() {
     fragTangent = normalize(normalMatrix * inTangent.xyz);
     fragBitangent = cross(fragNormal, fragTangent) * inTangent.w;
     fragPosLightSpace = directLight.VPMatrix * worldPosition;
-    fragAlbedoIndex = inTexIndex;
-    fragNormalIndex = inTexIndex + 1;
+    fragDiffuseIndex   = inTexIndex;
+    fragSpecularIndex  = inTexIndex + 1;
+    fragShininessIndex = inTexIndex + 2;
+    fragAmbientIndex   = inTexIndex + 3;
+    fragNormalIndex    = inTexIndex + 4;
 }

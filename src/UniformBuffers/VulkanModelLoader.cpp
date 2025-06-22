@@ -3,6 +3,7 @@
 //
 
 #include "VulkanModelLoader.h"
+#include "MessageLogger.h"
 
 #include <utility>
 
@@ -45,6 +46,7 @@ bool VulkanModelLoader::loadGeometry() {
     return true;
 }
 
+    //PROJECT_PATH"textures/no_texture.jpeg"
 bool VulkanModelLoader::loadMaterials() {
     mVulkanTextures.resize(mMaterials.size());
     for (size_t i = 0; i < mMaterials.size(); ++i) {
@@ -55,14 +57,37 @@ bool VulkanModelLoader::loadMaterials() {
             Texture*& vulkanTexture = vulkanTextures[tex];
             vulkanTexture = new Texture(mContext);
             TextureLoadInfo loadInfo{
-                .data = texture.data,
-                .bufferSize = texture.bufferSize,
+                .data = texture.empty() ? getEmptyData((ModelTexture::Type) tex) : texture.data,
+                .width = texture.empty() ? 1 : texture.width,
+                .height = texture.empty() ? 1 : texture.height,
                 .path = texture.path,
                 .texType = (ModelTexture::Type) tex,
-                .generateMipMap = true
+                .generateMipMap = texture.empty() ? false : true
             };
             vulkanTexture->load(loadInfo);
         }
     }
     return true;
+}
+
+static glm::vec3 toEmptyColor(ModelTexture::Type texType) {
+    switch(texType) {
+        case ModelTexture::Type::DIFFUSE:
+            return {1, 0, 0};
+        case ModelTexture::Type::SPECULAR:
+        case ModelTexture::Type::SHININESS:
+        case ModelTexture::Type::AMBIENT:
+            return glm::vec3(0);
+        case ModelTexture::Type::NORMAL:
+            return {0, 1, 0};
+        default:
+            INFO << "ID: " << texType;
+            throw std::runtime_error("Unsupported model texture type!");
+    }
+}
+
+void* VulkanModelLoader::getEmptyData(ModelTexture::Type texType) {
+    gli::texture2d tex(gli::FORMAT_RGBA8_UNORM_PACK8, {1,1}, 1);
+    tex.clear(gli::packUnorm4x8(glm::vec4(toEmptyColor(texType), 1)));
+    return tex.data();
 }

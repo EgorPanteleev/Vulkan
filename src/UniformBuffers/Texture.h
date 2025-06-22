@@ -12,7 +12,8 @@
 
 struct TextureLoadInfo{
     void* data = nullptr;
-    uint32_t bufferSize = 0;
+    int width = 0;
+    int height = 0;
     std::string path;
     ModelTexture::Type texType = ModelTexture::Type::UNKNOWN;
     bool generateMipMap = false;

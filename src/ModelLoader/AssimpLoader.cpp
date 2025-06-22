@@ -237,22 +237,21 @@ void AssimpLoader::loadTexture(ModelTexture::Type textureType, uint materialInde
     aiTextureType assimpType = ModelTexture::toAssimpType(textureType);
     ModelTexture texture;
     aiString aiPath;
-    if (material->GetTextureCount(assimpType) <= 0) {
-       texture.path = PROJECT_PATH"textures/no_texture.jpeg";
-    } else if (material->GetTexture(assimpType, 0, &aiPath, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
-        std::string path = aiPath.C_Str();
-        std::replace(path.begin(), path.end(), '\\', '/');
-        const aiTexture* aiTex = mScene->GetEmbeddedTexture(path.c_str());
-        if (aiTex) {
-            texture.embedded = true;
-            texture.bufferSize = aiTex->mWidth * aiTex->mHeight;
-            texture.data = aiTex->pcData;
-        } else {
-            MESSAGE << "path";
-            fs::path modelPath(mModelPath);
-            std::string dirPath = modelPath.parent_path();
-            texture.path = dirPath + "/" + path;
-        }
+
+    if (material->GetTextureCount(assimpType) <= 0) return;
+    if (material->GetTexture(assimpType, 0, &aiPath, NULL, NULL, NULL, NULL, NULL) != AI_SUCCESS) return;
+    std::string path = aiPath.C_Str();
+    std::replace(path.begin(), path.end(), '\\', '/');
+    const aiTexture* aiTex = mScene->GetEmbeddedTexture(path.c_str());
+    if (aiTex) {
+        texture.embedded = true;
+        texture.width = aiTex->mWidth;
+        texture.height = aiTex->mHeight;
+        texture.data = aiTex->pcData;
+    } else {
+        fs::path modelPath(mModelPath);
+        std::string dirPath = modelPath.parent_path();
+        texture.path = dirPath + "/" + path;
     }
     mMaterials[materialIndex].mTextures[textureType] = texture;
 }
