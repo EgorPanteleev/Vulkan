@@ -1,8 +1,13 @@
 add_compile_definitions(PROJECT_PATH="${CMAKE_SOURCE_DIR}/")
 add_compile_definitions(BINARY_PATH="${CMAKE_BINARY_DIR}/")
+add_compile_definitions(COMPILED_SHADERS_PATH="${CMAKE_BINARY_DIR}/compiled_shaders/")
+add_compile_definitions(GLM_FORCE_DEPTH_ZERO_TO_ONE)
+#add_compile_definitions(GLM_FORCE_RIGHT_HANDED)
+add_compile_definitions(GLM_FORCE_RADIANS)
 
 add_subdirectory(Camera)
 add_subdirectory(Message)
+add_subdirectory(Math)
 add_subdirectory(Geometry)
 add_subdirectory(ModelLoader)
 
@@ -10,8 +15,9 @@ add_subdirectory(General)
 add_subdirectory(UniformBuffers)
 add_subdirectory(ShadowPipeline)
 add_subdirectory(GraphicsPipeline)
+add_subdirectory(ImGuiPipeline)
 
-set(Libs Camera General GraphicsPipeline ShadowPipeline)
+set(Libs Camera General GraphicsPipeline ShadowPipeline ImGuiPipeline)
 
 #static Library
 file(GLOB SOURCES "*.cpp")

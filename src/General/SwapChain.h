@@ -17,23 +17,24 @@ public:
      *  Getters
      */
     VkSwapchainKHR swapChain() { return mSwapChain; }
-    VkFormat format() { return mFormat; }
-    VkExtent2D extent() { return mExtent; }
+    VkFormat format() const { return mFormat; }
+    VkExtent2D extent() const { return mExtent; }
     std::vector<VkImage>& images() { return mImages; }
     std::vector<VkImageView>& imageViews() { return mImageViews; }
-    uint32_t currentFrame() { return mCurrentFrame; }
     std::vector<VkFramebuffer>& frameBuffers() { return mFrameBuffers; }
     std::vector<VkFramebuffer>& shadowFrameBuffers() { return mShadowFrameBuffers; }
+    std::vector<VkFramebuffer>& imGuiFrameBuffers() { return mImGuiFrameBuffers; }
+    uint32_t imageIndex() const { return mImageIndex; }
     /**
     * Work with images
     */
-    VkResult acquireNextImage(uint32_t* imageIndex, VkSemaphore imageAvailableSemaphore, VkFence inFlightFence);
-    void updateCurrentFrame();
+    VkResult acquireNextImage(VkSemaphore imageAvailableSemaphore, VkFence inFlightFence);
     /**
     * Creating frame buffers
     */
     void createFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView, VkImageView colorImageView);
-    void createShadowFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView);
+    void createShadowFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView, VkExtent2D shadowExtent);
+    void createImGuiFrameBuffers(VkRenderPass renderPass);
 private:
     /**
      *  Creating swapchain
@@ -54,9 +55,10 @@ private:
     VkExtent2D mExtent;
     std::vector<VkImage> mImages;
     std::vector<VkImageView> mImageViews;
-    uint32_t mCurrentFrame;
     std::vector<VkFramebuffer> mFrameBuffers;
     std::vector<VkFramebuffer> mShadowFrameBuffers;
+    std::vector<VkFramebuffer> mImGuiFrameBuffers;
+    uint32_t mImageIndex;
 };
 
 

@@ -21,7 +21,7 @@ VertexBuffer::~VertexBuffer() {
 }
 
 void VertexBuffer::createVertexBuffer() {
-    VkDeviceSize bufferSize = sizeof(mVertices[0]) * mVertices.size();
+    VkDeviceSize bufferSize = sizeof(Vertex) * mVertices.size();
 
     VkBuffer stagingBuffer;
     VmaAllocation allocation;

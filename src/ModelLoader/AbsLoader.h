@@ -8,6 +8,7 @@
 #include "ModelVertex.h"
 #include "ModelMesh.h"
 #include "ModelMaterial.h"
+#include "BBox.h"
 
 #include <vector>
 #include <string>
@@ -28,6 +29,7 @@ public:
 
     Type type() { return mType; }
     std::string getTypeString();
+    BBox bbox() { return mBBox; }
 
     [[nodiscard]] const std::vector<ModelMesh>& meshes() const { return mMeshes; }
     [[nodiscard]] const std::vector<ModelMaterial>& materials() const { return mMaterials; }
@@ -37,12 +39,15 @@ public:
     virtual bool load() = 0;
 
 protected:
+    void computeBBox();
+
     Type mType;
     std::string mModelPath;
     std::vector<ModelMesh> mMeshes;
     std::vector<ModelMaterial> mMaterials;
     std::vector<ModelVertex> mVertices;
     std::vector<uint32_t> mIndices;
+    BBox mBBox;
 };
 
 

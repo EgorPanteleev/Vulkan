@@ -13,14 +13,35 @@
 #include "ShadowDescriptorSet.h"
 #include "ShadowPipeline.h"
 
+#include <imgui.h>
+
+class VkImGui;
+
+struct CommandManagerRecordInfo{
+    SwapChain* swapChain;
+    GraphicsPipeline* graphicsPipeline;
+    ShadowPipeline* shadowPipeline;
+    VkImGui* vkImGui;
+    VertexBuffer* vertexBuffer;
+    uint32_t imageIndex;
+    uint32_t currentFrame;
+};
+
+struct CommandManagerSubmitInfo{
+    SwapChain* swapChain;
+    SyncObjects* syncObjects;
+    uint32_t imageIndex;
+    uint32_t currentFrame;
+};
+
 class CommandManager {
 public:
     CommandManager(Context* context, DepthResources* depthResources);
     ~CommandManager();
-    void recordCommandBuffer(SwapChain* swapChain, GraphicsPipeline* graphicsPipeline, ShadowPipeline* shadowPipeline,
-                             DescriptorSet* descriptorSet, ShadowDescriptorSet* shadowDescriptorSet,
-                             VertexBuffer* vertexBuffer, uint32_t imageIndex);
-    VkResult submitCommandBuffer(SwapChain* swapChain, SyncObjects* syncObjects, uint32_t* imageIndex);
+    void recordCommandBuffer(CommandManagerRecordInfo& recordInfo);
+    VkResult submitCommandBuffer(CommandManagerSubmitInfo& submitInfo);
+
+    VkCommandBuffer commandBuffer(uint32_t currentFrame) const { return mCommandBuffers[currentFrame]; }
 private:
     /**
     * Creating command pool

@@ -4,11 +4,7 @@
 
 #ifndef VULKAN_MODELMATERIAL_H
 #define VULKAN_MODELMATERIAL_H
-/*TODO
-1) create texture class, which handles vulkan textures
-2) load textures as i know
-3) change graphics pipeline to create descriptor set per mesh
-*/
+
 #include <string>
 #include <array>
 #include <map>
@@ -17,23 +13,34 @@
 
 struct ModelTexture {
     enum Type {
-        DIFFUSE = 0,
-        UNKNOWN = 1
+        DIFFUSE   = 0,
+        SPECULAR  = 1,
+        SHININESS = 2,
+        AMBIENT   = 3,
+        NORMAL    = 4,
+        UNKNOWN   = 5
     };
 
-    ModelTexture(): path(), data(nullptr), bufferSize(0), embedded(false) {}
+    ModelTexture(): path(), data(nullptr), width(0), height(0), embedded(false) {}
+
+    bool empty() { return path.empty() && !data; }
 
     static aiTextureType toAssimpType(Type type);
 
     std::string path;
     void* data;
-    u_int32_t bufferSize;
+    int width;
+    int height;
     bool embedded;
 };
 
 static std::map<ModelTexture::Type, aiTextureType> toAssimpTypeMap {
-        { ModelTexture::DIFFUSE, aiTextureType_DIFFUSE },
-        { ModelTexture::UNKNOWN, aiTextureType_UNKNOWN }
+        { ModelTexture::DIFFUSE  , aiTextureType_DIFFUSE   },
+        { ModelTexture::SPECULAR , aiTextureType_SPECULAR  },
+        { ModelTexture::SHININESS, aiTextureType_SHININESS },
+        { ModelTexture::AMBIENT  , aiTextureType_AMBIENT   },
+        { ModelTexture::NORMAL   , aiTextureType_NORMALS   },
+        { ModelTexture::UNKNOWN  , aiTextureType_UNKNOWN   }
 };
 
 struct ModelMaterial {

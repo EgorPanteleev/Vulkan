@@ -4,18 +4,15 @@
 
 #include "Camera.h"
 
-Camera::Camera(): mPosition(0), mOrientation(glm::quat(0, 0, 0, 1)), mUp(0, 0, 1) {
-}
-
-Camera::Camera(const glm::vec3& pos, const glm::vec3& target, const glm::vec3& up,
-               float FOV, float aspectRatio, float nearPlane, float farPlane):
-               mPosition(pos), mOrientation(0, 0, 0, 1), mUp(up) {
-    calculateProjection(FOV, aspectRatio, nearPlane, farPlane);
-    initOrientation(target);
+Camera::Camera(CameraCreateInfo& createInfo):
+               mPosition(createInfo.pos), mOrientation(0, 0, 0, 1), mUp(createInfo.up) {
+    calculateProjection(createInfo.FOV, createInfo.aspectRatio, createInfo.nearPlane, createInfo.farPlane);
+    initOrientation(createInfo.target);
 }
 
 void Camera::calculateProjection(float FOV, float aspectRatio, float nearPlane, float farPlane) {
     mProjectionMatrix = glm::perspective(glm::radians(FOV), aspectRatio, nearPlane, farPlane);
+    //mProjectionMatrix = glm::ortho(-2000.f, 2000.f, -2000.f, 2000.f, -2000.f, 2000.f);
     mProjectionMatrix[1][1] *= -1;
 }
 

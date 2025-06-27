@@ -18,6 +18,7 @@ public:
 
     VkImage shadowImage() { return mShadowImage; }
     VkImageView shadowImageView() { return mShadowImageView; }
+    VkExtent2D shadowMapExtent() { return mShadowMapExtent; }
 
     void translateShadowImage(VkCommandBuffer commandBuffer, VkImageLayout from, VkImageLayout to);
 
@@ -36,6 +37,7 @@ private:
     VmaAllocation mShadowImageAllocation;
     VkImageView mShadowImageView;
     VkSampler mSampler;
+    VkExtent2D mShadowMapExtent;
 };
 
 

@@ -94,6 +94,10 @@ bool AssimpLoader::loadGeometry() {
         std::ranges::for_each(indices, [&](uint32_t & ind) { ind += baseVertex; });
         mIndices.insert(mIndices.end(), indices.begin(), indices.end());
     }
+    computeBBox();
+    INFO << "Scene size:";
+    INFO <<  "min - (" << mBBox.min.x << ", " << mBBox.min.y << ", " << mBBox.min.z << ")";
+    INFO <<  "max - (" << mBBox.max.x << ", " << mBBox.max.y << ", " << mBBox.max.z << ")";
     return true;
 }
 
@@ -119,6 +123,19 @@ void AssimpLoader::loadMesh(std::vector<VertexType>& vertices, std::vector<uint3
             vert.normal = glm::vec3(normal.x, normal.y, normal.z);
         } else {
             vert.normal = glm::vec3(0.0f, 1.0f, 0.0f);
+        }
+
+        if (mesh->mTangents) {
+            const aiVector3D& tangent = mesh->mTangents[i];
+            glm::vec3 computedBitangent = glm::cross(vert.normal, glm::vec3(tangent.x, tangent.y, tangent.z));
+
+            auto B = mesh->mBitangents[i];
+
+            float w = (dot(computedBitangent, glm::vec3(B.x, B.y, B.z)) < 0.0f) ? -1.0f : 1.0f;
+
+            vert.tangent = glm::vec4(tangent.x, tangent.y, tangent.z, w);
+        } else {
+            vert.tangent = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
         }
 
         if (mesh->HasTextureCoords(0)) {
@@ -219,20 +236,22 @@ void AssimpLoader::loadTexture(ModelTexture::Type textureType, uint materialInde
     const aiMaterial* material = mScene->mMaterials[materialIndex];
     aiTextureType assimpType = ModelTexture::toAssimpType(textureType);
     ModelTexture texture;
-    aiString path;
-    if (material->GetTextureCount(assimpType) <= 0) {
-       texture.path = PROJECT_PATH"textures/no_texture.jpeg";
-    } else if (material->GetTexture(assimpType, 0, &path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
-        const aiTexture* aiTex = mScene->GetEmbeddedTexture(path.C_Str());
-        if (aiTex) {
-            texture.embedded = true;
-            texture.bufferSize = aiTex->mWidth * aiTex->mHeight;
-            texture.data = aiTex->pcData;
-        } else {
-            fs::path modelPath(mModelPath);
-            std::string dirPath = modelPath.parent_path();
-            texture.path = dirPath + "/" + path.C_Str();
-        }
+    aiString aiPath;
+
+    if (material->GetTextureCount(assimpType) <= 0) return;
+    if (material->GetTexture(assimpType, 0, &aiPath, NULL, NULL, NULL, NULL, NULL) != AI_SUCCESS) return;
+    std::string path = aiPath.C_Str();
+    std::replace(path.begin(), path.end(), '\\', '/');
+    const aiTexture* aiTex = mScene->GetEmbeddedTexture(path.c_str());
+    if (aiTex) {
+        texture.embedded = true;
+        texture.width = aiTex->mWidth;
+        texture.height = aiTex->mHeight;
+        texture.data = aiTex->pcData;
+    } else {
+        fs::path modelPath(mModelPath);
+        std::string dirPath = modelPath.parent_path();
+        texture.path = dirPath + "/" + path;
     }
     mMaterials[materialIndex].mTextures[textureType] = texture;
 }

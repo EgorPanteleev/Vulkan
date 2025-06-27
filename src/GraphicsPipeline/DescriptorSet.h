@@ -11,12 +11,19 @@
 #include "DepthResources.h"
 #include "VulkanModelLoader.h"
 
+using UniformBuffers = std::vector<std::unique_ptr<UniformBuffer>>;
+
+struct DescriptorSetCreateInfo {
+    Context* context;
+    VulkanModelLoader* loader;
+    DepthResources* depthResources;
+    const UniformBuffers& uniformBuffers;
+};
+
 class DescriptorSet {
 public:
-    using UniformBuffers = std::vector<std::unique_ptr<UniformBuffer>>;
 
-    DescriptorSet(Context* context, Texture* texture, VulkanModelLoader* loader,
-                  DepthResources* depthResources, const UniformBuffers& uniformBuffers);
+    DescriptorSet(DescriptorSetCreateInfo& createInfo);
     ~DescriptorSet();
 
     VkDescriptorSetLayout& descriptorSetLayout() { return mDescriptorSetLayout; }
@@ -30,8 +37,6 @@ private:
     void updateDescriptorSets();
 
     Context* mContext;
-
-    Texture* mTexture;
 
     VulkanModelLoader* mLoader;
 

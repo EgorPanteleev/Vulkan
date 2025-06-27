@@ -1,6 +1,9 @@
-project(ModelLoader)
+project(ImGuiPipeline)
 
-find_package(assimp REQUIRED)
+find_package(Vulkan REQUIRED)
+
+set(Libs General GraphicsPipeline)
+set(ThirdPartyLibs imgui)
 
 #static Library
 file(GLOB SOURCES "*.cpp")
@@ -8,6 +11,4 @@ file(GLOB HEADERS "*.h")
 add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(Libs Message Math)
-set(ThirdPartyLibs assimp::assimp meshoptimizer)
-target_link_libraries(${PROJECT_NAME} ${Libs} ${ThirdPartyLibs})
+target_link_libraries(${PROJECT_NAME} ${ThirdPartyLibs} ${Libs})

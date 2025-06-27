@@ -5,9 +5,9 @@
 #include "DescriptorSet.h"
 #include "MessageLogger.h"
 
-DescriptorSet::DescriptorSet(Context* context, Texture* texture, VulkanModelLoader* loader,
-                             DepthResources* depthResources, const UniformBuffers& uniformBuffers):
-                             mContext(context), mTexture(texture), mLoader(loader), mDepthResources(depthResources), mUniformBuffers(uniformBuffers) {
+DescriptorSet::DescriptorSet(DescriptorSetCreateInfo& createInfo):
+                             mContext(createInfo.context), mLoader(createInfo.loader),
+                             mDepthResources(createInfo.depthResources), mUniformBuffers(createInfo.uniformBuffers) {
     maxTextures = mLoader->vulkanTextures().size() * ModelTexture::UNKNOWN;
     createDescriptorSetLayout();
     createDescriptorPool();
@@ -97,11 +97,11 @@ void DescriptorSet::createDescriptorSetLayout() {
 void DescriptorSet::createDescriptorPool() {
     auto descriptorCount = (uint32_t)mContext->maxFramesInFlight();
     std::vector<VkDescriptorPoolSize> poolSizes{
-            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , descriptorCount              },
-            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , descriptorCount              },
-            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, descriptorCount              },
-            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , descriptorCount              },
-            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxTextures * descriptorCount              }
+            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , descriptorCount               },
+            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , descriptorCount               },
+            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, descriptorCount               },
+            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , descriptorCount               },
+            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxTextures * descriptorCount }
     };
 
     VkDescriptorPoolCreateInfo poolInfo{
@@ -169,13 +169,15 @@ void DescriptorSet::updateDescriptorSets() {
         };
 
         std::vector<VkDescriptorImageInfo> texturesInfo(maxTextures);
-        for (size_t j = 0; j < maxTextures; ++j) { //FIXME 2d cycle mTextures not always [0]
-            auto& textures= mLoader->vulkanTextures()[j].mTextures;
-            texturesInfo[j] = {
-                    .sampler = textures[0]->sampler(),
-                    .imageView = textures[0]->imageView(),
-                    .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-            };
+        for (size_t k = 0; k < mLoader->vulkanTextures().size(); ++k) {
+            for (size_t m = 0; m < ModelTexture::UNKNOWN; ++m) {
+                Texture* texture = mLoader->vulkanTextures()[k].mTextures[m];
+                texturesInfo[k * ModelTexture::UNKNOWN + m] = {
+                        .sampler = texture->sampler(),
+                        .imageView = texture->imageView(),
+                        .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+                };
+            }
         }
 
         std::vector<VkWriteDescriptorSet> descriptorWrites{

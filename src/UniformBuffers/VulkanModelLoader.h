@@ -27,6 +27,9 @@ public:
     bool loadGeometry();
     bool loadMaterials();
 private:
+    void* getEmptyData(ModelTexture::Type texType);
+
+
     Context* mContext;
 
     std::vector<Vertex> mVulkanVertices;

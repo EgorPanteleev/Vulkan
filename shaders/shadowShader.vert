@@ -1,9 +1,8 @@
-#version 450
+#version 460
 layout(location = 0) in vec3 inPosition;
 
-layout(binding = 0) uniform UniformDirectLight {
-    mat4 view;
-    mat4 proj;
+layout(binding = 0) uniform DirectLight {
+    mat4 VPMatrix;
     vec4 color;
     vec4 direction;
 } directLight;
@@ -15,5 +14,5 @@ layout(binding = 1) uniform UniformBufferObject {
 } ubo;
 
 void main() {
-    gl_Position = directLight.proj * directLight.view * ubo.model * vec4(inPosition, 1.0);
+    gl_Position = directLight.VPMatrix * ubo.model * vec4(inPosition, 1.0);
 }

@@ -8,11 +8,19 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+struct CameraCreateInfo{
+    glm::vec3 pos = glm::vec3(0);
+    glm::vec3 target = glm::vec3(0, 0, -1);
+    glm::vec3 up = glm::vec3(0, 1, 0);
+    float FOV = 60;
+    float aspectRatio = 16.0f / 9.0f;
+    float nearPlane = 0.0f;
+    float farPlane = 1000.0f;
+};
+
 class Camera {
 public:
-    Camera();
-    Camera(const glm::vec3& pos, const glm::vec3& target, const glm::vec3& up,
-           float FOV, float aspectRatio, float nearPlane, float farPlane);
+    Camera(CameraCreateInfo& createInfo);
 
     glm::vec3 forward() const { return glm::normalize(mOrientation * glm::vec3(0, 0, -1)); }
     glm::vec3 right() const { return glm::normalize(mOrientation * glm::vec3(1, 0, 0)); }

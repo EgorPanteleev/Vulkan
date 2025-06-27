@@ -4,21 +4,32 @@
 
 #include "GraphicsPipeline.h"
 #include "Utils.h"
-#include "VertexBuffer.h"
 
 
-GraphicsPipeline::GraphicsPipeline(Context* context, SwapChain* swapChain, DescriptorSet* descriptorSet,
-                                   VkShaderModule& vertShaderModule, VkShaderModule& fragShaderModule):
-                                   mContext(context), mSwapChain(swapChain) {
+GraphicsPipeline::GraphicsPipeline(GraphicsPipelineCreateInfo& createInfo):
+                                   mContext(createInfo.context), mSwapChain(createInfo.swapChain) {
+    createDescriptorSet(createInfo);
     createRenderPass();
-    createPipelineLayout(descriptorSet);
-    createGraphicsPipeline( vertShaderModule, fragShaderModule );
+    createPipelineLayout();
+    createGraphicsPipeline( createInfo.vertShaderModule, createInfo.fragShaderModule );
 }
 
 GraphicsPipeline::~GraphicsPipeline(){
     vkDestroyPipeline(mContext->device(), mGraphicsPipeline, nullptr);
     vkDestroyPipelineLayout(mContext->device(), mPipelineLayout, nullptr);
+    vkDestroyPipelineCache(mContext->device(), mPipelineCache, nullptr);
     vkDestroyRenderPass(mContext->device(), mRenderPass, nullptr);
+    delete mDescriptorSet;
+}
+
+void GraphicsPipeline::createDescriptorSet(GraphicsPipelineCreateInfo& createInfo) {
+    DescriptorSetCreateInfo descriptorSetCreateInfo{
+            .context = createInfo.context,
+            .loader = createInfo.loader,
+            .depthResources = createInfo.depthResources,
+            .uniformBuffers = createInfo.uniformBuffers
+    };
+    mDescriptorSet = new DescriptorSet(descriptorSetCreateInfo);
 }
 
 void GraphicsPipeline::createRenderPass() {
@@ -167,17 +178,24 @@ void GraphicsPipeline::createGraphicsPipeline(VkShaderModule& vertShaderModule, 
             .basePipelineIndex = -1
     };
 
-    if (vkCreateGraphicsPipelines(mContext->device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &mGraphicsPipeline) != VK_SUCCESS) {
+    VkPipelineCacheCreateInfo cacheCreateInfo = {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
+            .initialDataSize = 0,
+            .pInitialData = nullptr,
+    };
+    vkCreatePipelineCache(mContext->device(), &cacheCreateInfo, nullptr, &mPipelineCache);
+
+    if (vkCreateGraphicsPipelines(mContext->device(), mPipelineCache, 1, &pipelineInfo, nullptr, &mGraphicsPipeline) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create graphics pipeline!");
     }
     INFO << "Created graphics pipeline!";
 }
 
-void GraphicsPipeline::createPipelineLayout(DescriptorSet* descriptorSet) {
+void GraphicsPipeline::createPipelineLayout() {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
             .setLayoutCount = 1,
-            .pSetLayouts = &descriptorSet->descriptorSetLayout(),
+            .pSetLayouts = &mDescriptorSet->descriptorSetLayout(),
             .pushConstantRangeCount = 0,
             .pPushConstantRanges = nullptr
     };
@@ -292,4 +310,57 @@ void GraphicsPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configI
             .pDynamicStates = configInfo.dynamicStateEnables.data()
     };
     configInfo.dynamicStateInfo = dynamicStateInfo;
+}
+
+void GraphicsPipeline::render(GraphicsPipelineRenderInfo& renderInfo) {
+    std::vector<VkClearValue> clearValues = {
+            {.color = {{0.2f, 0.2f, 0.2f, 1.0f}},},
+            {.depthStencil = {1.0f, 0}}
+    };
+
+    VkRenderPassBeginInfo renderPassInfo{
+            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+            .renderPass = mRenderPass,
+            .framebuffer = renderInfo.frameBuffer,
+            .renderArea = {
+                    .offset = {0, 0},
+                    .extent = renderInfo.extent
+            },
+            .clearValueCount = (uint32_t) clearValues.size(),
+            .pClearValues = clearValues.data(),
+    };
+    vkCmdBeginRenderPass(renderInfo.commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    vkCmdBindPipeline(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline );
+
+    VkViewport viewport{
+            .x = 0.0f,
+            .y = 0.0f,
+            .width = static_cast<float>(renderInfo.extent.width),
+            .height = static_cast<float>(renderInfo.extent.height),
+            .minDepth = 0.0f,
+            .maxDepth = 1.0f
+    };
+    vkCmdSetViewport(renderInfo.commandBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor{
+            .offset = {0, 0},
+            .extent = renderInfo.extent,
+    };
+    vkCmdSetScissor(renderInfo.commandBuffer, 0, 1, &scissor);
+
+    vkCmdBindPipeline(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
+
+    VkBuffer vertexBuffers[] = {renderInfo.vertexBuffer};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(renderInfo.commandBuffer, 0, 1, vertexBuffers, offsets);
+
+    vkCmdBindIndexBuffer(renderInfo.commandBuffer, renderInfo.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+    vkCmdBindDescriptorSets(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout,
+                            0, 1, &mDescriptorSet->descriptorSets()[renderInfo.currentFrame], 0, nullptr);
+
+    vkCmdDrawIndexed(renderInfo.commandBuffer, renderInfo.indexCount, 1, 0, 0, 0);
+
+    vkCmdEndRenderPass(renderInfo.commandBuffer);
 }
