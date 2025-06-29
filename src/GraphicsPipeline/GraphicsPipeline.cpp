@@ -226,26 +226,12 @@ void GraphicsPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configI
     };
     configInfo.inputAssemblyInfo = inputAssemblyInfo;
 
-    VkViewport viewport{
-            .x = 0.0f,
-            .y = 0.0f,
-            .width = (float) mSwapChain->extent().width,
-            .height = (float) mSwapChain->extent().height,
-            .minDepth = 0.0f,
-            .maxDepth = 1.0f
-    };
-
-    VkRect2D scissor{
-            .offset = {0, 0},
-            .extent = mSwapChain->extent()
-    };
-
     VkPipelineViewportStateCreateInfo viewportInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
             .viewportCount = 1,
-            .pViewports = &viewport,
+            .pViewports = nullptr, //dynamic
             .scissorCount = 1,
-            .pScissors = &scissor
+            .pScissors = nullptr //dynamic
     };
     configInfo.viewportInfo = viewportInfo;
 
