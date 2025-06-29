@@ -46,6 +46,8 @@ public:
 
     void render(GraphicsPipelineRenderInfo& renderInfo);
 
+    void updateDescriptorSet() { mDescriptorSet->updateDescriptorSets(); }
+
 private:
     void createDescriptorSet(GraphicsPipelineCreateInfo& createInfo);
     /**

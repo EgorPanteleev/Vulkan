@@ -170,9 +170,10 @@ void Renderer::recreateSwapChain() {
     mSwapChain->recreate();
     mColorResources->recreate(mSwapChain->extent(), mSwapChain->format());
     mDepthResources->recreate(mSwapChain->extent());
-    mSwapChain->createFrameBuffers(mGraphicsPipeline->renderPass(),
-                                   mDepthResources->imageView(), mColorResources->imageView());
+    mGraphicsPipeline->updateDescriptorSet();
     mSwapChain->createShadowFrameBuffers(mShadowPipeline->renderPass(), mDepthResources->shadowImageView(), mDepthResources->shadowMapExtent());
+    mSwapChain->createFrameBuffers(mGraphicsPipeline->renderPass(),
+                                    mDepthResources->imageView(), mColorResources->imageView());
     mSwapChain->createImGuiFrameBuffers(mVkImGui->renderPass());
 
     INFO << "Swapchain recreated!";

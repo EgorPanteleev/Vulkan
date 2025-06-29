@@ -30,11 +30,12 @@ public:
 
     std::vector<VkDescriptorSet>& descriptorSets() { return mDescriptorSets; }
 
+    void updateDescriptorSets();
+
 private:
     void createDescriptorSetLayout();
     void createDescriptorPool();
     void createDescriptorSets();
-    void updateDescriptorSets();
 
     Context* mContext;
 

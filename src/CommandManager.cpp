@@ -4,7 +4,6 @@
 
 #include "CommandManager.h"
 #include "Utils.h"
-#include "DescriptorSet.h"
 
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
