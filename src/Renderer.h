@@ -24,6 +24,7 @@ public:
     ~Renderer();
 
     void run();
+    void quit();
 
     Context* context() { return mContext.get(); }
     Camera* camera() { return mCamera.get(); }

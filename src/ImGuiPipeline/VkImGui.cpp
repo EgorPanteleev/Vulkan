@@ -17,6 +17,7 @@ VkImGui::VkImGui(Context* context, SwapChain* swapChain):
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.MouseDrawCursor = true;
 
     //init glfw backend
     bool installCallbacks = false;

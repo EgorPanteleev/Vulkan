@@ -73,6 +73,10 @@ void Renderer::run() {
     mainLoop();
 }
 
+void Renderer::quit() {
+    glfwSetWindowShouldClose(mContext->glfwWindow(), GLFW_TRUE);
+}
+
 void Renderer::mainLoop() {
     FpsCounter fpsCounter;
     double deltaTime = 0;
