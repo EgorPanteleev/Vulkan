@@ -17,11 +17,13 @@ struct ShadowPipelineCreateInfo {
 
 struct ShadowPipelineRenderInfo {
     VkCommandBuffer commandBuffer;
-    VkFramebuffer frameBuffer;
+    DepthResources* depthResources;
     VkBuffer vertexBuffer;
     VkBuffer indexBuffer;
     uint32_t indexCount;
     uint32_t currentFrame;
+    VkImageLayout initialLayout;
+    VkImageLayout finalLayout;
 };
 
 class ShadowPipeline {
@@ -29,7 +31,6 @@ public:
     ShadowPipeline(ShadowPipelineCreateInfo& createInfo);
     ~ShadowPipeline();
 
-    VkRenderPass renderPass() { return mRenderPass; }
     VkPipelineLayout pipelineLayout() { return mPipelineLayout; }
     VkPipeline graphicsPipeline() { return mGraphicsPipeline; }
     ShadowDescriptorSet* descriptorSet() { return mDescriptorSet; }
@@ -38,18 +39,15 @@ public:
 
 private:
     void createDescriptorSet(ShadowPipelineCreateInfo& createInfo);
-    void createRenderPass();
     void createPipelineLayout();
     void createGraphicsPipeline(VkShaderModule& vertShaderModule);
     void getPipelineConfigInfo(Utils::PipelineConfigInfo& configInfo);
 
     Context* mContext;
     ShadowDescriptorSet* mDescriptorSet;
-    VkRenderPass mRenderPass;
     VkPipelineLayout mPipelineLayout;
     VkPipeline mGraphicsPipeline;
     VkExtent2D mShadowMapExtent;
 };
-
 
 #endif //VULKAN_SHADOWPIPELINE_H

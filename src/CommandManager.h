@@ -21,6 +21,7 @@ struct CommandManagerRecordInfo{
     SwapChain* swapChain;
     GraphicsPipeline* graphicsPipeline;
     ShadowPipeline* shadowPipeline;
+    DepthResources* depthResources;
     VkImGui* vkImGui;
     VertexBuffer* vertexBuffer;
     uint32_t imageIndex;

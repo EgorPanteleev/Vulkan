@@ -54,11 +54,13 @@ void CommandManager::recordCommandBuffer(CommandManagerRecordInfo& recordInfo) {
 
     ShadowPipelineRenderInfo shadowPipelineRenderInfo {
         .commandBuffer = commandBuffer,
-        .frameBuffer = recordInfo.swapChain->shadowFrameBuffers()[0],
+        .depthResources = recordInfo.depthResources,
         .vertexBuffer = recordInfo.vertexBuffer->vertexBuffer(),
         .indexBuffer = recordInfo.vertexBuffer->indexBuffer(),
         .indexCount = (uint32_t)recordInfo.vertexBuffer->indices().size(),
-        .currentFrame = currentFrame
+        .currentFrame = currentFrame,
+        .initialLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+        .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
     };
     recordInfo.shadowPipeline->render(shadowPipelineRenderInfo);
 

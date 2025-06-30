@@ -22,7 +22,6 @@ public:
     std::vector<VkImage>& images() { return mImages; }
     std::vector<VkImageView>& imageViews() { return mImageViews; }
     std::vector<VkFramebuffer>& frameBuffers() { return mFrameBuffers; }
-    std::vector<VkFramebuffer>& shadowFrameBuffers() { return mShadowFrameBuffers; }
     std::vector<VkFramebuffer>& imGuiFrameBuffers() { return mImGuiFrameBuffers; }
     uint32_t imageIndex() const { return mImageIndex; }
     /**
@@ -33,7 +32,6 @@ public:
     * Creating frame buffers
     */
     void createFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView, VkImageView colorImageView);
-    void createShadowFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView, VkExtent2D shadowExtent);
     void createImGuiFrameBuffers(VkRenderPass renderPass);
 private:
     /**
@@ -56,7 +54,6 @@ private:
     std::vector<VkImage> mImages;
     std::vector<VkImageView> mImageViews;
     std::vector<VkFramebuffer> mFrameBuffers;
-    std::vector<VkFramebuffer> mShadowFrameBuffers;
     std::vector<VkFramebuffer> mImGuiFrameBuffers;
     uint32_t mImageIndex;
 };

@@ -24,9 +24,6 @@ void SwapChain::clear() {
     for ( auto framebuffer : mFrameBuffers ) {
         vkDestroyFramebuffer( mContext->device(), framebuffer, nullptr );
     }
-    for ( auto framebuffer : mShadowFrameBuffers ) {
-        vkDestroyFramebuffer( mContext->device(), framebuffer, nullptr );
-    }
     for ( auto framebuffer : mImGuiFrameBuffers ) {
         vkDestroyFramebuffer( mContext->device(), framebuffer, nullptr );
     }
@@ -162,17 +159,6 @@ void SwapChain::createFrameBuffers(VkRenderPass renderPass, VkImageView depthIma
         mFrameBuffers[i] = Utils::createFrameBuffer(mContext->device(), renderPass, attachments, mExtent);
     }
     INFO << "Created frame buffers!";
-}
-
-void SwapChain::createShadowFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView, VkExtent2D shadowExtent) {
-    size_t shadowSize = 1;
-    mShadowFrameBuffers.resize( shadowSize );
-    for (size_t i = 0; i < shadowSize; ++i) {
-        std::vector<VkImageView> attachments = {
-                depthImageView
-        };
-        mShadowFrameBuffers[i] = Utils::createFrameBuffer(mContext->device(), renderPass, attachments, shadowExtent);
-    }
 }
 
 void SwapChain::createImGuiFrameBuffers(VkRenderPass renderPass) {

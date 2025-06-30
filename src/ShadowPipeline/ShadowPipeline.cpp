@@ -8,14 +8,12 @@
 ShadowPipeline::ShadowPipeline(ShadowPipelineCreateInfo& createInfo):
                                mContext(createInfo.context), mShadowMapExtent(createInfo.extent) {
     createDescriptorSet(createInfo);
-    createRenderPass();
     createPipelineLayout();
     createGraphicsPipeline(createInfo.vertShaderModule);
 }
 ShadowPipeline::~ShadowPipeline() {
     vkDestroyPipeline(mContext->device(), mGraphicsPipeline, nullptr);
     vkDestroyPipelineLayout(mContext->device(), mPipelineLayout, nullptr);
-    vkDestroyRenderPass(mContext->device(), mRenderPass, nullptr);
     delete mDescriptorSet;
 }
 
@@ -25,56 +23,6 @@ void ShadowPipeline::createDescriptorSet(ShadowPipelineCreateInfo& createInfo) {
         .uniformBuffers = createInfo.uniformBuffers
     };
     mDescriptorSet = new ShadowDescriptorSet(shadowDescriptorSetCreateInfo);
-}
-
-void ShadowPipeline::createRenderPass() {
-    VkAttachmentDescription depthAttachment{
-            .format = Utils::findDepthFormat(mContext),
-            .samples = VK_SAMPLE_COUNT_1_BIT,
-            .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-            .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-            .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-            .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-            .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-    };
-
-    VkAttachmentReference depthAttachmentRef{
-            .attachment = 0,
-            .layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL
-    };
-
-    VkSubpassDependency dependency{
-            .srcSubpass = VK_SUBPASS_EXTERNAL,
-            .dstSubpass = 0,
-            .srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-            .dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-            .srcAccessMask = VK_ACCESS_SHADER_READ_BIT,
-            .dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-            .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
-    };
-
-    VkSubpassDescription subpass{
-            .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-            .colorAttachmentCount = 0,
-            .pDepthStencilAttachment = &depthAttachmentRef
-    };
-
-    std::vector<VkAttachmentDescription> attachments = {depthAttachment};
-    VkRenderPassCreateInfo renderPassInfo{
-            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-            .attachmentCount = (uint32_t)attachments.size(),
-            .pAttachments = attachments.data(),
-            .subpassCount = 1,
-            .pSubpasses = &subpass,
-            .dependencyCount = 1,
-            .pDependencies = &dependency
-    };
-
-    if (vkCreateRenderPass(mContext->device(), &renderPassInfo, nullptr, &mRenderPass) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create render pass!");
-    }
-    INFO << "Created render pass";
 }
 
 void ShadowPipeline::createPipelineLayout() {
@@ -118,10 +66,19 @@ void ShadowPipeline::createGraphicsPipeline(VkShaderModule& vertShaderModule) {
             .maxDepthBounds = 1.0f,
     };
 
+    VkPipelineRenderingCreateInfo pipelineRenderingInfo{
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
+            .colorAttachmentCount = 0,
+            .pColorAttachmentFormats = nullptr,
+            .depthAttachmentFormat = VK_FORMAT_D32_SFLOAT,
+            .stencilAttachmentFormat = VK_FORMAT_UNDEFINED,
+    };
+
     Utils::PipelineConfigInfo configInfo;
     getPipelineConfigInfo( configInfo );
     VkGraphicsPipelineCreateInfo pipelineInfo{
             .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+            .pNext = &pipelineRenderingInfo,
             .stageCount = 1,
             .pStages = shaderStages,
             .pVertexInputState = &configInfo.vertexInputInfo,
@@ -133,7 +90,7 @@ void ShadowPipeline::createGraphicsPipeline(VkShaderModule& vertShaderModule) {
             .pColorBlendState = &configInfo.colorBlendInfo,
             .pDynamicState = &configInfo.dynamicStateInfo,
             .layout = mPipelineLayout,
-            .renderPass = mRenderPass,
+            .renderPass = nullptr,
             .subpass = 0,
             .basePipelineHandle = VK_NULL_HANDLE,
             .basePipelineIndex = -1
@@ -223,24 +180,36 @@ void ShadowPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configInf
     configInfo.dynamicStateInfo = dynamicStateInfo;
 }
 
-
 void ShadowPipeline::render(ShadowPipelineRenderInfo& renderInfo) {
+    renderInfo.depthResources->translateShadowImage(renderInfo.commandBuffer,
+                                                    renderInfo.finalLayout,
+                                                    renderInfo.initialLayout);
     VkClearValue clearValue{
             .depthStencil = {1.0f, 0}
     };
-    VkRenderPassBeginInfo renderPassInfo{
-            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-            .renderPass = mRenderPass,
-            .framebuffer = renderInfo.frameBuffer,
+
+    VkRenderingAttachmentInfo depthAttachment = {
+            .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+            .imageView = renderInfo.depthResources->shadowImageView(),
+            .imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+            .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            .clearValue = clearValue,
+    };
+
+    VkRenderingInfo renderingInfo = {
+            .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
             .renderArea = {
                     .offset = {0, 0},
                     .extent = mShadowMapExtent
             },
-            .clearValueCount = 1,
-            .pClearValues = &clearValue
+            .layerCount = 1,
+            .colorAttachmentCount = 0,
+            .pColorAttachments = nullptr,
+            .pDepthAttachment = &depthAttachment,
     };
 
-    vkCmdBeginRenderPass(renderInfo.commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRendering(renderInfo.commandBuffer, &renderingInfo);
 
     vkCmdBindPipeline(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
 
@@ -261,16 +230,23 @@ void ShadowPipeline::render(ShadowPipelineRenderInfo& renderInfo) {
     };
     vkCmdSetScissor(renderInfo.commandBuffer, 0, 1, &scissor);
 
+    vkCmdBindDescriptorSets(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout,
+                            0, 1, &mDescriptorSet->descriptorSets()[renderInfo.currentFrame], 0, nullptr);
+
     VkBuffer vertexBuffers[] = {renderInfo.vertexBuffer};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(renderInfo.commandBuffer, 0, 1, vertexBuffers, offsets);
 
     vkCmdBindIndexBuffer(renderInfo.commandBuffer, renderInfo.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-    vkCmdBindDescriptorSets(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout,
-                            0, 1, &mDescriptorSet->descriptorSets()[renderInfo.currentFrame], 0, nullptr);
-
     vkCmdDrawIndexed(renderInfo.commandBuffer, renderInfo.indexCount, 1, 0, 0, 0);
 
-    vkCmdEndRenderPass(renderInfo.commandBuffer);
+    vkCmdEndRendering(renderInfo.commandBuffer);
+
+    renderInfo.depthResources->translateShadowImage(renderInfo.commandBuffer,
+                                                    renderInfo.initialLayout,
+                                                    renderInfo.finalLayout);
 }
+
+//            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+//            .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL

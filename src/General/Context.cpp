@@ -221,7 +221,13 @@ void Context::createLogicalDevice() {
             .descriptorBindingPartiallyBound = VK_TRUE,
             .descriptorBindingVariableDescriptorCount = VK_TRUE,
             .runtimeDescriptorArray = VK_TRUE,
-            .separateDepthStencilLayouts = VK_TRUE
+            .separateDepthStencilLayouts = VK_TRUE,
+    };
+
+    VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeature{
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
+            .pNext = &vulkan12Features,
+            .dynamicRendering = VK_TRUE,
     };
 
     VkDeviceCreateInfo createInfo{};
@@ -231,7 +237,7 @@ void Context::createLogicalDevice() {
     createInfo.pEnabledFeatures = &deviceFeatures;
     createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
-    createInfo.pNext = &vulkan12Features;
+    createInfo.pNext = &dynamicRenderingFeature;
     if (enableValidationLayers) {
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();

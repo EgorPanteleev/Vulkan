@@ -52,8 +52,6 @@ Renderer::Renderer(const std::string& modelPath, CameraCreateInfo& cameraCreateI
     mVertexBuffer = std::make_unique<VertexBuffer>(mContext.get(), mLoader.get());
     mSyncObjects = std::make_unique<SyncObjects>(mContext.get(), mSwapChain.get());
 
-
-    mSwapChain->createShadowFrameBuffers(mShadowPipeline->renderPass(), mDepthResources->shadowImageView(), mDepthResources->shadowMapExtent());
     mSwapChain->createFrameBuffers(mGraphicsPipeline->renderPass(),
                                    mDepthResources->imageView(),
                                    mColorResources->imageView());
@@ -116,6 +114,7 @@ void Renderer::endFrame() {
             .swapChain = mSwapChain.get(),
             .graphicsPipeline = mGraphicsPipeline.get(),
             .shadowPipeline = mShadowPipeline.get(),
+            .depthResources = mDepthResources.get(),
             .vkImGui = gui,
             .vertexBuffer = mVertexBuffer.get(),
             .imageIndex = mSwapChain->imageIndex(),
@@ -175,7 +174,6 @@ void Renderer::recreateSwapChain() {
     mColorResources->recreate(mSwapChain->extent(), mSwapChain->format());
     mDepthResources->recreate(mSwapChain->extent());
     mGraphicsPipeline->updateDescriptorSet();
-    mSwapChain->createShadowFrameBuffers(mShadowPipeline->renderPass(), mDepthResources->shadowImageView(), mDepthResources->shadowMapExtent());
     mSwapChain->createFrameBuffers(mGraphicsPipeline->renderPass(),
                                     mDepthResources->imageView(), mColorResources->imageView());
     mSwapChain->createImGuiFrameBuffers(mVkImGui->renderPass());
