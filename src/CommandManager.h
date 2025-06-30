@@ -21,7 +21,6 @@ struct CommandManagerRecordInfo{
     SwapChain* swapChain;
     GraphicsPipeline* graphicsPipeline;
     ShadowPipeline* shadowPipeline;
-    DepthResources* depthResources;
     VkImGui* vkImGui;
     VertexBuffer* vertexBuffer;
     uint32_t imageIndex;
@@ -37,7 +36,7 @@ struct CommandManagerSubmitInfo{
 
 class CommandManager {
 public:
-    CommandManager(Context* context, DepthResources* depthResources);
+    CommandManager(Context* context);
     ~CommandManager();
     void recordCommandBuffer(CommandManagerRecordInfo& recordInfo);
     VkResult submitCommandBuffer(CommandManagerSubmitInfo& submitInfo);
@@ -55,7 +54,6 @@ private:
 
 
     Context* mContext;
-    DepthResources* mDepthResources;
     VkCommandPool mCommandPool;
     std::vector<VkCommandBuffer> mCommandBuffers;
 };

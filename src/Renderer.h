@@ -11,8 +11,6 @@
 #include "SyncObjects.h"
 #include "UniformBuffer.h"
 #include "Texture.h"
-#include "DepthResources.h"
-#include "ColorResources.h"
 #include "ShadowDescriptorSet.h"
 #include "ShadowPipeline.h"
 #include "VulkanModelLoader.h"
@@ -53,8 +51,6 @@ private:
     UniquePtr<Context> mContext;
     UniquePtr<VulkanModelLoader> mLoader;
     UniquePtr<SwapChain> mSwapChain;
-    UniquePtr<ColorResources> mColorResources;
-    UniquePtr<DepthResources> mDepthResources;
     UniquePtr<UniformBuffers> mUniformBuffers;
     UniquePtr<ShadowDescriptorSet> mShadowDescriptorSet;
     UniquePtr<ShadowPipeline> mShadowPipeline;

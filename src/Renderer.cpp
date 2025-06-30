@@ -19,8 +19,6 @@ Renderer::Renderer(const std::string& modelPath, CameraCreateInfo& cameraCreateI
     if (!mLoader->load()) exit(-1);
 
     mSwapChain = std::make_unique<SwapChain>(mContext.get());
-    mColorResources = std::make_unique<ColorResources>(mContext.get(), mSwapChain->extent(), mSwapChain->format());
-    mDepthResources = std::make_unique<DepthResources>(mContext.get(), mSwapChain->extent());
     mUniformBuffers = std::make_unique<UniformBuffers>();
     mUniformBuffers->emplace_back(std::make_unique<ModelUniformBuffer>(mContext.get(), mCamera.get()));
     mUniformBuffers->emplace_back(std::make_unique<LightUniformBuffer>(mContext.get(), mCamera.get()));
@@ -42,20 +40,19 @@ Renderer::Renderer(const std::string& modelPath, CameraCreateInfo& cameraCreateI
             .context = mContext.get(),
             .swapChain = mSwapChain.get(),
             .loader = mLoader.get(),
-            .depthResources = mDepthResources.get(),
             .shadowMap = mShadowPipeline->shadowMap(),
             .uniformBuffers = *mUniformBuffers,
             .vertShaderModule = mMainVertShaderModule,
             .fragShaderModule = mFragShaderModule
     };
     mGraphicsPipeline = std::make_unique<GraphicsPipeline>(graphicsPipelineCreateInfo);
-    mCommandManager = std::make_unique<CommandManager>(mContext.get(), mDepthResources.get());
+    mCommandManager = std::make_unique<CommandManager>(mContext.get());
     mVertexBuffer = std::make_unique<VertexBuffer>(mContext.get(), mLoader.get());
     mSyncObjects = std::make_unique<SyncObjects>(mContext.get(), mSwapChain.get());
 
     mSwapChain->createFrameBuffers(mGraphicsPipeline->renderPass(),
-                                   mDepthResources->imageView(),
-                                   mColorResources->imageView());
+                                   mGraphicsPipeline->depthBuffer()->imageView(),
+                                   mGraphicsPipeline->colorBuffer()->imageView());
 
     mVkImGui = std::make_unique<VkImGui>(mContext.get(), mSwapChain.get());
     mSwapChain->createImGuiFrameBuffers(mVkImGui->renderPass());
@@ -115,7 +112,6 @@ void Renderer::endFrame() {
             .swapChain = mSwapChain.get(),
             .graphicsPipeline = mGraphicsPipeline.get(),
             .shadowPipeline = mShadowPipeline.get(),
-            .depthResources = mDepthResources.get(),
             .vkImGui = gui,
             .vertexBuffer = mVertexBuffer.get(),
             .imageIndex = mSwapChain->imageIndex(),
@@ -172,11 +168,11 @@ void Renderer::recreateSwapChain() {
     vkDeviceWaitIdle(mContext->device());
     mSwapChain->clear();
     mSwapChain->recreate();
-    mColorResources->recreate(mSwapChain->extent(), mSwapChain->format());
-    mDepthResources->recreate(mSwapChain->extent());
+    mGraphicsPipeline->recreateBuffers();
     mGraphicsPipeline->updateDescriptorSet();
     mSwapChain->createFrameBuffers(mGraphicsPipeline->renderPass(),
-                                    mDepthResources->imageView(), mColorResources->imageView());
+                                    mGraphicsPipeline->depthBuffer()->imageView(),
+                                    mGraphicsPipeline->colorBuffer()->imageView());
     mSwapChain->createImGuiFrameBuffers(mVkImGui->renderPass());
 
     INFO << "Swapchain recreated!";

@@ -15,7 +15,6 @@ struct GraphicsPipelineCreateInfo {
     Context* context;
     SwapChain* swapChain;
     VulkanModelLoader* loader;
-    DepthResources* depthResources;
     Image* shadowMap;
     const UniformBuffers& uniformBuffers;
     VkShaderModule vertShaderModule;
@@ -45,11 +44,19 @@ public:
 
     DescriptorSet* descriptorSet() { return mDescriptorSet; }
 
+    Image* colorBuffer() { return mColorBuffer; }
+    Image* depthBuffer() { return mDepthBuffer; }
+
     void render(GraphicsPipelineRenderInfo& renderInfo);
 
     void updateDescriptorSet() { mDescriptorSet->updateDescriptorSets(); }
 
+    void recreateBuffers();
+
 private:
+    void createColorBuffer();
+    void createDepthBuffer();
+
     void createDescriptorSet(GraphicsPipelineCreateInfo& createInfo);
     /**
      * Creating render pass
@@ -68,6 +75,8 @@ private:
     Context* mContext;
     SwapChain* mSwapChain;
     DescriptorSet* mDescriptorSet;
+    Image* mColorBuffer;
+    Image* mDepthBuffer;
     VkRenderPass mRenderPass;
     VkPipelineLayout mPipelineLayout;
     VkPipeline mGraphicsPipeline;

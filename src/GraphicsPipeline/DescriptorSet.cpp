@@ -7,7 +7,7 @@
 
 DescriptorSet::DescriptorSet(DescriptorSetCreateInfo& createInfo):
                              mContext(createInfo.context), mLoader(createInfo.loader),
-                             mDepthResources(createInfo.depthResources), mShadowMap(createInfo.shadowMap),
+                             mShadowMap(createInfo.shadowMap),
                              mUniformBuffers(createInfo.uniformBuffers) {
     maxTextures = mLoader->vulkanTextures().size() * ModelTexture::UNKNOWN;
     createDescriptorSetLayout();

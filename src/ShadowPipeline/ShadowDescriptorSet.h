@@ -7,7 +7,6 @@
 
 #include "Context.h"
 #include "UniformBuffer.h"
-#include "DepthResources.h"
 
 using UniformBuffers = std::vector<std::unique_ptr<UniformBuffer>>;
 

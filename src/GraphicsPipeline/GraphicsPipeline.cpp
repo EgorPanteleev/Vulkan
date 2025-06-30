@@ -7,7 +7,10 @@
 
 
 GraphicsPipeline::GraphicsPipeline(GraphicsPipelineCreateInfo& createInfo):
-                                   mContext(createInfo.context), mSwapChain(createInfo.swapChain) {
+                                   mContext(createInfo.context), mSwapChain(createInfo.swapChain),
+                                   mColorBuffer(new Image(mContext)), mDepthBuffer(new Image(mContext)){
+    createColorBuffer();
+    createDepthBuffer();
     createDescriptorSet(createInfo);
     createRenderPass();
     createPipelineLayout();
@@ -20,13 +23,43 @@ GraphicsPipeline::~GraphicsPipeline(){
     vkDestroyPipelineCache(mContext->device(), mPipelineCache, nullptr);
     vkDestroyRenderPass(mContext->device(), mRenderPass, nullptr);
     delete mDescriptorSet;
+    mDepthBuffer->destroy();
+    delete mDepthBuffer;
+    mColorBuffer->destroy();
+    delete mColorBuffer;
+}
+
+void GraphicsPipeline::createColorBuffer() {
+    ImageAllocateInfo allocateInfo{
+            .format = mSwapChain->format(),
+            .extent = mSwapChain->extent(),
+            .numSamples =  Utils::getMaxUsableSampleCount(mContext->physicalDevice()),
+            .imageUsageFlags = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+            .aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT,
+            .mipLevels = 1,
+            .generateMipMaps = false
+    };
+    mColorBuffer->allocate(allocateInfo);
+}
+
+void GraphicsPipeline::createDepthBuffer() {
+    ImageAllocateInfo allocateInfo{
+            .format = Utils::findDepthFormat(mContext),
+            .extent = mSwapChain->extent(),
+            .numSamples = Utils::getMaxUsableSampleCount(mContext->physicalDevice()),
+            .imageUsageFlags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+            .aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT,
+            .mipLevels = 1,
+            .generateMipMaps = false
+    };
+    mDepthBuffer->allocate(allocateInfo);
+    mDepthBuffer->transit(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 }
 
 void GraphicsPipeline::createDescriptorSet(GraphicsPipelineCreateInfo& createInfo) {
     DescriptorSetCreateInfo descriptorSetCreateInfo{
             .context = createInfo.context,
             .loader = createInfo.loader,
-            .depthResources = createInfo.depthResources,
             .shadowMap = createInfo.shadowMap,
             .uniformBuffers = createInfo.uniformBuffers
     };
@@ -350,4 +383,11 @@ void GraphicsPipeline::render(GraphicsPipelineRenderInfo& renderInfo) {
     vkCmdDrawIndexed(renderInfo.commandBuffer, renderInfo.indexCount, 1, 0, 0, 0);
 
     vkCmdEndRenderPass(renderInfo.commandBuffer);
+}
+
+void GraphicsPipeline::recreateBuffers() {
+    colorBuffer()->destroy();
+    createColorBuffer();
+    depthBuffer()->destroy();
+    createDepthBuffer();
 }

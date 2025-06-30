@@ -8,8 +8,8 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
 #include "VkImGui.h"
-CommandManager::CommandManager(Context* context, DepthResources* depthResources):
-                               mContext(context), mDepthResources(depthResources) {
+CommandManager::CommandManager(Context* context):
+                               mContext(context) {
     createCommandPool();
     createCommandBuffers();
 }

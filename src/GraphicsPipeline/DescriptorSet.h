@@ -8,7 +8,6 @@
 #include "Context.h"
 #include "UniformBuffer.h"
 #include "Texture.h"
-#include "DepthResources.h"
 #include "VulkanModelLoader.h"
 
 using UniformBuffers = std::vector<std::unique_ptr<UniformBuffer>>;
@@ -16,7 +15,6 @@ using UniformBuffers = std::vector<std::unique_ptr<UniformBuffer>>;
 struct DescriptorSetCreateInfo {
     Context* context;
     VulkanModelLoader* loader;
-    DepthResources* depthResources;
     Image* shadowMap;
     const UniformBuffers& uniformBuffers;
 };
@@ -41,8 +39,6 @@ private:
     Context* mContext;
 
     VulkanModelLoader* mLoader;
-
-    DepthResources* mDepthResources;
 
     Image* mShadowMap;
 
