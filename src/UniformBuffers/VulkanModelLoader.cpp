@@ -14,6 +14,7 @@ VulkanModelLoader::VulkanModelLoader(Context* context, std::string modelPath): A
 VulkanModelLoader::~VulkanModelLoader() {
     for (auto& vulkanTextureVec: mVulkanTextures) {
         for (auto& mTexture : vulkanTextureVec.mTextures){
+            mTexture->destroy();
             delete mTexture;
             mTexture = nullptr;
         }
@@ -58,8 +59,8 @@ bool VulkanModelLoader::loadMaterials() {
             vulkanTexture = new Texture(mContext);
             TextureLoadInfo loadInfo{
                 .data = texture.empty() ? getEmptyData((ModelTexture::Type) tex) : texture.data,
-                .width = texture.empty() ? 1 : texture.width,
-                .height = texture.empty() ? 1 : texture.height,
+                .width = static_cast<uint32_t>(texture.empty() ? 1 : texture.width),
+                .height = static_cast<uint32_t>(texture.empty() ? 1 : texture.height),
                 .path = texture.path,
                 .texType = (ModelTexture::Type) tex,
                 .generateMipMap = texture.empty() ? false : true

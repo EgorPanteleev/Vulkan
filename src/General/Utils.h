@@ -87,9 +87,11 @@ namespace Utils {
     void endSingleTimeCommands(Context* context, VkCommandPool commandPool, VkCommandBuffer commandBuffer);
     bool hasStencilComponent(VkFormat format);
     void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, uint32_t mipLevels,
-                               VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+                               VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout,
+                               uint32_t level = 0, uint32_t levelCount = 0);
     void transitionImageLayout(Context* context, VkImage image, uint32_t mipLevels, VkFormat format,
-                               VkImageLayout oldLayout, VkImageLayout newLayout);
+                               VkImageLayout oldLayout, VkImageLayout newLayout,
+                               uint32_t level = 0, uint32_t levelCount = 0);
     void copyBufferToImage(Context* context, VkBuffer buffer, VkImage image,
                            uint32_t width, uint32_t height, int mipLevel = 0 );
 

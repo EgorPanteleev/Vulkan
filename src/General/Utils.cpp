@@ -390,6 +390,7 @@ namespace Utils {
                 if (stencilComponent) aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
                 break;
             case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+            case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
                 aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 break;
             default:
@@ -418,6 +419,10 @@ namespace Utils {
                 srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
                 srcStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
                 break;
+            case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+                srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+                break;
             default:
                 throw std::invalid_argument(std::string("Unsupported old layout: ") + imageLayoutToString(oldLayout));
         }
@@ -441,14 +446,19 @@ namespace Utils {
                                 VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
                 dstStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
                 break;
+            case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+                dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+                break;
             default:
                 throw std::invalid_argument(std::string("Unsupported new layout: ") + imageLayoutToString(newLayout));
         }
     }
 
-
     void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, uint32_t mipLevels,
-                               VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
+                               VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout,
+                               uint32_t level, uint32_t levelCount) {
+        if (!levelCount) levelCount = mipLevels;
         VkAccessFlags srcAccessMask;
         VkPipelineStageFlags srcStage;
         determineSrcMaskStage(oldLayout, srcAccessMask, srcStage);
@@ -468,8 +478,8 @@ namespace Utils {
                 .image = image,
                 .subresourceRange = {
                         .aspectMask = determineAspectMask(newLayout, format),
-                        .baseMipLevel = 0,
-                        .levelCount = mipLevels,
+                        .baseMipLevel = level,
+                        .levelCount = levelCount,
                         .baseArrayLayer = 0,
                         .layerCount = 1
                 }
@@ -486,12 +496,13 @@ namespace Utils {
     }
 
     void transitionImageLayout(Context* context, VkImage image, uint32_t mipLevels, VkFormat format,
-                               VkImageLayout oldLayout, VkImageLayout newLayout) {
+                               VkImageLayout oldLayout, VkImageLayout newLayout,
+                               uint32_t level, uint32_t levelCount) {
         auto commandPool = Utils::createCommandPool(context, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
 
         VkCommandBuffer commandBuffer = beginSingleTimeCommands(context->device(), commandPool);
 
-        transitionImageLayout(commandBuffer, image, mipLevels, format, oldLayout, newLayout);
+        transitionImageLayout(commandBuffer, image, mipLevels, format, oldLayout, newLayout, level, levelCount);
 
         endSingleTimeCommands(context, commandPool, commandBuffer);
         vkDestroyCommandPool(context->device(), commandPool, nullptr);

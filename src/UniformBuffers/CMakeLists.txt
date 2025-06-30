@@ -2,7 +2,7 @@ project(UniformBuffers)
 
 find_package(glm REQUIRED)
 
-set(Libs Camera General ModelLoader)
+set(Libs Camera General ModelLoader Image)
 
 #static Library
 file(GLOB SOURCES "*.cpp")
