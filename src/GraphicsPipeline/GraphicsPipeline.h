@@ -16,6 +16,7 @@ struct GraphicsPipelineCreateInfo {
     SwapChain* swapChain;
     VulkanModelLoader* loader;
     DepthResources* depthResources;
+    Image* shadowMap;
     const UniformBuffers& uniformBuffers;
     VkShaderModule vertShaderModule;
     VkShaderModule fragShaderModule;

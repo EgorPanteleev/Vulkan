@@ -12,6 +12,7 @@ struct ImageAllocateInfo{
     VkExtent2D extent = {0, 0};
     VkSampleCountFlagBits numSamples = VK_SAMPLE_COUNT_1_BIT;
     VkImageUsageFlags imageUsageFlags = 0;
+    VkImageAspectFlags aspectFlags = 0;
     uint32_t mipLevels = 1;
     bool generateMipMaps = false;
 };
@@ -24,6 +25,7 @@ public:
     VkImage image() { return mImage; }
     VkImageView imageView() { return mImageView; }
     VkSampler sampler() { return mSampler; }
+    VkExtent2D extent() { return mExtent; }
 
     void allocate(ImageAllocateInfo& allocateInfo);
     void destroy();

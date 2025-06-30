@@ -32,7 +32,7 @@ Renderer::Renderer(const std::string& modelPath, CameraCreateInfo& cameraCreateI
             .context = mContext.get(),
             .uniformBuffers = *mUniformBuffers,
             .vertShaderModule = mShadowVertShaderModule,
-            .extent = mDepthResources->shadowMapExtent()
+            .extent = {2048, 2048}
     };
     mShadowPipeline = std::make_unique<ShadowPipeline>(shadowPipelineCreateInfo);
 
@@ -43,6 +43,7 @@ Renderer::Renderer(const std::string& modelPath, CameraCreateInfo& cameraCreateI
             .swapChain = mSwapChain.get(),
             .loader = mLoader.get(),
             .depthResources = mDepthResources.get(),
+            .shadowMap = mShadowPipeline->shadowMap(),
             .uniformBuffers = *mUniformBuffers,
             .vertShaderModule = mMainVertShaderModule,
             .fragShaderModule = mFragShaderModule

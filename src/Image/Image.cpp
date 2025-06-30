@@ -23,7 +23,7 @@ void Image::allocate(ImageAllocateInfo& allocateInfo) {
                        allocateInfo.imageUsageFlags);
 
     mImageView = Utils::createImageView(mContext->device(), mImage, mMipLevels, VK_IMAGE_VIEW_TYPE_2D,
-                                        mFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+                                        mFormat, allocateInfo.aspectFlags);
 
     Utils::createSampler(mContext, mSampler, mMipLevels,
                          VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_FALSE);
@@ -63,14 +63,13 @@ void Image::generateMipMaps() {
     auto commandPool = Utils::createCommandPool(mContext, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
     VkCommandBuffer commandBuffer = Utils::beginSingleTimeCommands(mContext->device(), commandPool);
 
-    int32_t mipWidth = static_cast<int32_t>(mExtent.width);
-    int32_t mipHeight = static_cast<int32_t>(mExtent.height);
+    auto mipWidth = static_cast<int32_t>(mExtent.width);
+    auto mipHeight = static_cast<int32_t>(mExtent.height);
 
     for (uint32_t i = 1; i < mMipLevels; ++i) {
-        // 1. Transition (i-1) level from DST to SRC
-        transit(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, i - 1, 1);
+        transit(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, i - 1, 1);
 
-        // 2. Blit to mip i
         VkImageBlit blit{
                 .srcSubresource = {
                         .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -100,15 +99,12 @@ void Image::generateMipMaps() {
                        1, &blit,
                        VK_FILTER_LINEAR);
 
-        // 3. Transition (i-1) to SHADER_READ layout
-        transit(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, i - 1, 1);
-
-        // 4. Prepare for next loop
+        transit(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, i - 1, 1);
         if (mipWidth > 1) mipWidth /= 2;
         if (mipHeight > 1) mipHeight /= 2;
     }
 
-    // Последний уровень в TRANSFER_DST → SHADER_READ
     transit(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mMipLevels - 1, 1);
 
     Utils::endSingleTimeCommands(mContext, commandPool, commandBuffer);

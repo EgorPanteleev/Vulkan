@@ -54,7 +54,6 @@ void CommandManager::recordCommandBuffer(CommandManagerRecordInfo& recordInfo) {
 
     ShadowPipelineRenderInfo shadowPipelineRenderInfo {
         .commandBuffer = commandBuffer,
-        .depthResources = recordInfo.depthResources,
         .vertexBuffer = recordInfo.vertexBuffer->vertexBuffer(),
         .indexBuffer = recordInfo.vertexBuffer->indexBuffer(),
         .indexCount = (uint32_t)recordInfo.vertexBuffer->indices().size(),

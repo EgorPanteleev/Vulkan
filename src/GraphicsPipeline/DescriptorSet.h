@@ -17,6 +17,7 @@ struct DescriptorSetCreateInfo {
     Context* context;
     VulkanModelLoader* loader;
     DepthResources* depthResources;
+    Image* shadowMap;
     const UniformBuffers& uniformBuffers;
 };
 
@@ -42,6 +43,8 @@ private:
     VulkanModelLoader* mLoader;
 
     DepthResources* mDepthResources;
+
+    Image* mShadowMap;
 
     const UniformBuffers& mUniformBuffers;
     /**

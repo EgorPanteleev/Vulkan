@@ -7,7 +7,8 @@
 
 DescriptorSet::DescriptorSet(DescriptorSetCreateInfo& createInfo):
                              mContext(createInfo.context), mLoader(createInfo.loader),
-                             mDepthResources(createInfo.depthResources), mUniformBuffers(createInfo.uniformBuffers) {
+                             mDepthResources(createInfo.depthResources), mShadowMap(createInfo.shadowMap),
+                             mUniformBuffers(createInfo.uniformBuffers) {
     maxTextures = mLoader->vulkanTextures().size() * ModelTexture::UNKNOWN;
     createDescriptorSetLayout();
     createDescriptorPool();
@@ -151,8 +152,8 @@ void DescriptorSet::updateDescriptorSets() {
         };
 
         VkDescriptorImageInfo shadowMapInfo{
-                .sampler = mDepthResources->sampler(),
-                .imageView = mDepthResources->shadowImageView(),
+                .sampler = mShadowMap->sampler(),
+                .imageView = mShadowMap->imageView(),
                 .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
         };
 

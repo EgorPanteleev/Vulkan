@@ -14,13 +14,6 @@ public:
 
     VkImage image() { return mImage; }
     VkImageView imageView() { return mImageView; }
-    VkSampler sampler() { return mSampler; }
-
-    VkImage shadowImage() { return mShadowImage; }
-    VkImageView shadowImageView() { return mShadowImageView; }
-    VkExtent2D shadowMapExtent() { return mShadowMapExtent; }
-
-    void translateShadowImage(VkCommandBuffer commandBuffer, VkImageLayout from, VkImageLayout to);
 
     void recreate(VkExtent2D swapChainExtent);
 private:
@@ -32,12 +25,6 @@ private:
     VkImage mImage;
     VmaAllocation mImageAllocation;
     VkImageView mImageView;
-
-    VkImage mShadowImage;
-    VmaAllocation mShadowImageAllocation;
-    VkImageView mShadowImageView;
-    VkSampler mSampler;
-    VkExtent2D mShadowMapExtent;
 };
 
 

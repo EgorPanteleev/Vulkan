@@ -27,6 +27,7 @@ void GraphicsPipeline::createDescriptorSet(GraphicsPipelineCreateInfo& createInf
             .context = createInfo.context,
             .loader = createInfo.loader,
             .depthResources = createInfo.depthResources,
+            .shadowMap = createInfo.shadowMap,
             .uniformBuffers = createInfo.uniformBuffers
     };
     mDescriptorSet = new DescriptorSet(descriptorSetCreateInfo);

@@ -6,7 +6,8 @@
 #include "Utils.h"
 
 ShadowPipeline::ShadowPipeline(ShadowPipelineCreateInfo& createInfo):
-                               mContext(createInfo.context), mShadowMapExtent(createInfo.extent) {
+                               mContext(createInfo.context), mShadowMap(new Image(mContext)) {
+    createShadowMap(createInfo);
     createDescriptorSet(createInfo);
     createPipelineLayout();
     createGraphicsPipeline(createInfo.vertShaderModule);
@@ -15,6 +16,22 @@ ShadowPipeline::~ShadowPipeline() {
     vkDestroyPipeline(mContext->device(), mGraphicsPipeline, nullptr);
     vkDestroyPipelineLayout(mContext->device(), mPipelineLayout, nullptr);
     delete mDescriptorSet;
+    mShadowMap->destroy();
+    delete mShadowMap;
+}
+
+void ShadowPipeline::createShadowMap(ShadowPipelineCreateInfo& createInfo) {
+    ImageAllocateInfo allocateInfo{
+        .format = Utils::findDepthFormat(mContext),
+        .extent = createInfo.extent,
+        .numSamples = VK_SAMPLE_COUNT_1_BIT,
+        .imageUsageFlags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+        .aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT,
+        .mipLevels = 1,
+        .generateMipMaps = false
+    };
+    mShadowMap->allocate(allocateInfo);
+    mShadowMap->transit(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 void ShadowPipeline::createDescriptorSet(ShadowPipelineCreateInfo& createInfo) {
@@ -181,16 +198,14 @@ void ShadowPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configInf
 }
 
 void ShadowPipeline::render(ShadowPipelineRenderInfo& renderInfo) {
-    renderInfo.depthResources->translateShadowImage(renderInfo.commandBuffer,
-                                                    renderInfo.finalLayout,
-                                                    renderInfo.initialLayout);
+    mShadowMap->transit(renderInfo.commandBuffer, renderInfo.finalLayout, renderInfo.initialLayout);
     VkClearValue clearValue{
             .depthStencil = {1.0f, 0}
     };
 
     VkRenderingAttachmentInfo depthAttachment = {
             .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-            .imageView = renderInfo.depthResources->shadowImageView(),
+            .imageView = mShadowMap->imageView(),
             .imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
             .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
             .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
@@ -201,7 +216,7 @@ void ShadowPipeline::render(ShadowPipelineRenderInfo& renderInfo) {
             .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
             .renderArea = {
                     .offset = {0, 0},
-                    .extent = mShadowMapExtent
+                    .extent = mShadowMap->extent()
             },
             .layerCount = 1,
             .colorAttachmentCount = 0,
@@ -217,8 +232,8 @@ void ShadowPipeline::render(ShadowPipelineRenderInfo& renderInfo) {
     VkViewport viewport{
             .x = 0.0f,
             .y = 0.0f,
-            .width = static_cast<float>(mShadowMapExtent.width),
-            .height = static_cast<float>(mShadowMapExtent.height),
+            .width = static_cast<float>(mShadowMap->extent().width),
+            .height = static_cast<float>(mShadowMap->extent().height),
             .minDepth = 0.0f,
             .maxDepth = 1.0f,
     };
@@ -226,7 +241,7 @@ void ShadowPipeline::render(ShadowPipelineRenderInfo& renderInfo) {
 
     VkRect2D scissor{
         .offset = {0, 0},
-        .extent = mShadowMapExtent
+        .extent = mShadowMap->extent()
     };
     vkCmdSetScissor(renderInfo.commandBuffer, 0, 1, &scissor);
 
@@ -243,10 +258,5 @@ void ShadowPipeline::render(ShadowPipelineRenderInfo& renderInfo) {
 
     vkCmdEndRendering(renderInfo.commandBuffer);
 
-    renderInfo.depthResources->translateShadowImage(renderInfo.commandBuffer,
-                                                    renderInfo.initialLayout,
-                                                    renderInfo.finalLayout);
+    mShadowMap->transit(renderInfo.commandBuffer,renderInfo.initialLayout,renderInfo.finalLayout);
 }
-
-//            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-//            .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL

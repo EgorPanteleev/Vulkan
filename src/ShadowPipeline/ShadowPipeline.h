@@ -7,6 +7,7 @@
 
 #include "ShadowDescriptorSet.h"
 #include "Utils.h"
+#include "Image.h"
 
 struct ShadowPipelineCreateInfo {
     Context* context;
@@ -17,7 +18,6 @@ struct ShadowPipelineCreateInfo {
 
 struct ShadowPipelineRenderInfo {
     VkCommandBuffer commandBuffer;
-    DepthResources* depthResources;
     VkBuffer vertexBuffer;
     VkBuffer indexBuffer;
     uint32_t indexCount;
@@ -34,10 +34,12 @@ public:
     VkPipelineLayout pipelineLayout() { return mPipelineLayout; }
     VkPipeline graphicsPipeline() { return mGraphicsPipeline; }
     ShadowDescriptorSet* descriptorSet() { return mDescriptorSet; }
+    Image* shadowMap() { return mShadowMap; }
 
     void render(ShadowPipelineRenderInfo& renderInfo);
 
 private:
+    void createShadowMap(ShadowPipelineCreateInfo& createInfo);
     void createDescriptorSet(ShadowPipelineCreateInfo& createInfo);
     void createPipelineLayout();
     void createGraphicsPipeline(VkShaderModule& vertShaderModule);
@@ -45,9 +47,9 @@ private:
 
     Context* mContext;
     ShadowDescriptorSet* mDescriptorSet;
+    Image* mShadowMap;
     VkPipelineLayout mPipelineLayout;
     VkPipeline mGraphicsPipeline;
-    VkExtent2D mShadowMapExtent;
 };
 
 #endif //VULKAN_SHADOWPIPELINE_H

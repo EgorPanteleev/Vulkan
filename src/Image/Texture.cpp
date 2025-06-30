@@ -139,6 +139,7 @@ ImageAllocateInfo Texture::getAllocateInfo() const {
             .extent = mExtent,
             .numSamples = VK_SAMPLE_COUNT_1_BIT,
             .imageUsageFlags = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            .aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT,
             .mipLevels = mMipLevels,
             .generateMipMaps = mGenerateMipMap
     };
@@ -151,6 +152,7 @@ ImageAllocateInfo Texture::getAllocateInfo(TextureLoadInfo& loadInfo) const {
             .extent = {loadInfo.width, loadInfo.height},
             .numSamples = VK_SAMPLE_COUNT_1_BIT,
             .imageUsageFlags = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            .aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT,
             .mipLevels = calcMipLevels(loadInfo.width, loadInfo.height),
             .generateMipMaps = loadInfo.generateMipMap
     };
@@ -163,6 +165,7 @@ ImageAllocateInfo Texture::getAllocateInfo(const gli::texture& tex) const {
             .extent = {static_cast<uint32_t>(tex.extent().x), static_cast<uint32_t>(tex.extent().y)},
             .numSamples = VK_SAMPLE_COUNT_1_BIT,
             .imageUsageFlags = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            .aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT,
             .mipLevels = static_cast<uint32_t>(tex.levels()),
             .generateMipMaps = false // Compressed images doesnt support generating mipMaps
     };
