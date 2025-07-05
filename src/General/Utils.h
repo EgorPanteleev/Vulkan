@@ -105,6 +105,10 @@ namespace Utils {
     void createSampler(Context* context, VkSampler& sampler, uint32_t mipLevels,
                        VkSamplerAddressMode adressMode, VkBorderColor borderColor,
                        VkBool32 compare);
+
+    void createFullImage(Context* context, VmaAllocation& imageAllocation, VkImage& image, VkImageView& imageView,
+                         uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkExtent2D extent, VkFormat format,
+                         VkImageUsageFlags imageUsageFlags, VkImageAspectFlags aspectFlags);
 }
 
 #endif //VULKAN_UTILS_H

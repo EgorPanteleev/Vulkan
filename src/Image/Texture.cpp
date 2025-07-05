@@ -8,7 +8,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-Texture::Texture(Context* context): Image(context) {
+Texture::Texture(Context* context): SampledImage(context) {
 }
 
 Texture::~Texture() {
@@ -21,7 +21,7 @@ void Texture::load(TextureLoadInfo& loadInfo) {
 }
 
 void Texture::loadByData(TextureLoadInfo& loadInfo) {
-    ImageAllocateInfo allocateInfo = getAllocateInfo(loadInfo);
+    TextureAllocateInfo allocateInfo = getAllocateInfo(loadInfo);
     allocate(allocateInfo);
     mGenerateMipMap = loadInfo.generateMipMap;
     load(loadInfo.data, mExtent, 0);
@@ -57,7 +57,7 @@ bool Texture::loadCommon(const std::string& path) {
                              (int*)&mTexChannels, STBI_rgb_alpha);
     if (!pixels) return false;
     if (mGenerateMipMap) mMipLevels = calcMipLevels(mExtent.width, mExtent.height);
-    ImageAllocateInfo allocateInfo = getAllocateInfo();
+    TextureAllocateInfo allocateInfo = getAllocateInfo();
     allocate(allocateInfo);
     load(pixels, mExtent, 0);
     return true;
@@ -66,7 +66,7 @@ bool Texture::loadCommon(const std::string& path) {
 bool Texture::loadCompressed(const std::string& path) {
     gli::texture tex = gli::load(path.c_str());
     if (tex.empty()) return false;
-    ImageAllocateInfo allocateInfo = getAllocateInfo(tex);
+    TextureAllocateInfo allocateInfo = getAllocateInfo(tex);
     allocate(allocateInfo);
     int layer = 0; int face = 0;
     for (int level = 0; level < tex.levels(); ++level) {
@@ -79,7 +79,11 @@ bool Texture::loadCompressed(const std::string& path) {
 
 
 void Texture::load(void* data, VkExtent2D extent, int mipLevel) {
-    transit(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    ImageTransitInfo transitInfo{
+      .src = VK_IMAGE_LAYOUT_UNDEFINED,
+      .dst = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+    };
+    transit(transitInfo);
     VkDeviceSize imageSize = formatToSize(mFormat, extent);
     VkBuffer stagingBuffer;
     VmaAllocation allocation;
@@ -94,6 +98,18 @@ void Texture::load(void* data, VkExtent2D extent, int mipLevel) {
     vmaDestroyBuffer(mContext->allocator(), stagingBuffer, allocation);
     if (mGenerateMipMap) generateMipMaps();
 }
+
+void Texture::allocate(TextureAllocateInfo& allocateInfo){
+    mFormat = allocateInfo.format;
+    mExtent = allocateInfo.extent;
+    mMipLevels = allocateInfo.mipLevels;
+    mGenerateMipMap = allocateInfo.generateMipMaps;
+    Utils::createFullImage(mContext, mImageAllocation, mImage, mImageView, mMipLevels, allocateInfo.numSamples,
+                           mExtent, mFormat, allocateInfo.imageUsageFlags, allocateInfo.aspectFlags );
+    Utils::createSampler(mContext, mSampler, mMipLevels,
+                         VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_FALSE);
+}
+
 
 VkFormat Texture::toVkFormat(ModelTexture::Type modelTexType) {
     VkFormat res;
@@ -133,8 +149,22 @@ VkFormat Texture::toVkFormat(gli::texture::format_type gliFormat) {
     return res;
 }
 
-ImageAllocateInfo Texture::getAllocateInfo() const {
-    ImageAllocateInfo allocateInfo {
+void Texture::transit(ImageTransitInfoCmd& transitInfo) {
+    Utils::transitionImageLayout(transitInfo.commandBuffer, mImage,
+                                 mMipLevels, mFormat,
+                                 transitInfo.src, transitInfo.dst,
+                                 transitInfo.level, transitInfo.levelCount);
+}
+
+void Texture::transit(ImageTransitInfo& transitInfo) {
+    Utils::transitionImageLayout(mContext,mImage,
+                                 mMipLevels, mFormat,
+                                 transitInfo.src, transitInfo.dst,
+                                 transitInfo.level, transitInfo.levelCount);
+}
+
+TextureAllocateInfo Texture::getAllocateInfo() const {
+    TextureAllocateInfo allocateInfo {
             .format = mFormat,
             .extent = mExtent,
             .numSamples = VK_SAMPLE_COUNT_1_BIT,
@@ -146,8 +176,8 @@ ImageAllocateInfo Texture::getAllocateInfo() const {
     return allocateInfo;
 }
 
-ImageAllocateInfo Texture::getAllocateInfo(TextureLoadInfo& loadInfo) const {
-    ImageAllocateInfo allocateInfo {
+TextureAllocateInfo Texture::getAllocateInfo(TextureLoadInfo& loadInfo) const {
+    TextureAllocateInfo allocateInfo {
             .format = toVkFormat(loadInfo.texType),
             .extent = {loadInfo.width, loadInfo.height},
             .numSamples = VK_SAMPLE_COUNT_1_BIT,
@@ -159,8 +189,8 @@ ImageAllocateInfo Texture::getAllocateInfo(TextureLoadInfo& loadInfo) const {
     return allocateInfo;
 }
 
-ImageAllocateInfo Texture::getAllocateInfo(const gli::texture& tex) const {
-    ImageAllocateInfo allocateInfo {
+TextureAllocateInfo Texture::getAllocateInfo(const gli::texture& tex) const {
+    TextureAllocateInfo allocateInfo {
             .format = toVkFormat(tex.format()),
             .extent = {static_cast<uint32_t>(tex.extent().x), static_cast<uint32_t>(tex.extent().y)},
             .numSamples = VK_SAMPLE_COUNT_1_BIT,
@@ -170,4 +200,77 @@ ImageAllocateInfo Texture::getAllocateInfo(const gli::texture& tex) const {
             .generateMipMaps = false // Compressed images doesnt support generating mipMaps
     };
     return allocateInfo;
+}
+
+void Texture::generateMipMaps() {
+    VkFormatProperties formatProperties;
+    vkGetPhysicalDeviceFormatProperties(mContext->physicalDevice(), mFormat, &formatProperties);
+    if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
+        WARNING << "WARNING: Texture image format does not support linear blitting!";
+        return;
+    }
+
+    auto commandPool = Utils::createCommandPool(mContext, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
+    VkCommandBuffer commandBuffer = Utils::beginSingleTimeCommands(mContext->device(), commandPool);
+
+    auto mipWidth = static_cast<int32_t>(mExtent.width);
+    auto mipHeight = static_cast<int32_t>(mExtent.height);
+
+    for (uint32_t i = 1; i < mMipLevels; ++i) {
+        ImageTransitInfoCmd transitInfo{
+                .commandBuffer = commandBuffer,
+                .src = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                .dst = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                .level = i - 1,
+                .levelCount = 1,
+        };
+        transit(transitInfo);
+
+        VkImageBlit blit{
+                .srcSubresource = {
+                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                        .mipLevel = i - 1,
+                        .baseArrayLayer = 0,
+                        .layerCount = 1,
+                },
+                .srcOffsets = {
+                        {0, 0, 0},
+                        {mipWidth, mipHeight, 1},
+                },
+                .dstSubresource = {
+                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                        .mipLevel = i,
+                        .baseArrayLayer = 0,
+                        .layerCount = 1,
+                },
+                .dstOffsets = {
+                        {0, 0, 0},
+                        {mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1},
+                },
+        };
+
+        vkCmdBlitImage(commandBuffer,
+                       mImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                       mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                       1, &blit,
+                       VK_FILTER_LINEAR);
+
+        transitInfo.src = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        transitInfo.dst = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        transit(transitInfo);
+        if (mipWidth > 1) mipWidth /= 2;
+        if (mipHeight > 1) mipHeight /= 2;
+    }
+
+    ImageTransitInfoCmd transitInfo{
+            .commandBuffer = commandBuffer,
+            .src = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            .dst = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            .level = mMipLevels - 1,
+            .levelCount = 1,
+    };
+    transit(transitInfo);
+
+    Utils::endSingleTimeCommands(mContext, commandPool, commandBuffer);
+    vkDestroyCommandPool(mContext->device(), commandPool, nullptr);
 }

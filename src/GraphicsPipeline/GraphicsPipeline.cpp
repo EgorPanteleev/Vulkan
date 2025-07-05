@@ -12,7 +12,6 @@ GraphicsPipeline::GraphicsPipeline(GraphicsPipelineCreateInfo& createInfo):
     createColorBuffer();
     createDepthBuffer();
     createDescriptorSet(createInfo);
-    createRenderPass();
     createPipelineLayout();
     createGraphicsPipeline( createInfo.vertShaderModule, createInfo.fragShaderModule );
 }
@@ -21,7 +20,6 @@ GraphicsPipeline::~GraphicsPipeline(){
     vkDestroyPipeline(mContext->device(), mGraphicsPipeline, nullptr);
     vkDestroyPipelineLayout(mContext->device(), mPipelineLayout, nullptr);
     vkDestroyPipelineCache(mContext->device(), mPipelineCache, nullptr);
-    vkDestroyRenderPass(mContext->device(), mRenderPass, nullptr);
     delete mDescriptorSet;
     mDepthBuffer->destroy();
     delete mDepthBuffer;
@@ -36,10 +34,13 @@ void GraphicsPipeline::createColorBuffer() {
             .numSamples =  Utils::getMaxUsableSampleCount(mContext->physicalDevice()),
             .imageUsageFlags = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
             .aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT,
-            .mipLevels = 1,
-            .generateMipMaps = false
     };
     mColorBuffer->allocate(allocateInfo);
+    ImageTransitInfo transitInfo{
+        .src = VK_IMAGE_LAYOUT_UNDEFINED,
+        .dst = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+    };
+    mColorBuffer->transit(transitInfo);
 }
 
 void GraphicsPipeline::createDepthBuffer() {
@@ -49,11 +50,13 @@ void GraphicsPipeline::createDepthBuffer() {
             .numSamples = Utils::getMaxUsableSampleCount(mContext->physicalDevice()),
             .imageUsageFlags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
             .aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT,
-            .mipLevels = 1,
-            .generateMipMaps = false
     };
     mDepthBuffer->allocate(allocateInfo);
-    mDepthBuffer->transit(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    ImageTransitInfo transitInfo{
+            .src = VK_IMAGE_LAYOUT_UNDEFINED,
+            .dst = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+    };
+    mDepthBuffer->transit(transitInfo);
 }
 
 void GraphicsPipeline::createDescriptorSet(GraphicsPipelineCreateInfo& createInfo) {
@@ -64,96 +67,6 @@ void GraphicsPipeline::createDescriptorSet(GraphicsPipelineCreateInfo& createInf
             .uniformBuffers = createInfo.uniformBuffers
     };
     mDescriptorSet = new DescriptorSet(descriptorSetCreateInfo);
-}
-
-void GraphicsPipeline::createRenderPass() {
-    auto msaaSamples = Utils::getMaxUsableSampleCount(mContext->physicalDevice());
-    VkAttachmentDescription colorAttachment {
-            .format = mSwapChain->format(),
-            .samples = msaaSamples,
-            .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-            .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-            .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-            .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-            .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-    };
-
-    VkAttachmentReference colorAttachmentRef{
-            .attachment = 0,
-            .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-    };
-
-    VkAttachmentDescription depthAttachment{
-            .format = Utils::findDepthFormat(mContext),
-            .samples = msaaSamples,
-            .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-            .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-            .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-            .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-    };
-
-    VkAttachmentReference depthAttachmentRef{
-            .attachment = 1,
-            .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-    };
-
-    VkAttachmentDescription colorAttachmentResolve{
-            .format = mSwapChain->format(),
-            .samples = VK_SAMPLE_COUNT_1_BIT,
-            .loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-            .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-            .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-            .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-            .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-    };
-
-    VkAttachmentReference colorAttachmentResolveRef{
-            .attachment = 2,
-            .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-    };
-
-    VkSubpassDependency dependency{
-            .srcSubpass = VK_SUBPASS_EXTERNAL,
-            .dstSubpass = 0,
-            .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
-                            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-            .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
-                            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-            .srcAccessMask = 0,
-            .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-                             VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
-    };
-
-    VkSubpassDescription subpass{
-            .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-            .colorAttachmentCount = 1,
-            .pColorAttachments = &colorAttachmentRef,
-            .pResolveAttachments = &colorAttachmentResolveRef,
-            .pDepthStencilAttachment = &depthAttachmentRef
-    };
-
-    std::array<VkAttachmentDescription, 3> attachments = {colorAttachment,
-                                                          depthAttachment,
-                                                          colorAttachmentResolve};
-    VkRenderPassCreateInfo renderPassInfo{
-            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-            .attachmentCount = static_cast<uint32_t>(attachments.size()),
-            .pAttachments = attachments.data(),
-            .subpassCount = 1,
-            .pSubpasses = &subpass,
-            .dependencyCount = 1,
-            .pDependencies = &dependency
-    };
-
-    if (vkCreateRenderPass(mContext->device(), &renderPassInfo, nullptr, &mRenderPass) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create render pass!");
-    }
-    INFO << "Created render pass";
-
 }
 
 void GraphicsPipeline::createGraphicsPipeline(VkShaderModule& vertShaderModule, VkShaderModule& fragShaderModule) {
@@ -191,10 +104,21 @@ void GraphicsPipeline::createGraphicsPipeline(VkShaderModule& vertShaderModule, 
             .maxDepthBounds = 1.0f
     };
 
+    VkFormat colorFormats[] = { mSwapChain->format() };
+
+    VkPipelineRenderingCreateInfo pipelineRenderingInfo{
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
+            .colorAttachmentCount = 1,
+            .pColorAttachmentFormats = colorFormats,
+            .depthAttachmentFormat = VK_FORMAT_D32_SFLOAT,
+            .stencilAttachmentFormat = VK_FORMAT_UNDEFINED,
+    };
+
     Utils::PipelineConfigInfo configInfo;
     getPipelineConfigInfo(configInfo);
     VkGraphicsPipelineCreateInfo pipelineInfo{
             .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+            .pNext = &pipelineRenderingInfo,
             .stageCount = 2,
             .pStages = shaderStages,
             .pVertexInputState = &configInfo.vertexInputInfo,
@@ -206,7 +130,7 @@ void GraphicsPipeline::createGraphicsPipeline(VkShaderModule& vertShaderModule, 
             .pColorBlendState = &configInfo.colorBlendInfo,
             .pDynamicState = &configInfo.dynamicStateInfo,
             .layout = mPipelineLayout,
-            .renderPass = mRenderPass,
+            .renderPass = VK_NULL_HANDLE,
             .subpass = 0,
             .basePipelineHandle = VK_NULL_HANDLE,
             .basePipelineIndex = -1
@@ -333,23 +257,51 @@ void GraphicsPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configI
 }
 
 void GraphicsPipeline::render(GraphicsPipelineRenderInfo& renderInfo) {
+    ImageTransitInfoCmd transitInfo{
+        .commandBuffer = renderInfo.commandBuffer,
+        .src = renderInfo.colorLayoutAttachment.finalLayout,
+        .dst = renderInfo.colorLayoutAttachment.initialLayout
+    };
+    renderInfo.presentImage->transit(transitInfo);
     std::vector<VkClearValue> clearValues = {
             {.color = {{0.2f, 0.2f, 0.2f, 1.0f}},},
             {.depthStencil = {1.0f, 0}}
     };
 
-    VkRenderPassBeginInfo renderPassInfo{
-            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-            .renderPass = mRenderPass,
-            .framebuffer = renderInfo.frameBuffer,
+    VkRenderingAttachmentInfo colorAttachment = {
+            .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+            .imageView = mColorBuffer->imageView(),
+            .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            .resolveMode = VK_RESOLVE_MODE_AVERAGE_BIT,
+            .resolveImageView = renderInfo.presentImage->imageView(),
+            .resolveImageLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+            .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+            .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+            .clearValue = clearValues[0],
+    };
+
+    VkRenderingAttachmentInfo depthAttachment = {
+            .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+            .imageView = mDepthBuffer->imageView(),
+            .imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+            .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            .clearValue = clearValues[1],
+    };
+
+    VkRenderingInfo renderingInfo = {
+            .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
             .renderArea = {
                     .offset = {0, 0},
                     .extent = renderInfo.extent
             },
-            .clearValueCount = (uint32_t) clearValues.size(),
-            .pClearValues = clearValues.data(),
+            .layerCount = 1,
+            .colorAttachmentCount = 1,
+            .pColorAttachments = &colorAttachment,
+            .pDepthAttachment = &depthAttachment,
     };
-    vkCmdBeginRenderPass(renderInfo.commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    vkCmdBeginRendering(renderInfo.commandBuffer, &renderingInfo);
 
     vkCmdBindPipeline(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline );
 
@@ -369,7 +321,8 @@ void GraphicsPipeline::render(GraphicsPipelineRenderInfo& renderInfo) {
     };
     vkCmdSetScissor(renderInfo.commandBuffer, 0, 1, &scissor);
 
-    vkCmdBindPipeline(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
+    vkCmdBindDescriptorSets(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout,
+                            0, 1, &mDescriptorSet->descriptorSets()[renderInfo.currentFrame], 0, nullptr);
 
     VkBuffer vertexBuffers[] = {renderInfo.vertexBuffer};
     VkDeviceSize offsets[] = {0};
@@ -377,12 +330,12 @@ void GraphicsPipeline::render(GraphicsPipelineRenderInfo& renderInfo) {
 
     vkCmdBindIndexBuffer(renderInfo.commandBuffer, renderInfo.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-    vkCmdBindDescriptorSets(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout,
-                            0, 1, &mDescriptorSet->descriptorSets()[renderInfo.currentFrame], 0, nullptr);
-
     vkCmdDrawIndexed(renderInfo.commandBuffer, renderInfo.indexCount, 1, 0, 0, 0);
 
-    vkCmdEndRenderPass(renderInfo.commandBuffer);
+    vkCmdEndRendering(renderInfo.commandBuffer);
+
+    std::swap(transitInfo.src, transitInfo.dst);
+    renderInfo.presentImage->transit(transitInfo);
 }
 
 void GraphicsPipeline::recreateBuffers() {

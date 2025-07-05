@@ -1,10 +1,9 @@
-project(General)
+project(SwapChain)
 
 find_package(Vulkan REQUIRED)
 find_package(glfw3 REQUIRED)
 
-set(ThirdPartyLibs vma stbImage gli)
-set(Libs Message Geometry Image)
+set(Libs Message Image)
 
 #static Library
 file(GLOB SOURCES "*.cpp")

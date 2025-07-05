@@ -15,20 +15,27 @@ struct GraphicsPipelineCreateInfo {
     Context* context;
     SwapChain* swapChain;
     VulkanModelLoader* loader;
-    Image* shadowMap;
+    SampledImage* shadowMap;
     const UniformBuffers& uniformBuffers;
     VkShaderModule vertShaderModule;
     VkShaderModule fragShaderModule;
 };
 
+struct LayoutAttachment {
+    VkImageLayout initialLayout;
+    VkImageLayout finalLayout;
+};
+
 struct GraphicsPipelineRenderInfo {
     VkCommandBuffer commandBuffer;
-    VkFramebuffer frameBuffer;
     VkBuffer vertexBuffer;
     VkBuffer indexBuffer;
     uint32_t indexCount;
     uint32_t currentFrame;
     VkExtent2D extent;
+    Image* presentImage;
+    LayoutAttachment colorLayoutAttachment;
+    LayoutAttachment depthLayoutAttachment;
 };
 
 class GraphicsPipeline {
@@ -38,7 +45,6 @@ public:
     /**
     * Getters
     */
-    VkRenderPass renderPass() { return mRenderPass; }
     VkPipelineLayout pipelineLayout() { return mPipelineLayout; }
     VkPipeline graphicsPipeline() { return mGraphicsPipeline; }
 
@@ -59,10 +65,6 @@ private:
 
     void createDescriptorSet(GraphicsPipelineCreateInfo& createInfo);
     /**
-     * Creating render pass
-     */
-    void createRenderPass();
-    /**
      * Creating pipeline layout
      */
     void createPipelineLayout();
@@ -77,7 +79,6 @@ private:
     DescriptorSet* mDescriptorSet;
     Image* mColorBuffer;
     Image* mDepthBuffer;
-    VkRenderPass mRenderPass;
     VkPipelineLayout mPipelineLayout;
     VkPipeline mGraphicsPipeline;
     VkPipelineCache mPipelineCache;

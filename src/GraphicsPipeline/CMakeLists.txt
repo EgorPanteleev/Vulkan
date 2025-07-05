@@ -3,7 +3,7 @@ project(GraphicsPipeline)
 find_package(Vulkan REQUIRED)
 
 set(ThirdPartyLibs stbImage)
-set(Libs General UniformBuffers)
+set(Libs General UniformBuffers SwapChain )
 
 #static Library
 file(GLOB SOURCES "*.cpp")

@@ -50,10 +50,6 @@ Renderer::Renderer(const std::string& modelPath, CameraCreateInfo& cameraCreateI
     mVertexBuffer = std::make_unique<VertexBuffer>(mContext.get(), mLoader.get());
     mSyncObjects = std::make_unique<SyncObjects>(mContext.get(), mSwapChain.get());
 
-    mSwapChain->createFrameBuffers(mGraphicsPipeline->renderPass(),
-                                   mGraphicsPipeline->depthBuffer()->imageView(),
-                                   mGraphicsPipeline->colorBuffer()->imageView());
-
     mVkImGui = std::make_unique<VkImGui>(mContext.get(), mSwapChain.get());
     mSwapChain->createImGuiFrameBuffers(mVkImGui->renderPass());
     mImGuiUsage = false;
@@ -170,9 +166,6 @@ void Renderer::recreateSwapChain() {
     mSwapChain->recreate();
     mGraphicsPipeline->recreateBuffers();
     mGraphicsPipeline->updateDescriptorSet();
-    mSwapChain->createFrameBuffers(mGraphicsPipeline->renderPass(),
-                                    mGraphicsPipeline->depthBuffer()->imageView(),
-                                    mGraphicsPipeline->colorBuffer()->imageView());
     mSwapChain->createImGuiFrameBuffers(mVkImGui->renderPass());
 
     INFO << "Swapchain recreated!";

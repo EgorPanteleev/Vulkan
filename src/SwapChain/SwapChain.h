@@ -6,6 +6,7 @@
 #define VULKAN_SWAPCHAIN_H
 
 #include "Context.h"
+#include "Image.h"
 
 class SwapChain {
 public:
@@ -19,9 +20,7 @@ public:
     VkSwapchainKHR swapChain() { return mSwapChain; }
     VkFormat format() const { return mFormat; }
     VkExtent2D extent() const { return mExtent; }
-    std::vector<VkImage>& images() { return mImages; }
-    std::vector<VkImageView>& imageViews() { return mImageViews; }
-    std::vector<VkFramebuffer>& frameBuffers() { return mFrameBuffers; }
+    const std::vector<std::unique_ptr<Image>>& images() const { return mImages; }
     std::vector<VkFramebuffer>& imGuiFrameBuffers() { return mImGuiFrameBuffers; }
     uint32_t imageIndex() const { return mImageIndex; }
     /**
@@ -31,7 +30,6 @@ public:
     /**
     * Creating frame buffers
     */
-    void createFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView, VkImageView colorImageView);
     void createImGuiFrameBuffers(VkRenderPass renderPass);
 private:
     /**
@@ -45,15 +43,12 @@ private:
      * Creating images and image views
      */
     void createImages();
-    void createImageViews();
 
     Context* mContext;
     VkSwapchainKHR mSwapChain;
     VkFormat mFormat;
     VkExtent2D mExtent;
-    std::vector<VkImage> mImages;
-    std::vector<VkImageView> mImageViews;
-    std::vector<VkFramebuffer> mFrameBuffers;
+    std::vector<std::unique_ptr<Image>> mImages;
     std::vector<VkFramebuffer> mImGuiFrameBuffers;
     uint32_t mImageIndex;
 };

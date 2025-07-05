@@ -13,8 +13,21 @@ struct ImageAllocateInfo{
     VkSampleCountFlagBits numSamples = VK_SAMPLE_COUNT_1_BIT;
     VkImageUsageFlags imageUsageFlags = 0;
     VkImageAspectFlags aspectFlags = 0;
-    uint32_t mipLevels = 1;
-    bool generateMipMaps = false;
+};
+
+struct ImageTransitInfoCmd {
+    VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+    VkImageLayout src = VK_IMAGE_LAYOUT_UNDEFINED;
+    VkImageLayout dst = VK_IMAGE_LAYOUT_UNDEFINED;
+    uint32_t level = 0;
+    uint32_t levelCount = 0;
+};
+
+struct ImageTransitInfo {
+    VkImageLayout src = VK_IMAGE_LAYOUT_UNDEFINED;
+    VkImageLayout dst = VK_IMAGE_LAYOUT_UNDEFINED;
+    uint32_t level = 0;
+    uint32_t levelCount = 0;
 };
 
 class Image {
@@ -24,30 +37,27 @@ public:
 
     VkImage image() { return mImage; }
     VkImageView imageView() { return mImageView; }
-    VkSampler sampler() { return mSampler; }
     VkExtent2D extent() { return mExtent; }
 
     void allocate(ImageAllocateInfo& allocateInfo);
     void destroy();
 
-    void transit(VkCommandBuffer commandBuffer, VkImageLayout src, VkImageLayout dst,
-                 uint32_t level = 0, uint32_t levelCount = 0);
-    void transit(VkImageLayout src, VkImageLayout dst, uint32_t level = 0, uint32_t levelCount = 0);
-
     static uint32_t calcMipLevels(uint32_t width, uint32_t height);
+
+    virtual void transit(ImageTransitInfoCmd& transitInfo);
+    virtual void transit(ImageTransitInfo& transitInfo);
+
+    void set(VkImage image, VkImageView imageView) {mImage = image; mImageView = imageView;};
+
 protected:
-    void generateMipMaps();
 
     Context* mContext;
     VkImage mImage;
     VkImageView mImageView;
     VmaAllocation mImageAllocation;
-    VkSampler mSampler;
 
     VkFormat mFormat;
     VkExtent2D mExtent;
-    uint32_t mMipLevels;
-    bool mGenerateMipMap;
 };
 
 

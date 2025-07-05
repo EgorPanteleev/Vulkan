@@ -65,13 +65,18 @@ void CommandManager::recordCommandBuffer(CommandManagerRecordInfo& recordInfo) {
 
     GraphicsPipelineRenderInfo graphicsPipelineRenderInfo{
             .commandBuffer = commandBuffer,
-            .frameBuffer = recordInfo.swapChain->frameBuffers()[recordInfo.imageIndex],
             .vertexBuffer = recordInfo.vertexBuffer->vertexBuffer(),
             .indexBuffer = recordInfo.vertexBuffer->indexBuffer(),
             .indexCount = (uint32_t)recordInfo.vertexBuffer->indices().size(),
             .currentFrame = currentFrame,
-            .extent = recordInfo.swapChain->extent()
+            .extent = recordInfo.swapChain->extent(),
+            .presentImage = recordInfo.swapChain->images()[recordInfo.swapChain->imageIndex()].get(),
+            .colorLayoutAttachment = {VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                      VK_IMAGE_LAYOUT_PRESENT_SRC_KHR},
+            .depthLayoutAttachment = {VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                                      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL},
     };
+
     recordInfo.graphicsPipeline->render(graphicsPipelineRenderInfo);
 
     if ( recordInfo.vkImGui ) recordInfo.vkImGui->render(commandBuffer, recordInfo.imageIndex);

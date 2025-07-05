@@ -15,7 +15,7 @@ using UniformBuffers = std::vector<std::unique_ptr<UniformBuffer>>;
 struct DescriptorSetCreateInfo {
     Context* context;
     VulkanModelLoader* loader;
-    Image* shadowMap;
+    SampledImage* shadowMap;
     const UniformBuffers& uniformBuffers;
 };
 
@@ -40,7 +40,7 @@ private:
 
     VulkanModelLoader* mLoader;
 
-    Image* mShadowMap;
+    SampledImage* mShadowMap;
 
     const UniformBuffers& mUniformBuffers;
     /**

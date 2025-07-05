@@ -7,7 +7,7 @@
 
 #include "ShadowDescriptorSet.h"
 #include "Utils.h"
-#include "Image.h"
+#include "SampledImage.h"
 
 struct ShadowPipelineCreateInfo {
     Context* context;
@@ -34,7 +34,7 @@ public:
     VkPipelineLayout pipelineLayout() { return mPipelineLayout; }
     VkPipeline graphicsPipeline() { return mGraphicsPipeline; }
     ShadowDescriptorSet* descriptorSet() { return mDescriptorSet; }
-    Image* shadowMap() { return mShadowMap; }
+    SampledImage* shadowMap() { return mShadowMap; }
 
     void render(ShadowPipelineRenderInfo& renderInfo);
 
@@ -47,7 +47,7 @@ private:
 
     Context* mContext;
     ShadowDescriptorSet* mDescriptorSet;
-    Image* mShadowMap;
+    SampledImage* mShadowMap;
     VkPipelineLayout mPipelineLayout;
     VkPipeline mGraphicsPipeline;
 };

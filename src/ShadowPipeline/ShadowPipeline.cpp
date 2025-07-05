@@ -6,7 +6,7 @@
 #include "Utils.h"
 
 ShadowPipeline::ShadowPipeline(ShadowPipelineCreateInfo& createInfo):
-                               mContext(createInfo.context), mShadowMap(new Image(mContext)) {
+                               mContext(createInfo.context), mShadowMap(new SampledImage(mContext)) {
     createShadowMap(createInfo);
     createDescriptorSet(createInfo);
     createPipelineLayout();
@@ -27,11 +27,13 @@ void ShadowPipeline::createShadowMap(ShadowPipelineCreateInfo& createInfo) {
         .numSamples = VK_SAMPLE_COUNT_1_BIT,
         .imageUsageFlags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
         .aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT,
-        .mipLevels = 1,
-        .generateMipMaps = false
     };
     mShadowMap->allocate(allocateInfo);
-    mShadowMap->transit(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    ImageTransitInfo transitInfo{
+        .src = VK_IMAGE_LAYOUT_UNDEFINED,
+        .dst = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+    };
+    mShadowMap->transit(transitInfo);
 }
 
 void ShadowPipeline::createDescriptorSet(ShadowPipelineCreateInfo& createInfo) {
@@ -198,7 +200,12 @@ void ShadowPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configInf
 }
 
 void ShadowPipeline::render(ShadowPipelineRenderInfo& renderInfo) {
-    mShadowMap->transit(renderInfo.commandBuffer, renderInfo.finalLayout, renderInfo.initialLayout);
+    ImageTransitInfoCmd transitInfo{
+        .commandBuffer = renderInfo.commandBuffer,
+        .src = renderInfo.finalLayout,
+        .dst = renderInfo.initialLayout,
+    };
+    mShadowMap->transit(transitInfo);
     VkClearValue clearValue{
             .depthStencil = {1.0f, 0}
     };
@@ -258,5 +265,6 @@ void ShadowPipeline::render(ShadowPipelineRenderInfo& renderInfo) {
 
     vkCmdEndRendering(renderInfo.commandBuffer);
 
-    mShadowMap->transit(renderInfo.commandBuffer,renderInfo.initialLayout,renderInfo.finalLayout);
+    std::swap(transitInfo.src, transitInfo.dst);
+    mShadowMap->transit(transitInfo);
 }

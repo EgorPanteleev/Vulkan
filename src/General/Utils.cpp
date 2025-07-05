@@ -389,6 +389,8 @@ namespace Utils {
                 aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
                 if (stencilComponent) aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
                 break;
+            case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+            case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
             case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
             case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
                 aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -423,6 +425,14 @@ namespace Utils {
                 srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
                 srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
                 break;
+            case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                srcStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+                srcAccessMask = 0;
+                srcStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+                break;
             default:
                 throw std::invalid_argument(std::string("Unsupported old layout: ") + imageLayoutToString(oldLayout));
         }
@@ -449,6 +459,14 @@ namespace Utils {
             case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
                 dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
                 dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                dstStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+                dstAccessMask = 0;
+                dstStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
                 break;
             default:
                 throw std::invalid_argument(std::string("Unsupported new layout: ") + imageLayoutToString(newLayout));
@@ -605,6 +623,19 @@ namespace Utils {
         if (vkCreateSampler(context->device(), &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create texture sampler!");
         }
+    }
+
+    void createFullImage(Context* context, VmaAllocation& imageAllocation, VkImage& image, VkImageView& imageView,
+                     uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkExtent2D extent, VkFormat format,
+                     VkImageUsageFlags imageUsageFlags, VkImageAspectFlags aspectFlags) {
+
+        Utils::createImage(context->allocator(), imageAllocation, VMA_MEMORY_USAGE_AUTO,
+                           image, mipLevels, numSamples,
+                           extent.width, extent.height, format, VK_IMAGE_TILING_OPTIMAL,
+                           imageUsageFlags);
+
+        imageView = Utils::createImageView(context->device(), image, mipLevels, VK_IMAGE_VIEW_TYPE_2D,
+                                            format, aspectFlags);
     }
 
 }

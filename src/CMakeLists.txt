@@ -13,6 +13,7 @@ add_subdirectory(ModelLoader)
 
 add_subdirectory(General)
 add_subdirectory(Image)
+add_subdirectory(SwapChain)
 add_subdirectory(UniformBuffers)
 add_subdirectory(ShadowPipeline)
 add_subdirectory(GraphicsPipeline)
@@ -25,7 +26,9 @@ file(GLOB SOURCES "*.cpp")
 file(GLOB HEADERS "*.h")
 add_library(VulkanLib STATIC ${SOURCES} ${HEADERS}
         Image/Image.cpp
-        Image/Image.h)
+        Image/Image.h
+        Image/SampledImage.cpp
+        Image/SampledImage.h)
 
 target_link_libraries(VulkanLib ${Libs} )
 target_include_directories(VulkanLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

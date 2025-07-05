@@ -17,21 +17,17 @@ SwapChain::~SwapChain() {
 void SwapChain::recreate() {
     createSwapChain();
     createImages();
-    createImageViews();
 }
 
 void SwapChain::clear() {
-    for ( auto framebuffer : mFrameBuffers ) {
-        vkDestroyFramebuffer( mContext->device(), framebuffer, nullptr );
-    }
     for ( auto framebuffer : mImGuiFrameBuffers ) {
         vkDestroyFramebuffer( mContext->device(), framebuffer, nullptr );
     }
     vkDestroySwapchainKHR(mContext->device(), mSwapChain, nullptr);
-    for (auto imageView : mImageViews) {
-        vkDestroyImageView(mContext->device(), imageView, nullptr);
+    for (auto& image: mImages) {
+        vkDestroyImageView(mContext->device(), image->imageView(), nullptr);
     }
-    mImageViews.clear();
+    mImages.clear();
 }
 
 void SwapChain::createSwapChain() {
@@ -121,22 +117,28 @@ VkExtent2D SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilit
 }
 
 void SwapChain::createImages() {
+    std::vector<VkImage> images;
     auto swapChainSupport =
             Utils::getSwapChainSupport(mContext->physicalDevice(), mContext->surface());
     auto imageCount = Utils::getImageCount(swapChainSupport);
-    vkGetSwapchainImagesKHR(mContext->device(), mSwapChain, &imageCount, nullptr);
-    mImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(mContext->device(), mSwapChain, &imageCount, mImages.data());
-}
+    vkGetSwapchainImagesKHR(mContext->device(), mSwapChain,&imageCount, nullptr);
+    images.resize(imageCount);
+    vkGetSwapchainImagesKHR(mContext->device(), mSwapChain, &imageCount, images.data());
 
-void SwapChain::createImageViews() {
-    mImageViews.resize(mImages.size());
-    for (size_t i = 0; i < mImages.size(); ++i) {
-        mImageViews[i] = Utils::createImageView(mContext->device(), mImages[i], 1, VK_IMAGE_VIEW_TYPE_2D,
+    ImageTransitInfo transitInfo{
+            .src = VK_IMAGE_LAYOUT_UNDEFINED,
+            .dst = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+    };
+
+    for (int i = 0; i < imageCount; ++i) {
+        VkImageView imageView;
+        imageView = Utils::createImageView(mContext->device(), images[i], 1, VK_IMAGE_VIEW_TYPE_2D,
                                                 mFormat, VK_IMAGE_ASPECT_COLOR_BIT );
+        mImages.push_back(std::make_unique<Image>(mContext));
+        mImages.back()->set(images[i], imageView);
+        mImages.back()->transit(transitInfo);
     }
 }
-
 
 VkResult SwapChain::acquireNextImage(VkSemaphore imageAvailableSemaphore, VkFence inFlightFence) {
     vkWaitForFences(mContext->device(), 1, &inFlightFence, VK_TRUE, UINT64_MAX);
@@ -148,25 +150,12 @@ VkResult SwapChain::acquireNextImage(VkSemaphore imageAvailableSemaphore, VkFenc
     return result;
 }
 
-void SwapChain::createFrameBuffers(VkRenderPass renderPass, VkImageView depthImageView, VkImageView colorImageView) {
-    mFrameBuffers.resize( mImageViews.size() );
-    for (size_t i = 0; i < mImageViews.size(); ++i) {
-        std::vector<VkImageView> attachments = {
-                colorImageView,
-                depthImageView,
-                mImageViews[i]
-        };
-        mFrameBuffers[i] = Utils::createFrameBuffer(mContext->device(), renderPass, attachments, mExtent);
-    }
-    INFO << "Created frame buffers!";
-}
-
 void SwapChain::createImGuiFrameBuffers(VkRenderPass renderPass) {
     mImGuiFrameBuffers.clear();
-    mImGuiFrameBuffers.resize( mImageViews.size() );
-    for (size_t i = 0; i < mImageViews.size(); ++i) {
+    mImGuiFrameBuffers.resize( mImages.size() );
+    for (size_t i = 0; i < mImages.size(); ++i) {
         std::vector<VkImageView> attachments = {
-                mImageViews[i]
+                mImages[i]->imageView()
         };
         mImGuiFrameBuffers[i] = Utils::createFrameBuffer(mContext->device(), renderPass, attachments, mExtent);
     }
