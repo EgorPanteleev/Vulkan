@@ -10,6 +10,9 @@
 [submodule "thirdparty/gli"]
 	path = thirdparty/gli
 	url = https://github.com/g-truc/gli.git
-[submodule "thirdparty/Tracy"]
-	path = thirdparty/Tracy
+[submodule "thirdparty/tracy"]
+	path = thirdparty/tracy
 	url = https://github.com/wolfpld/tracy.git
+[submodule "thirdparty/assimp"]
+	path = thirdparty/assimp
+	url = https://github.com/assimp/assimp.git
