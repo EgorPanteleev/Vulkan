@@ -26,3 +26,8 @@ set(ASSIMP_INJECT_DEBUG_POSTFIX OFF CACHE BOOL "" FORCE)
 set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
 set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
 add_subdirectory(./assimp)
+
+#Tracy
+option (TRACY_ENABLE "" ON)
+option (TRACY_ON_DEMAND "" ON)
+add_subdirectory(./tracy)
