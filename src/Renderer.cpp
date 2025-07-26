@@ -152,11 +152,11 @@ void Renderer::render() {
         uniformBuffer->updateUniformBuffer(mCurrentFrame, mSwapChain->extent() );
     }
 
+    ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(500, 200), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowBgAlpha(0.4);
+    mVkImGui->beginFrame();
     if ( mImGuiUsage ) {
-        mVkImGui->beginFrame();
-        ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(500, 200), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowBgAlpha(0.4);
         ImGui::Begin("Settings");
         ImVec2 mousePos = ImGui::GetMousePos();
         ImGui::Text("Mouse pos: %.1f x %.1f", mousePos.x, mousePos.y);
@@ -166,8 +166,8 @@ void Renderer::render() {
         ImGui::DragFloat3("Light direction", &dir.x, 0.005f, -1.0f, 1.0f);
 
         ImGui::End();
-        mVkImGui->endFrame();
     }
+    mVkImGui->endFrame();
 }
 
 void Renderer::recreateSwapChain() {

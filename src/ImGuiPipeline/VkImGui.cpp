@@ -41,13 +41,6 @@ VkImGui::VkImGui(Context* context, SwapChain* swapChain):
     ImGui_ImplVulkan_Init(&init_info);
 
     ImGui_ImplVulkan_CreateFontsTexture();
-
-    //upload fonts
-//    auto commandPool = Utils::createCommandPool(mContext, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT );
-//    VkCommandBuffer commandBuffer = Utils::beginSingleTimeCommands(mContext->device(), commandPool);
-//    ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
-//    Utils::endSingleTimeCommands(mContext, commandPool, commandBuffer);
-//    ImGui_ImplVulkan_DestroyFontUploadObjects();
 }
 
 VkImGui::~VkImGui() {
