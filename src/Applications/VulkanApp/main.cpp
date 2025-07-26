@@ -2,7 +2,8 @@
 // Created by auser on 4/2/25.
 //
 
-#include "VulkanApp.h"
+#include "VulkanApp.hpp"
+#include "tracy/Tracy.hpp"
 
 #define MODEL_PATH PROJECT_PATH"models/Sponza/glTF/Sponza.gltf"
 //#define MODEL_PATH PROJECT_PATH"models/Bistro/BistroExterior.fbx"

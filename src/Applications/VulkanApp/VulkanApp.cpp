@@ -2,7 +2,7 @@
 // Created by auser on 6/19/25.
 //
 
-#include "VulkanApp.h"
+#include "VulkanApp.hpp"
 
 #include <backends/imgui_impl_glfw.h>
 
@@ -27,6 +27,11 @@ static void keyCallBack(GLFWwindow* window, int key, int scancode, int action, i
     if (action == GLFW_PRESS && key == GLFW_KEY_Z) {
         renderer->setImGuiUsage(!renderer->imGuiUsage());
     }
+
+    if (action == GLFW_PRESS && key == GLFW_KEY_Q) {
+        renderer->quit();
+    }
+
 }
 
 static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {

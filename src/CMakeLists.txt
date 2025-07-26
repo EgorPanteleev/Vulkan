@@ -7,24 +7,7 @@ add_compile_definitions(GLM_FORCE_RADIANS)
 
 add_subdirectory(Camera)
 add_subdirectory(Message)
-add_subdirectory(Math)
-add_subdirectory(Geometry)
+add_subdirectory(Utils)
 add_subdirectory(ModelLoader)
-
-add_subdirectory(General)
-add_subdirectory(UniformBuffers)
-add_subdirectory(ShadowPipeline)
-add_subdirectory(GraphicsPipeline)
-add_subdirectory(ImGuiPipeline)
-
-set(Libs Camera General GraphicsPipeline ShadowPipeline ImGuiPipeline)
-
-#static Library
-file(GLOB SOURCES "*.cpp")
-file(GLOB HEADERS "*.h")
-add_library(VulkanLib STATIC ${SOURCES} ${HEADERS})
-
-target_link_libraries(VulkanLib ${Libs} )
-target_include_directories(VulkanLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
+add_subdirectory(VulkanRenderer)
 add_subdirectory(Applications)

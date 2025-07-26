@@ -1,0 +1,40 @@
+//
+// Created by auser on 6/12/25.
+//
+
+#ifndef VULKAN_VULKANMODELLOADER_H
+#define VULKAN_VULKANMODELLOADER_H
+
+#include "AssimpLoader.hpp"
+#include "Vertex.hpp"
+#include "Texture.hpp"
+
+struct VulkanTextures {
+    VulkanTextures(): mTextures() {}
+
+    Texture*& operator[](int ind) { return mTextures[ind]; }
+    std::array<Texture*, ModelTexture::UNKNOWN> mTextures;
+};
+
+class VulkanModelLoader: public AssimpLoader {
+public:
+    VulkanModelLoader(Context* context, std::string modelPath);
+    ~VulkanModelLoader();
+    const std::vector<Vertex>& vulkanVertices() { return mVulkanVertices; }
+    const std::vector<VulkanTextures>& vulkanTextures() { return mVulkanTextures; }
+    bool load() override;
+
+    bool loadGeometry();
+    bool loadMaterials();
+private:
+    void* getEmptyData(ModelTexture::Type texType);
+
+
+    Context* mContext;
+
+    std::vector<Vertex> mVulkanVertices;
+    std::vector<VulkanTextures> mVulkanTextures;
+};
+
+
+#endif //VULKAN_VULKANMODELLOADER_H
