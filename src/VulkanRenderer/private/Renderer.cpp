@@ -152,10 +152,10 @@ void Renderer::render() {
         uniformBuffer->updateUniformBuffer(mCurrentFrame, mSwapChain->extent() );
     }
 
-    ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(500, 200), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowBgAlpha(0.4);
     mVkImGui->beginFrame();
+    ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(500, 115), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowBgAlpha(0.4);
     if ( mImGuiUsage ) {
         ImGui::Begin("Settings");
         ImVec2 mousePos = ImGui::GetMousePos();
