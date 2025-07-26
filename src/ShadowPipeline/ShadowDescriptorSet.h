@@ -5,6 +5,8 @@
 #ifndef VULKAN_SHADOWDESCRIPTORSET_H
 #define VULKAN_SHADOWDESCRIPTORSET_H
 
+#include <memory>
+
 #include "Context.h"
 #include "UniformBuffer.h"
 

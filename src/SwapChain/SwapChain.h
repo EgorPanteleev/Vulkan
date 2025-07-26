@@ -5,6 +5,8 @@
 #ifndef VULKAN_SWAPCHAIN_H
 #define VULKAN_SWAPCHAIN_H
 
+#include <memory>
+
 #include "Context.h"
 #include "Image.h"
 

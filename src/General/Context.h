@@ -5,23 +5,25 @@
 #ifndef VULKAN_CONTEXT_H
 #define VULKAN_CONTEXT_H
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-#include "vk_mem_alloc.h"
-//STL
+#include <vk_mem_alloc.h>
 #include <vector>
-#include <memory>
 
 #include "Window.h"
 
+struct ContextCreateInfo {
+    WindowCreateInfo windowCreateInfo{};
+    uint32_t maxFramesInFlight = 2;
+    std::vector<const char*> validationLayers;
+    std::vector<const char*> deviceExtensions;
+    bool enableValidationLayers = false;
+};
+
 class Context {
 public:
-    Context();
+    Context(const ContextCreateInfo& createInfo);
     ~Context();
 
-    /**
-     *  Getters
-     */
+    /// Getters
     VkInstance instance() { return mInstance; }
     Window& window() { return mWindow; }
     GLFWwindow* glfwWindow() { return mWindow.window(); }
@@ -34,35 +36,38 @@ public:
     VkQueue presentQueue() { return mPresentQueue; }
 
 private:
-    /**
-     *  Creating instance
-     */
+    /// Creating instance
     void createInstance();
     bool checkValidationLayerSupport();
     std::vector<const char *> getRequiredExtensions();
     void checkGflwRequiredInstanceExtensions();
-    /**
-     * Picking physical device
-     */
+
+    /// Picking physical device
     void pickPhysicalDevice();
     bool isDeviceSuitable( VkPhysicalDevice device );
     bool checkDeviceExtensionSupport( VkPhysicalDevice device );
-    /**
-     * Creating logical device
-     */
+
+    /// Creating logical device
     void createLogicalDevice();
 
+    /// Other
     void createAllocator();
     VkQueue getQueue(uint32_t index) const;
-    const uint32_t mMaxFramesInFlight = 3;
-    const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
-    const std::vector<const char *> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-                                                         VK_KHR_MAINTENANCE_1_EXTENSION_NAME};
-#ifdef NDEBUG
-    const bool enableValidationLayers = false;
-#else
-    const bool enableValidationLayers = true;
-#endif
+
+    //    std::vector<const char*> mValidationLayers = { "VK_LAYER_KHRONOS_validation" };
+    //    std::vector<const char *> mDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+    //                                                         VK_KHR_MAINTENANCE_1_EXTENSION_NAME};
+
+    uint32_t mMaxFramesInFlight;
+    std::vector<const char*> mValidationLayers;
+    std::vector<const char *> mDeviceExtensions;
+    bool mEnableValidationLayers;
+
+//#ifdef NDEBUG
+//    const bool mEnableValidationLayers = false;
+//#else
+//    const bool mEnableValidationLayers = true;
+//#endif
     VkInstance mInstance;
     Window mWindow;
     VkSurfaceKHR mSurface;

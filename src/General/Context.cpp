@@ -6,18 +6,22 @@
 #include "Utils.h"
 
 #define VMA_IMPLEMENTATION
-#include "vk_mem_alloc.h"
-//STL
+#include <vk_mem_alloc.h>
+
 #include <cstring>
 #include <stdexcept>
 #include <iostream>
 #include <unordered_set>
 #include <set>
 
-Context::Context(): mInstance(VK_NULL_HANDLE), mWindow( 960, 600, "VulkanApp" ), mPhysicalDevice(VK_NULL_HANDLE),
-                    mDevice(VK_NULL_HANDLE), mGraphicsQueue(VK_NULL_HANDLE), mPresentQueue(VK_NULL_HANDLE) {
+Context::Context(const ContextCreateInfo& createInfo): mMaxFramesInFlight(createInfo.maxFramesInFlight),
+                 mValidationLayers(createInfo.validationLayers), mDeviceExtensions(createInfo.deviceExtensions),
+                 mEnableValidationLayers(createInfo.enableValidationLayers), mWindow(createInfo.windowCreateInfo),
+                 mInstance(VK_NULL_HANDLE), mSurface(VK_NULL_HANDLE), mPhysicalDevice(VK_NULL_HANDLE),
+                 mDevice(VK_NULL_HANDLE), mAllocator(VK_NULL_HANDLE), mGraphicsQueue(VK_NULL_HANDLE),
+                 mPresentQueue(VK_NULL_HANDLE), mDebugMessenger(VK_NULL_HANDLE) {
     createInstance();
-    if (enableValidationLayers)
+    if (mEnableValidationLayers)
         mDebugMessenger = Utils::createDebugMessenger(mInstance);
     mWindow.createWindowSurface( mInstance, mSurface );
     pickPhysicalDevice();
@@ -27,13 +31,13 @@ Context::Context(): mInstance(VK_NULL_HANDLE), mWindow( 960, 600, "VulkanApp" ),
 Context::~Context() {
     vmaDestroyAllocator(mAllocator);
     vkDestroyDevice(mDevice, nullptr);
-    if (enableValidationLayers) Utils::destroyDebugUtilsMessengerEXT(mInstance, mDebugMessenger, nullptr);
+    if (mEnableValidationLayers) Utils::destroyDebugUtilsMessengerEXT(mInstance, mDebugMessenger, nullptr);
     vkDestroySurfaceKHR(mInstance, mSurface, nullptr);
     vkDestroyInstance( mInstance, nullptr );
 }
 
 void Context::createInstance() {
-    if (enableValidationLayers && !checkValidationLayerSupport()) {
+    if (mEnableValidationLayers && !checkValidationLayerSupport()) {
         throw std::runtime_error("Validation layers requested, but not available!");
     }
     VkApplicationInfo appInfo{};
@@ -52,9 +56,9 @@ void Context::createInstance() {
     createInfo.ppEnabledExtensionNames = extensions.data();
 
     auto debugCreateInfo = Utils::createDebugMessengerCreateInfo();
-    if (enableValidationLayers) {
-        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
+    if (mEnableValidationLayers) {
+        createInfo.enabledLayerCount = static_cast<uint32_t>(mValidationLayers.size());
+        createInfo.ppEnabledLayerNames = mValidationLayers.data();
         createInfo.pNext = &debugCreateInfo;
     } else {
         createInfo.enabledLayerCount = 0;
@@ -74,7 +78,7 @@ bool Context::checkValidationLayerSupport() {
     std::vector<VkLayerProperties> availableLayers(layerCount);
     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-    for (const char* layerName : validationLayers) {
+    for (const char* layerName : mValidationLayers) {
         bool layerFound = false;
         for (const auto& layerProperties : availableLayers) {
             if (strcmp(layerName, layerProperties.layerName) == 0) {
@@ -94,7 +98,7 @@ std::vector<const char *> Context::getRequiredExtensions() {
     const char** glfwExtensions;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
     std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-    if (enableValidationLayers) {
+    if (mEnableValidationLayers) {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
     return extensions;
@@ -186,7 +190,7 @@ bool Context::checkDeviceExtensionSupport(VkPhysicalDevice device) {
     std::vector<VkExtensionProperties> availableExtensions(extensionCount);
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
-    std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+    std::set<std::string> requiredExtensions(mDeviceExtensions.begin(), mDeviceExtensions.end());
 
     for (const auto& extension : availableExtensions) {
         requiredExtensions.erase(extension.extensionName);
@@ -235,12 +239,12 @@ void Context::createLogicalDevice() {
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());;
     createInfo.pEnabledFeatures = &deviceFeatures;
-    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(mDeviceExtensions.size());
+    createInfo.ppEnabledExtensionNames = mDeviceExtensions.data();
     createInfo.pNext = &dynamicRenderingFeature;
-    if (enableValidationLayers) {
-        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
+    if (mEnableValidationLayers) {
+        createInfo.enabledLayerCount = static_cast<uint32_t>(mValidationLayers.size());
+        createInfo.ppEnabledLayerNames = mValidationLayers.data();
     } else {
         createInfo.enabledLayerCount = 0;
     }

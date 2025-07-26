@@ -14,7 +14,18 @@
 
 Renderer::Renderer(const std::string& modelPath, CameraCreateInfo& cameraCreateInfo): mCurrentFrame(0) {
     mCamera = std::make_unique<Camera>(cameraCreateInfo);
-    mContext = std::make_unique<Context>();
+    ContextCreateInfo contextCreateInfo {
+        .maxFramesInFlight = 3,
+        .validationLayers = { "VK_LAYER_KHRONOS_validation" },
+        .deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+                              VK_KHR_MAINTENANCE_1_EXTENSION_NAME },
+#ifdef NDEBUG
+        .enableValidationLayers = false,
+#else
+        .enableValidationLayers = true,
+#endif
+    };
+    mContext = std::make_unique<Context>(contextCreateInfo);
     mLoader = std::make_unique<VulkanModelLoader>(mContext.get(), modelPath);
     if (!mLoader->load()) exit(-1);
 
@@ -79,7 +90,6 @@ void Renderer::mainLoop() {
         endFrame();
         fpsCounter.update();
         deltaTime = 1e3 / fpsCounter.fps();
-//        INFO << deltaTime;
         processKeyboard(deltaTime);
         glfwSetWindowTitle(mContext->window().window(), std::to_string(fpsCounter.fps()).c_str());
     }

@@ -9,8 +9,8 @@
 #include <iostream>
 
 
-Window::Window( int w, int h, const std::string& name ): mFrameBufferResized(false) {
-    initWindow( w, h, name );
+Window::Window(const WindowCreateInfo& createInfo): mFrameBufferResized(false) {
+    initWindow(createInfo);
 }
 
 Window::~Window() {
@@ -18,14 +18,15 @@ Window::~Window() {
     glfwTerminate();
 }
 
-void Window::initWindow( int w, int h, const std::string& name) {
+void Window::initWindow(const WindowCreateInfo& createInfo) {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_FALSE);
     glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
 
-    mWindow = glfwCreateWindow( w, h, name.c_str(), nullptr, nullptr);
+    mWindow = glfwCreateWindow( createInfo.width, createInfo.height,
+                                createInfo.name, nullptr, nullptr);
 
     glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 }

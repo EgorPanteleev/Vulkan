@@ -47,7 +47,6 @@ bool VulkanModelLoader::loadGeometry() {
     return true;
 }
 
-    //PROJECT_PATH"textures/no_texture.jpeg"
 bool VulkanModelLoader::loadMaterials() {
     mVulkanTextures.resize(mMaterials.size());
     for (size_t i = 0; i < mMaterials.size(); ++i) {

@@ -9,14 +9,20 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+struct WindowCreateInfo {
+    const char* name = "";
+    int width = 960;
+    int height = 600;
+};
+
 class Window {
 public:
-    Window( int w, int h, const std::string& name );
+    Window(const WindowCreateInfo& createInfo);
     ~Window();
 
-    void createWindowSurface( VkInstance instance, VkSurfaceKHR& surface );
+    void createWindowSurface(VkInstance instance, VkSurfaceKHR& surface);
 
-    void getFrameBufferSize( int& width, int& height );
+    void getFrameBufferSize(int& width, int& height);
 
     [[nodiscard]] bool shouldClose() const {  return glfwWindowShouldClose( mWindow ); }
 
@@ -25,7 +31,7 @@ public:
 
     GLFWwindow* window() { return mWindow; }
 private:
-    void initWindow( int w, int h, const std::string& name );
+    void initWindow(const WindowCreateInfo& createInfo);
 
     GLFWwindow* mWindow;
     bool mFrameBufferResized;
