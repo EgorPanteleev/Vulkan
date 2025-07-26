@@ -1,4 +1,6 @@
-project(Message)
+project(Utils)
+
+find_package(glm REQUIRED)
 
 #static Library
 file(GLOB SOURCES "private/*.cpp")

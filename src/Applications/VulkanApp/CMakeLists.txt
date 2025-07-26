@@ -1,5 +1,5 @@
 set(ThirdPartyLibs glfw Vulkan::Vulkan Tracy::TracyClient)
-set(Libs VulkanLib)
+set(Libs VulkanRenderer)
 
 find_package(Vulkan REQUIRED)
 find_package(glfw3 REQUIRED)

@@ -2,7 +2,7 @@
 // Created by auser on 6/19/25.
 //
 
-#include "VulkanApp.h"
+#include "VulkanApp.hpp"
 
 #include <backends/imgui_impl_glfw.h>
 
