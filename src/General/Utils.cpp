@@ -220,7 +220,7 @@ namespace Utils {
         if (vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create buffer with VMA");
         }
-        INFO << "Created buffer!";
+        //INFO << "Created buffer!";
     }
 
     VkCommandPool createCommandPool(Context* context, VkCommandPoolCreateFlags flags) {
@@ -234,7 +234,7 @@ namespace Utils {
         if (vkCreateCommandPool(context->device(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create command pool!");
         }
-        INFO << "Created command pool!";
+        //INFO << "Created command pool!";
         return commandPool;
     }
 
