@@ -35,6 +35,7 @@ public:
     glm::vec3 up() const { return glm::normalize(mOrientation * glm::vec3(0, 1, 0)); }
     virtual glm::vec3 target() const { return mPosition + forward(); }
     glm::vec3 position() const { return mPosition; }
+    glm::quat orientation() const { return mOrientation; }
     glm::mat4 projectionMatrix() const { return mProjectionMatrix; }
     glm::mat4 viewMatrix() const { return mViewMatrix; }
     CameraType type() const { return mType; }
@@ -42,6 +43,9 @@ public:
     virtual void move(float forward_, float right_, float up_) = 0;
     virtual void rotate(float pitch, float yaw, float roll) = 0;
     virtual void zoom(float delta) = 0;
+
+    void setPosition(const glm::vec3& position) { mPosition = position; calculateView(); }
+    void setOrientation(const glm::quat& orientation) { mOrientation = orientation; calculateView(); }
 
 protected:
     void calculateProjection();

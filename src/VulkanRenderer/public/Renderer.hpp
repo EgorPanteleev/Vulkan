@@ -16,16 +16,21 @@
 #include "VulkanModelLoader.hpp"
 #include "VkImGui.hpp"
 
+struct UiStateVariables {
+    glm::vec3 lightDir = {0.0f, -1.0f, -0.2f};
+    CameraType camType = CameraType::FLY;
+};
+
 class Renderer {
 public:
-    Renderer(const std::string& modelPath, CameraCreateInfo& cameraCreateInfo);
+    Renderer(const std::string& modelPath, const CameraCreateInfo& cameraCreateInfo);
     ~Renderer();
 
     void run();
     void quit();
 
     Context* context() { return mContext.get(); }
-    AbsCamera* camera() { return mCamera.get(); }
+    AbsCamera* camera();
     Window* window() { return &mContext->window(); }
 
     void setImGuiUsage(bool use) { mImGuiUsage = use; }
@@ -45,9 +50,11 @@ private:
     void loadShader(const std::string& shaderPath, VkShaderModule& module);
     void processKeyboard(double deltaTime);
     void updateCurrentFrame() { mCurrentFrame = (mCurrentFrame + 1) % mContext->maxFramesInFlight(); }
+    void updateCameras();
 
     /// Render implementation
-    UniquePtr<AbsCamera> mCamera;
+    UniquePtr<AbsCamera> mFlyCamera;
+    UniquePtr<AbsCamera> mOrbitalCamera;
     UniquePtr<Context> mContext;
     UniquePtr<VulkanModelLoader> mLoader;
     UniquePtr<SwapChain> mSwapChain;

@@ -13,8 +13,16 @@
 #include <backends/imgui_impl_vulkan.h>
 
 
-Renderer::Renderer(const std::string& modelPath, CameraCreateInfo& cameraCreateInfo): mCurrentFrame(0) {
-    mCamera = makeCameraUnique(cameraCreateInfo);
+static UiStateVariables uiStateVariables{};
+
+Renderer::Renderer(const std::string& modelPath, const CameraCreateInfo& cameraCreateInfo): mCurrentFrame(0) {
+    uiStateVariables.camType = cameraCreateInfo.type;
+    CameraCreateInfo camCreateInfo = cameraCreateInfo;
+    camCreateInfo.type = CameraType::FLY;
+    mFlyCamera = makeCameraUnique(camCreateInfo);
+    camCreateInfo.type = CameraType::ORBITAL;
+    mOrbitalCamera = makeCameraUnique(camCreateInfo);
+
     ContextCreateInfo contextCreateInfo {
         .maxFramesInFlight = 3,
         .validationLayers = { "VK_LAYER_KHRONOS_validation" },
@@ -32,9 +40,9 @@ Renderer::Renderer(const std::string& modelPath, CameraCreateInfo& cameraCreateI
 
     mSwapChain = std::make_unique<SwapChain>(mContext.get());
     mUniformBuffers = std::make_unique<UniformBuffers>();
-    mUniformBuffers->emplace_back(std::make_unique<ModelUniformBuffer>(mContext.get(), mCamera.get()));
-    mUniformBuffers->emplace_back(std::make_unique<LightUniformBuffer>(mContext.get(), mCamera.get()));
-    mUniformBuffers->emplace_back(std::make_unique<DirectionalLightBuffer>(mContext.get(), mCamera.get(),
+    mUniformBuffers->emplace_back(std::make_unique<ModelUniformBuffer>(mContext.get(), camera()));
+    mUniformBuffers->emplace_back(std::make_unique<LightUniformBuffer>(mContext.get(), camera()));
+    mUniformBuffers->emplace_back(std::make_unique<DirectionalLightBuffer>(mContext.get(), camera(),
                                                                            mLoader->bbox(), glm::vec3(0.0f, -2.0f, -0.4f)));
 
     loadShader(COMPILED_SHADERS_PATH"shadowShader.vert.spv", mShadowVertShaderModule);
@@ -81,6 +89,20 @@ void Renderer::quit() {
     glfwSetWindowShouldClose(mContext->glfwWindow(), GLFW_TRUE);
 }
 
+AbsCamera* Renderer::camera() {
+    switch (uiStateVariables.camType) {
+        case CameraType::FLY: {
+            return mFlyCamera.get();
+        }
+        case CameraType::ORBITAL: {
+            return mOrbitalCamera.get();
+        }
+        default: {
+            throw std::runtime_error("Unsupported camera type!");
+        }
+    }
+}
+
 void Renderer::mainLoop() {
     FpsCounter fpsCounter;
     double deltaTime = 0;
@@ -96,8 +118,6 @@ void Renderer::mainLoop() {
     }
     vkDeviceWaitIdle( mContext->device() );
 }
-
-glm::vec3 dir = glm::vec3(0.0f, -1.0f, -0.2f);
 
 void Renderer::beginFrame() {
     auto acquireResult = mSwapChain->acquireNextImage(mSyncObjects->imageAvailableSemaphore(mCurrentFrame),
@@ -148,7 +168,7 @@ void Renderer::endFrame() {
 }
 
 void Renderer::render() {
-    ((DirectionalLightBuffer*)((*mUniformBuffers)[2].get()))->setDirection(glm::normalize(dir));
+    ((DirectionalLightBuffer*)((*mUniformBuffers)[2].get()))->setDirection(glm::normalize(uiStateVariables.lightDir));
     for ( auto& uniformBuffer: *mUniformBuffers ) {
         uniformBuffer->updateUniformBuffer(mCurrentFrame, mSwapChain->extent() );
     }
@@ -158,13 +178,28 @@ void Renderer::render() {
     ImGui::SetNextWindowSize(ImVec2(500, 115), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowBgAlpha(0.4);
     if ( mImGuiUsage ) {
+        bool isFlyCamera = uiStateVariables.camType == CameraType::FLY;
+
         ImGui::Begin("Settings");
         ImVec2 mousePos = ImGui::GetMousePos();
         ImGui::Text("Mouse pos: %.1f x %.1f", mousePos.x, mousePos.y);
         ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
 
         ImGui::Separator();
-        ImGui::DragFloat3("Light direction", &dir.x, 0.005f, -1.0f, 1.0f);
+        ImGui::DragFloat3("Light direction", &uiStateVariables.lightDir.x, 0.005f, -1.0f, 1.0f);
+
+        ImGui::Separator();
+        if (VkImGui::selectableButton("Fly", isFlyCamera)) {
+            uiStateVariables.camType = CameraType::FLY;
+            updateCameras();
+        }
+        ImGui::SameLine(0.0f, 5.0f);
+        if (VkImGui::selectableButton("Orbital", !isFlyCamera)) {
+            uiStateVariables.camType = CameraType::ORBITAL;
+            updateCameras();
+        }
+        ImGui::SameLine();
+        ImGui::Text("Camera type");
 
         ImGui::End();
     }
@@ -189,5 +224,13 @@ void Renderer::loadShader(const std::string& shaderPath, VkShaderModule& module)
 
 void Renderer::processKeyboard(double deltaTime) {
     if (mProcessKeyboard)
-        mProcessKeyboard(mContext->glfwWindow(), mCamera.get(), deltaTime);
+        mProcessKeyboard(mContext->glfwWindow(), camera(), deltaTime);
+}
+
+void Renderer::updateCameras() {
+    mFlyCamera->setPosition(mOrbitalCamera->position());
+    mFlyCamera->setOrientation(mOrbitalCamera->orientation());
+    for (auto& uniformBuffer: *mUniformBuffers.get()) {
+        uniformBuffer->setCamera(camera());
+    }
 }

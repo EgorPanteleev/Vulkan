@@ -202,6 +202,19 @@ void VkImGui::demo() {
     ImGui::ShowDemoWindow(nullptr);
 }
 
+bool VkImGui::selectableButton(const char* label, bool cond) {
+    if (cond) {
+        ImVec4 baseColor = {0.4f, 0.4f, 0.4f, 1.0f};
+        ImGui::PushStyleColor(ImGuiCol_Button,        baseColor);
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(baseColor.x + 0.1f, baseColor.y + 0.1f, baseColor.z + 0.1f, baseColor.w));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(baseColor.x - 0.1f, baseColor.y - 0.1f, baseColor.z - 0.1f, baseColor.w));
+    }
+    bool ret = ImGui::Button(label) && !cond;
+    if (cond) ImGui::PopStyleColor(3);
+
+    return ret;
+}
+
 void VkImGui::render(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
     VkClearValue clearColor{
         .color = {.float32 = {0.0f, 0.0f, 0.0f, 1.0f}}

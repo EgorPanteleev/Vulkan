@@ -19,6 +19,8 @@ public:
 
     std::vector<VkBuffer>& uniformBuffers() { return mUniformBuffers; }
 
+    void setCamera(AbsCamera* camera) { mCamera = camera; }
+
     virtual VkDeviceSize getSize() const = 0;
 protected:
     void createUniformBuffers();

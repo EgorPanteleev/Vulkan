@@ -21,6 +21,8 @@ public:
 
     static void demo();
 
+    static bool selectableButton(const char* label, bool cond);
+
     ImDrawData* drawData() { return mDrawData; }
     VkRenderPass renderPass() { return mRenderPass; }
 
