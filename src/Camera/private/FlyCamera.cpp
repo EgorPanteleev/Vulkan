@@ -21,6 +21,6 @@ void FlyCamera::rotate(float pitch, float yaw, float roll) {
 }
 
 void FlyCamera::zoom(float delta) {
-    mFOV = std::max(1.0f, mFOV - delta);
+    mFOV = std::min(135.0f, std::max(1.0f, mFOV - delta));
     calculateProjection();
 }
