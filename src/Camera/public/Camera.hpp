@@ -1,47 +1,18 @@
 //
-// Created by auser on 5/4/25.
+// Created by igor on 7/27/25.
 //
 
-#ifndef VULKAN_CAMERA_H
-#define VULKAN_CAMERA_H
+#ifndef VULKAN_CAMERA_HPP
+#define VULKAN_CAMERA_HPP
 
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include <stdexcept>
+#include <memory>
 
-struct CameraCreateInfo{
-    glm::vec3 pos = glm::vec3(0);
-    glm::vec3 target = glm::vec3(0, 0, -1);
-    glm::vec3 up = glm::vec3(0, 1, 0);
-    float FOV = 60;
-    float aspectRatio = 16.0f / 9.0f;
-    float nearPlane = 0.0f;
-    float farPlane = 1000.0f;
-};
+#include "FlyCamera.hpp"
+#include "OrbitalCamera.hpp"
 
-class Camera {
-public:
-    Camera(CameraCreateInfo& createInfo);
+AbsCamera* makeCamera(const CameraCreateInfo& createInfo);
+std::unique_ptr<AbsCamera> makeCameraUnique(const CameraCreateInfo& createInfo);
+std::shared_ptr<AbsCamera> makeCameraShared(const CameraCreateInfo& createInfo);
 
-    glm::vec3 forward() const { return glm::normalize(mOrientation * glm::vec3(0, 0, -1)); }
-    glm::vec3 right() const { return glm::normalize(mOrientation * glm::vec3(1, 0, 0)); }
-    glm::vec3 up() const { return glm::normalize(mOrientation * glm::vec3(0, 1, 0)); }
-    glm::vec3 position() const { return mPosition; }
-    glm::mat4 projectionMatrix() const { return mProjectionMatrix; }
-    glm::mat4 viewMatrix() const;
-
-    void move(float forward_, float right_, float up_);
-    void rotate(float pitch, float yaw, float roll);
-
-private:
-    void calculateProjection(float FOV, float aspectRatio, float nearPlane, float farPlane);
-    void initOrientation(const glm::vec3& target);
-
-    glm::vec3 mPosition;
-    glm::quat mOrientation;
-    glm::vec3 mUp;
-
-    glm::mat4 mProjectionMatrix;
-};
-
-
-#endif //VULKAN_CAMERA_H
+#endif //VULKAN_CAMERA_HPP

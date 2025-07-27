@@ -17,7 +17,7 @@ struct alignas(16) DirectionalLight {
 
 class DirectionalLightBuffer: public UniformBuffer {
 public:
-    DirectionalLightBuffer(Context* context, Camera* camera, const BBox& sceneBBox, const glm::vec3& dir);
+    DirectionalLightBuffer(Context* context, AbsCamera* camera, const BBox& sceneBBox, const glm::vec3& dir);
     virtual ~DirectionalLightBuffer() {};
 
     void updateUniformBuffer(uint32_t currentImage, VkExtent2D extent) override;

@@ -5,7 +5,7 @@
 #ifndef VULKAN_RENDERER_H
 #define VULKAN_RENDERER_H
 
-#include "Camera.hpp"
+#include "AbsCamera.hpp"
 #include "GraphicsPipeline.hpp"
 #include "CommandManager.hpp"
 #include "SyncObjects.hpp"
@@ -25,13 +25,13 @@ public:
     void quit();
 
     Context* context() { return mContext.get(); }
-    Camera* camera() { return mCamera.get(); }
+    AbsCamera* camera() { return mCamera.get(); }
     Window* window() { return &mContext->window(); }
 
     void setImGuiUsage(bool use) { mImGuiUsage = use; }
     bool imGuiUsage() const { return mImGuiUsage; }
 
-    void setKeyboardCallBack(void (*processKeyboard)(GLFWwindow* window, Camera* camera, double deltaTime)) { mProcessKeyboard = processKeyboard; }
+    void setKeyboardCallBack(void (*processKeyboard)(GLFWwindow* window, AbsCamera* camera, double deltaTime)) { mProcessKeyboard = processKeyboard; }
 private:
     using UniformBuffers = std::vector<std::unique_ptr<UniformBuffer>>;
     template <typename Type>
@@ -47,7 +47,7 @@ private:
     void updateCurrentFrame() { mCurrentFrame = (mCurrentFrame + 1) % mContext->maxFramesInFlight(); }
 
     /// Render implementation
-    UniquePtr<Camera> mCamera;
+    UniquePtr<AbsCamera> mCamera;
     UniquePtr<Context> mContext;
     UniquePtr<VulkanModelLoader> mLoader;
     UniquePtr<SwapChain> mSwapChain;
@@ -68,7 +68,7 @@ private:
     uint32_t mCurrentFrame;
 
     /// CallBacks
-    void (*mProcessKeyboard)(GLFWwindow* window, Camera* camera, double deltaTime);
+    void (*mProcessKeyboard)(GLFWwindow* window, AbsCamera* camera, double deltaTime);
 };
 
 

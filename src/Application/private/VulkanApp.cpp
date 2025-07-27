@@ -14,8 +14,9 @@ static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
     //if (ImGui::GetIO().WantCaptureMouse) return;
 
     auto renderer = reinterpret_cast<Renderer*>(glfwGetWindowUserPointer(window));
-    Camera* camera = renderer->camera();
-    //camera->zoomBy(static_cast<float>(yoffset * 2));
+    AbsCamera* camera = renderer->camera();
+    float speed = 10.0f;
+    camera->zoom(yoffset * speed);
 }
 
 static void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -53,7 +54,7 @@ static void mouseMoveCallback(GLFWwindow* window, double xpos, double ypos) {
     //if (ImGui::GetIO().WantCaptureMouse) return;
 
     auto renderer = reinterpret_cast<Renderer*>(glfwGetWindowUserPointer(window));
-    Camera* camera = renderer->camera();
+    AbsCamera* camera = renderer->camera();
 
     if (!rightMouseButtonPressed || !camera) return;
 
@@ -72,7 +73,7 @@ static void frameBufferResizeCallback(GLFWwindow* glfwWindow, int width, int hei
     window->setResized(true);
 }
 
-static void processKeyboard(GLFWwindow* window, Camera* camera, double deltaTime) {
+static void processKeyboard(GLFWwindow* window, AbsCamera* camera, double deltaTime) {
     auto speed = (float) deltaTime;
     if (speed < 0) return;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {

@@ -10,10 +10,11 @@
 
 int main() {
     CameraCreateInfo cameraCreateInfo{
+        .type = CameraType::FLY,
         .pos = glm::vec3(0),
-        .target = glm::vec3(-1, 0, 0),
+        .target = glm::vec3(-100, 0, 0),
         .up = glm::vec3(0, 1, 0),
-        .FOV = 45.0f,
+        .FOV = 50.0f,
         .aspectRatio = 1920.0f / 1200.0f,
         .nearPlane = 0.1f,
         .farPlane = 10000.f

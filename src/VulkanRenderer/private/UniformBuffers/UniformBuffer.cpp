@@ -10,7 +10,7 @@
 #include <chrono>
 #include <cstring>
 
-UniformBuffer::UniformBuffer(Context* context, Camera* camera): mContext(context), mCamera(camera) {
+UniformBuffer::UniformBuffer(Context* context, AbsCamera* camera): mContext(context), mCamera(camera) {
 }
 
 UniformBuffer::~UniformBuffer() {

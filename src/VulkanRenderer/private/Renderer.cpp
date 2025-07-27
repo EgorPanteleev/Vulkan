@@ -9,11 +9,12 @@
 #include "LightUniformBuffer.hpp"
 #include "DirectionalLightBuffer.hpp"
 #include "Utils.hpp"
+#include "Camera.hpp"
 #include <backends/imgui_impl_vulkan.h>
 
 
 Renderer::Renderer(const std::string& modelPath, CameraCreateInfo& cameraCreateInfo): mCurrentFrame(0) {
-    mCamera = std::make_unique<Camera>(cameraCreateInfo);
+    mCamera = makeCameraUnique(cameraCreateInfo);
     ContextCreateInfo contextCreateInfo {
         .maxFramesInFlight = 3,
         .validationLayers = { "VK_LAYER_KHRONOS_validation" },

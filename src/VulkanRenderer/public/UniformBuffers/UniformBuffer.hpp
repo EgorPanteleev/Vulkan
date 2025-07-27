@@ -13,7 +13,7 @@
 
 class UniformBuffer {
 public:
-    UniformBuffer(Context* context, Camera* camera);
+    UniformBuffer(Context* context, AbsCamera* camera);
     virtual ~UniformBuffer();
     virtual void updateUniformBuffer(uint32_t currentImage, VkExtent2D extent) = 0;
 
@@ -24,7 +24,7 @@ protected:
     void createUniformBuffers();
 
     Context* mContext;
-    Camera* mCamera;
+    AbsCamera* mCamera;
     std::vector<VkBuffer> mUniformBuffers;
     std::vector<VmaAllocation> mBuffersAllocation;
     std::vector<void*> mUniformBuffersMapped;
