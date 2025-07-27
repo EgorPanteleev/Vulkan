@@ -133,7 +133,7 @@ void VkImGui::setupStyle() {
     ImVec4* colors = style.Colors;
     ImGuiIO& io = ImGui::GetIO();
 
-    colors[ImGuiCol_Text]                   = ImVec4(0.95f, 0.95f, 0.95f, 1.00f);
+    colors[ImGuiCol_Text]                  = ImVec4(0.95f, 0.95f, 0.95f, 1.00f);
     colors[ImGuiCol_TextDisabled]          = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
     colors[ImGuiCol_WindowBg]              = ImVec4(0.08f, 0.08f, 0.08f, 1.00f);
     colors[ImGuiCol_ChildBg]               = ImVec4(0.10f, 0.10f, 0.10f, 1.00f);
