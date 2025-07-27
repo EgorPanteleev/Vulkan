@@ -16,7 +16,7 @@
 #include "VulkanModelLoader.hpp"
 #include "VkImGui.hpp"
 
-struct UiStateVariables {
+struct UiState {
     glm::vec3 lightDir = {0.0f, -1.0f, -0.2f};
     CameraType camType = CameraType::FLY;
 };

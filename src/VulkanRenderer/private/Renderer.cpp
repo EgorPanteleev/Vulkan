@@ -13,10 +13,10 @@
 #include <backends/imgui_impl_vulkan.h>
 
 
-static UiStateVariables uiStateVariables{};
+static UiState uiState{};
 
 Renderer::Renderer(const std::string& modelPath, const CameraCreateInfo& cameraCreateInfo): mCurrentFrame(0) {
-    uiStateVariables.camType = cameraCreateInfo.type;
+    uiState.camType = cameraCreateInfo.type;
     CameraCreateInfo camCreateInfo = cameraCreateInfo;
     camCreateInfo.type = CameraType::FLY;
     mFlyCamera = makeCameraUnique(camCreateInfo);
@@ -90,7 +90,7 @@ void Renderer::quit() {
 }
 
 AbsCamera* Renderer::camera() {
-    switch (uiStateVariables.camType) {
+    switch (uiState.camType) {
         case CameraType::FLY: {
             return mFlyCamera.get();
         }
@@ -168,7 +168,7 @@ void Renderer::endFrame() {
 }
 
 void Renderer::render() {
-    ((DirectionalLightBuffer*)((*mUniformBuffers)[2].get()))->setDirection(glm::normalize(uiStateVariables.lightDir));
+    ((DirectionalLightBuffer*)((*mUniformBuffers)[2].get()))->setDirection(glm::normalize(uiState.lightDir));
     for ( auto& uniformBuffer: *mUniformBuffers ) {
         uniformBuffer->updateUniformBuffer(mCurrentFrame, mSwapChain->extent() );
     }
@@ -178,7 +178,7 @@ void Renderer::render() {
     ImGui::SetNextWindowSize(ImVec2(500, 115), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowBgAlpha(0.4);
     if ( mImGuiUsage ) {
-        bool isFlyCamera = uiStateVariables.camType == CameraType::FLY;
+        bool isFlyCamera = uiState.camType == CameraType::FLY;
 
         ImGui::Begin("Settings");
         ImVec2 mousePos = ImGui::GetMousePos();
@@ -186,16 +186,16 @@ void Renderer::render() {
         ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
 
         ImGui::Separator();
-        ImGui::DragFloat3("Light direction", &uiStateVariables.lightDir.x, 0.005f, -1.0f, 1.0f);
+        ImGui::DragFloat3("Light direction", &uiState.lightDir.x, 0.005f, -1.0f, 1.0f);
 
         ImGui::Separator();
         if (VkImGui::selectableButton("Fly", isFlyCamera)) {
-            uiStateVariables.camType = CameraType::FLY;
+            uiState.camType = CameraType::FLY;
             updateCameras();
         }
         ImGui::SameLine(0.0f, 5.0f);
         if (VkImGui::selectableButton("Orbital", !isFlyCamera)) {
-            uiStateVariables.camType = CameraType::ORBITAL;
+            uiState.camType = CameraType::ORBITAL;
             updateCameras();
         }
         ImGui::SameLine();
