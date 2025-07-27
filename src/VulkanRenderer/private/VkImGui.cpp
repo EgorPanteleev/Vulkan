@@ -18,6 +18,7 @@ VkImGui::VkImGui(Context* context, SwapChain* swapChain):
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.MouseDrawCursor = true;
+    ImGui::StyleColorsDark();
 
     //init glfw backend
     bool installCallbacks = false;
@@ -40,7 +41,7 @@ VkImGui::VkImGui(Context* context, SwapChain* swapChain):
 
     ImGui_ImplVulkan_Init(&init_info);
 
-    ImGui_ImplVulkan_CreateFontsTexture();
+    //ImGui_ImplVulkan_CreateFontsTexture();
 }
 
 VkImGui::~VkImGui() {
