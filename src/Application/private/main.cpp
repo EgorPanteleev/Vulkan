@@ -5,7 +5,7 @@
 #include "VulkanApp.hpp"
 #include "tracy/Tracy.hpp"
 
-#define MODEL_PATH PROJECT_PATH"models/Sponza/glTF/Sponza.gltf"
+#define MODEL_PATH PROJECT_PATH"assets/models/Sponza/glTF/Sponza.gltf"
 //#define MODEL_PATH PROJECT_PATH"models/Bistro/BistroExterior.fbx"
 
 int main() {

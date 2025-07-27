@@ -27,6 +27,7 @@ public:
 private:
     void createDesriptorPool();
     void createRenderPass();
+    void setupStyle();
 
     Context* mContext;
     SwapChain* mSwapChain;
