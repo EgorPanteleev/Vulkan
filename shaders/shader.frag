@@ -39,6 +39,7 @@ layout(binding = 4) uniform sampler2D textures[];
 layout(location = 0) out vec4 outColor;
 
 const int PCF_SAMPLES = 3;
+const int PCF_SAMPLES_2 = int(PCF_SAMPLES * 0.5);
 const float BIAS = 0.005;
 float calculateShadowPCF(vec4 fragPosLightSpace) {
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -46,8 +47,8 @@ float calculateShadowPCF(vec4 fragPosLightSpace) {
     vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
     float currentDepth = projCoords.z - BIAS;
     float shadow = 0;
-    for (int x = -PCF_SAMPLES / 2; x <= PCF_SAMPLES / 2; ++x) {
-        for (int y = -PCF_SAMPLES / 2; y <= PCF_SAMPLES / 2; ++y) {
+    for (int x = -PCF_SAMPLES_2; x <= PCF_SAMPLES_2; ++x) {
+        for (int y = -PCF_SAMPLES_2; y <= PCF_SAMPLES_2; ++y) {
             vec2 offset = texelSize * vec2(x, y);
             float closestDepth = texture(shadowMap, projCoords.xy + offset).r;
             shadow += currentDepth > closestDepth ? 1.0 : 0.0;
@@ -58,9 +59,9 @@ float calculateShadowPCF(vec4 fragPosLightSpace) {
 
 void main() {
     vec3 texColor = texture(nonuniformEXT(textures[fragDiffuseIndex]), fragTexCoord).rgb;
-    float texSpecular = texture(nonuniformEXT(textures[fragSpecularIndex]), fragTexCoord).r;
-    float texShininess = texture(nonuniformEXT(textures[fragShininessIndex]), fragTexCoord).r;
-    vec3 texAmbient = texture(nonuniformEXT(textures[fragAmbientIndex]), fragTexCoord).rgb;
+    //float texSpecular = texture(nonuniformEXT(textures[fragSpecularIndex]), fragTexCoord).r;
+    //float texShininess = texture(nonuniformEXT(textures[fragShininessIndex]), fragTexCoord).r;
+    //vec3 texAmbient = texture(nonuniformEXT(textures[fragAmbientIndex]), fragTexCoord).rgb;
     vec3 texNormal = texture(nonuniformEXT(textures[fragNormalIndex]), fragTexCoord).rgb;
     texNormal = normalize(texNormal * 2.0 - 1.0);
     mat3 TBN = mat3(fragTangent, fragBitangent, fragNormal);
