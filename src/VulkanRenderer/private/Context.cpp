@@ -25,6 +25,7 @@ Context::Context(const ContextCreateInfo& createInfo): mMaxFramesInFlight(create
         mDebugMessenger = Utils::createDebugMessenger(mInstance);
     mWindow.createWindowSurface( mInstance, mSurface );
     pickPhysicalDevice();
+    mFamilyIndices = Utils::getQueueFamilies(mPhysicalDevice, mSurface);
     createLogicalDevice();
     createAllocator();
 }
@@ -200,10 +201,8 @@ bool Context::checkDeviceExtensionSupport(VkPhysicalDevice device) {
 }
 
 void Context::createLogicalDevice() {
-    auto indices = Utils::getQueueFamilies(mPhysicalDevice, mSurface);
-
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+    std::set<uint32_t> uniqueQueueFamilies = {mFamilyIndices.graphicsFamily.value(), mFamilyIndices.presentFamily.value()};
 
     float queuePriority = 1.0f;
     for (uint32_t queueFamily : uniqueQueueFamilies) {
@@ -254,8 +253,8 @@ void Context::createLogicalDevice() {
     }
     INFO << "Logical device created!";
     // Init queues
-    mGraphicsQueue = getQueue(indices.graphicsFamily.value());
-    mPresentQueue = getQueue(indices.presentFamily.value());
+    mGraphicsQueue = getQueue(mFamilyIndices.graphicsFamily.value());
+    mPresentQueue = getQueue(mFamilyIndices.presentFamily.value());
 }
 
 void Context::createAllocator() {

@@ -225,8 +225,7 @@ namespace Utils {
 
     VkCommandPool createCommandPool(Context* context, VkCommandPoolCreateFlags flags) {
         VkCommandPool commandPool;
-        auto indices = Utils::getQueueFamilies(context->physicalDevice(),
-                                               context->surface());
+        auto indices = context->familyIndices();
         VkCommandPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         poolInfo.flags = flags;

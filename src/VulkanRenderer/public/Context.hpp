@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "Window.hpp"
+#include "Utils.hpp"
 
 struct ContextCreateInfo {
     WindowCreateInfo windowCreateInfo{};
@@ -29,6 +30,7 @@ public:
     GLFWwindow* glfwWindow() { return mWindow.window(); }
     VkSurfaceKHR surface() { return mSurface; }
     VkPhysicalDevice physicalDevice() { return mPhysicalDevice; }
+    const Utils::QueueFamilyIndices& familyIndices() { return mFamilyIndices; };
     VkDevice device() { return mDevice; }
     VmaAllocator allocator() { return mAllocator; }
     uint32_t maxFramesInFlight() { return mMaxFramesInFlight; }
@@ -72,6 +74,7 @@ private:
     Window mWindow;
     VkSurfaceKHR mSurface;
     VkPhysicalDevice mPhysicalDevice;
+    Utils::QueueFamilyIndices mFamilyIndices;
     VkDevice mDevice;
     VmaAllocator mAllocator;
     VkQueue mGraphicsQueue;
