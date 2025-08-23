@@ -10,7 +10,6 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
-#include <unordered_map>
 
 //third party
 
@@ -109,9 +108,8 @@ namespace Utils {
         createInfo.subresourceRange.levelCount = mipLevels;
         createInfo.subresourceRange.baseArrayLayer = 0;
         createInfo.subresourceRange.layerCount = 1;
-        if (vkCreateImageView(device, &createInfo, nullptr, &imageView) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to create image view!");
-        }
+        VK_CHECK(vkCreateImageView(device, &createInfo, nullptr, &imageView),
+                 "Failed to create image view!");
         return imageView;
     }
 
@@ -225,11 +223,11 @@ namespace Utils {
 
     VkCommandPool createCommandPool(Context* context, VkCommandPoolCreateFlags flags) {
         VkCommandPool commandPool;
-        auto indices = context->familyIndices();
+
         VkCommandPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         poolInfo.flags = flags;
-        poolInfo.queueFamilyIndex = indices.graphicsFamily.value();
+        poolInfo.queueFamilyIndex = context->familyIndices().graphicsFamily.value();
         if (vkCreateCommandPool(context->device(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create command pool!");
         }
@@ -292,7 +290,7 @@ namespace Utils {
         }
     }
 
-    VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool) {
+    VkCommandBuffer createCommandBuffer(VkDevice device, VkCommandPool commandPool) {
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -301,6 +299,11 @@ namespace Utils {
 
         VkCommandBuffer commandBuffer;
         vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
+        return commandBuffer;
+    }
+
+    VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool) {
+        VkCommandBuffer commandBuffer = createCommandBuffer(device, commandPool);
 
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;

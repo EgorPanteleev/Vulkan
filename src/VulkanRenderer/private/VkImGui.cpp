@@ -25,12 +25,11 @@ VkImGui::VkImGui(Context* context, SwapChain* swapChain):
     ImGui_ImplGlfw_InitForVulkan(mContext->window().window(), installCallbacks);
 
     //init vulkan backend
-    auto indices = Utils::getQueueFamilies(mContext->physicalDevice(), mContext->surface());
     ImGui_ImplVulkan_InitInfo init_info = {
             .Instance = mContext->instance(),
             .PhysicalDevice = mContext->physicalDevice(),
             .Device = mContext->device(),
-            .QueueFamily = indices.graphicsFamily.value(),
+            .QueueFamily = mContext->familyIndices().graphicsFamily.value(),
             .Queue = mContext->graphicsQueue(),
             .DescriptorPool = mDescriptorPool,
             .RenderPass = mRenderPass,

@@ -7,7 +7,7 @@
 #include "Vertex.hpp"
 
 #include <vulkan/vulkan.h>
-#include "vk_mem_alloc.h"
+#include <vk_mem_alloc.h>
 
 //STL
 #include <optional>
@@ -15,6 +15,14 @@
 #include "Message.hpp"
 
 class Context;
+
+#define VK_CHECK(res, msg)                                                \
+    do {                                                                  \
+        VkResult err = res;                                               \
+        if (err != VK_SUCCESS) {                                          \
+            throw std::runtime_error(msg);                                \
+        }                                                                 \
+    } while (0)
 
 namespace Utils {
 
@@ -82,6 +90,8 @@ namespace Utils {
                      VkImage& image, uint32_t mipLevels, VkSampleCountFlagBits numSamples,
                      uint32_t width, uint32_t height, VkFormat format,
                      VkImageTiling tiling, VkImageUsageFlags imageUsage);
+    VkCommandBuffer createCommandBuffer(VkDevice device, VkCommandPool commandPool);
+
     VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
 
     void endSingleTimeCommands(Context* context, VkCommandPool commandPool, VkCommandBuffer commandBuffer);
