@@ -19,7 +19,7 @@ Context::Context(const ContextCreateInfo& createInfo): mMaxFramesInFlight(create
                  mEnableValidationLayers(createInfo.enableValidationLayers), mWindow(createInfo.windowCreateInfo),
                  mInstance(VK_NULL_HANDLE), mSurface(VK_NULL_HANDLE), mPhysicalDevice(VK_NULL_HANDLE),
                  mDevice(VK_NULL_HANDLE), mAllocator(VK_NULL_HANDLE), mGraphicsQueue(VK_NULL_HANDLE),
-                 mPresentQueue(VK_NULL_HANDLE), mDebugMessenger(VK_NULL_HANDLE) {
+                 mPresentQueue(VK_NULL_HANDLE), mDebugMessenger(VK_NULL_HANDLE), mTracyContext() {
     createInstance();
     if (mEnableValidationLayers)
         mDebugMessenger = Utils::createDebugMessenger(mInstance);
@@ -28,8 +28,10 @@ Context::Context(const ContextCreateInfo& createInfo): mMaxFramesInFlight(create
     mFamilyIndices = Utils::getQueueFamilies(mPhysicalDevice, mSurface);
     createLogicalDevice();
     createAllocator();
+    mTracyContext.init(this);
 }
 Context::~Context() {
+    mTracyContext.destroy();
     vmaDestroyAllocator(mAllocator);
     vkDestroyDevice(mDevice, nullptr);
     if (mEnableValidationLayers) Utils::destroyDebugUtilsMessengerEXT(mInstance, mDebugMessenger, nullptr);

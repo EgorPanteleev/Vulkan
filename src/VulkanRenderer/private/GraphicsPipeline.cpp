@@ -257,6 +257,7 @@ void GraphicsPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configI
 }
 
 void GraphicsPipeline::render(GraphicsPipelineRenderInfo& renderInfo) {
+    TracyVkZone(mContext->tracyContext(), renderInfo.commandBuffer, "Graphics render");
     ImageTransitInfoCmd transitInfo{
         .commandBuffer = renderInfo.commandBuffer,
         .src = renderInfo.colorLayoutAttachment.finalLayout,

@@ -5,11 +5,12 @@
 #ifndef VULKAN_CONTEXT_H
 #define VULKAN_CONTEXT_H
 
-#include <vk_mem_alloc.h>
 #include <vector>
+#include <vk_mem_alloc.h>
 
 #include "Window.hpp"
 #include "Utils.hpp"
+#include "TracyContext.hpp"
 
 struct ContextCreateInfo {
     WindowCreateInfo windowCreateInfo{};
@@ -36,6 +37,7 @@ public:
     uint32_t maxFramesInFlight() { return mMaxFramesInFlight; }
     VkQueue graphicsQueue() { return mGraphicsQueue; }
     VkQueue presentQueue() { return mPresentQueue; }
+    TracyVkCtx tracyContext() { return mTracyContext(); }
 
 private:
     /// Creating instance
@@ -80,6 +82,7 @@ private:
     VkQueue mGraphicsQueue;
     VkQueue mPresentQueue;
     VkDebugUtilsMessengerEXT mDebugMessenger;
+    TracyContext mTracyContext;
 };
 
 

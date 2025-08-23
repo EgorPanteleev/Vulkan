@@ -90,6 +90,7 @@ VkResult CommandManager::submitCommandBuffer(CommandManagerSubmitInfo& submitInf
     uint32_t currentFrame = submitInfo.currentFrame;
     VkSubmitInfo vkSubmitInfo{};
     vkSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    VkCommandBuffer commandBuffer = mCommandBuffers[currentFrame];
 
     VkSemaphore waitSemaphores[] = { submitInfo.syncObjects->imageAvailableSemaphore( currentFrame ) };
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -97,7 +98,7 @@ VkResult CommandManager::submitCommandBuffer(CommandManagerSubmitInfo& submitInf
     vkSubmitInfo.pWaitSemaphores = waitSemaphores;
     vkSubmitInfo.pWaitDstStageMask = waitStages;
     vkSubmitInfo.commandBufferCount = 1;
-    vkSubmitInfo.pCommandBuffers = &mCommandBuffers[currentFrame];
+    vkSubmitInfo.pCommandBuffers = &commandBuffer;
     VkSemaphore signalSemaphores[] = { submitInfo.syncObjects->renderFinishedSemaphore( submitInfo.imageIndex ) };
     vkSubmitInfo.signalSemaphoreCount = 1;
     vkSubmitInfo.pSignalSemaphores = signalSemaphores;
@@ -105,6 +106,8 @@ VkResult CommandManager::submitCommandBuffer(CommandManagerSubmitInfo& submitInf
     if (vkQueueSubmit( mContext->graphicsQueue(), 1, &vkSubmitInfo, submitInfo.syncObjects->inFlightFence( currentFrame ) ) != VK_SUCCESS) {
         throw std::runtime_error("Failed to submit draw command buffer!");
     }
+
+    mContext->tracyContext()->Collect(commandBuffer);
 
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;

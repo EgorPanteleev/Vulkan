@@ -215,6 +215,7 @@ bool VkImGui::selectableButton(const char* label, bool cond) {
 }
 
 void VkImGui::render(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+    TracyVkZone(mContext->tracyContext(), commandBuffer, "ImGui render");
     VkClearValue clearColor{
         .color = {.float32 = {0.0f, 0.0f, 0.0f, 1.0f}}
     };

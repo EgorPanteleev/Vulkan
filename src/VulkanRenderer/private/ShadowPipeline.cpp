@@ -200,6 +200,7 @@ void ShadowPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configInf
 }
 
 void ShadowPipeline::render(ShadowPipelineRenderInfo& renderInfo) {
+    TracyVkZone(mContext->tracyContext(), renderInfo.commandBuffer, "Shadow render");
     ImageTransitInfoCmd transitInfo{
         .commandBuffer = renderInfo.commandBuffer,
         .src = renderInfo.finalLayout,

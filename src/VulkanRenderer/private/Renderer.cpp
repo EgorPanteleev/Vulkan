@@ -2,16 +2,15 @@
 // Created by auser on 4/4/25.
 //
 
+#include <backends/imgui_impl_vulkan.h>
+#include <tracy/Tracy.hpp>
+
 #include "Renderer.hpp"
 #include "Timer.hpp"
 #include "Message.hpp"
 #include "ModelUniformBuffer.hpp"
 #include "LightUniformBuffer.hpp"
 #include "DirectionalLightBuffer.hpp"
-#include "Utils.hpp"
-#include "Camera.hpp"
-#include <backends/imgui_impl_vulkan.h>
-
 
 static UiState uiState{};
 
@@ -107,6 +106,7 @@ void Renderer::mainLoop() {
     FpsCounter fpsCounter;
     double deltaTime = 0;
     while ( !mContext->window().shouldClose() ) {
+        ZoneScopedN("MainLoop");
         glfwPollEvents();
         beginFrame();
         render();
@@ -115,11 +115,13 @@ void Renderer::mainLoop() {
         deltaTime = 1e3 / fpsCounter.fps();
         processKeyboard(deltaTime);
         glfwSetWindowTitle(mContext->window().window(), std::to_string(fpsCounter.fps()).c_str());
+        FrameMark;
     }
     vkDeviceWaitIdle( mContext->device() );
 }
 
 void Renderer::beginFrame() {
+    ZoneScopedN("Begin frame");
     auto acquireResult = mSwapChain->acquireNextImage(mSyncObjects->imageAvailableSemaphore(mCurrentFrame),
                                                                mSyncObjects->inFlightFence(mCurrentFrame));
 
@@ -133,6 +135,7 @@ void Renderer::beginFrame() {
 }
 
 void Renderer::endFrame() {
+    ZoneScopedN("End frame");
     VkImGui* gui = nullptr;
     if ( mImGuiUsage ) gui = mVkImGui.get();
     CommandManagerRecordInfo commandManagerRecordInfo{
@@ -168,6 +171,7 @@ void Renderer::endFrame() {
 }
 
 void Renderer::render() {
+    ZoneScopedN("Render frame");
     ((DirectionalLightBuffer*)((*mUniformBuffers)[2].get()))->setDirection(glm::normalize(uiState.lightDir));
     for ( auto& uniformBuffer: *mUniformBuffers ) {
         uniformBuffer->updateUniformBuffer(mCurrentFrame, mSwapChain->extent() );
