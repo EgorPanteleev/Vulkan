@@ -194,7 +194,7 @@ void Renderer::render() {
         ImGui::SameLine();
         ImGui::Text("Camera type");
         ImGui::Separator();
-        if (ImGui::Checkbox("Enable MSAA", &uiState.enableMSAA)) {
+        if (ImGui::Checkbox("MSAA", &uiState.enableMSAA)) {
             createGraphicsPipeline();
         }
         ImGui::End();
