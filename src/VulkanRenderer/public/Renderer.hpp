@@ -19,6 +19,7 @@
 struct UiState {
     glm::vec3 lightDir = {0.0f, -1.0f, -0.2f};
     CameraType camType = CameraType::FLY;
+    bool enableMSAA = false;
 };
 
 class Renderer {
@@ -51,6 +52,7 @@ private:
     void processKeyboard(double deltaTime);
     void updateCurrentFrame() { mCurrentFrame = (mCurrentFrame + 1) % mContext->maxFramesInFlight(); }
     void updateCameras();
+    void createGraphicsPipeline();
 
     /// Render implementation
     UniquePtr<AbsCamera> mFlyCamera;

@@ -19,6 +19,7 @@ struct GraphicsPipelineCreateInfo {
     const UniformBuffers& uniformBuffers;
     VkShaderModule vertShaderModule;
     VkShaderModule fragShaderModule;
+    bool enableMSAA = false;
 };
 
 struct LayoutAttachment {
@@ -74,6 +75,8 @@ private:
     void createGraphicsPipeline( VkShaderModule& vertShaderModule, VkShaderModule& fragShaderModule );
     void getPipelineConfigInfo( Utils::PipelineConfigInfo& configInfo );
 
+    VkSampleCountFlagBits getNumSamples() const;
+
     Context* mContext;
     SwapChain* mSwapChain;
     DescriptorSet* mDescriptorSet;
@@ -82,6 +85,7 @@ private:
     VkPipelineLayout mPipelineLayout;
     VkPipeline mGraphicsPipeline;
     VkPipelineCache mPipelineCache;
+    bool mEnableMSAA;
 };
 
 

@@ -40,6 +40,7 @@ void CommandManager::createCommandBuffers() {
 }
 
 void CommandManager::recordCommandBuffer(CommandManagerRecordInfo& recordInfo) {
+    ZoneScopedN("Record cmdBuffer");
     uint32_t currentFrame = recordInfo.currentFrame;
     auto commandBuffer = mCommandBuffers[currentFrame];
     vkResetCommandBuffer(commandBuffer, 0);
@@ -87,6 +88,7 @@ void CommandManager::recordCommandBuffer(CommandManagerRecordInfo& recordInfo) {
 }
 
 VkResult CommandManager::submitCommandBuffer(CommandManagerSubmitInfo& submitInfo) {
+    ZoneScopedN("Submit command buffer");
     uint32_t currentFrame = submitInfo.currentFrame;
     VkSubmitInfo vkSubmitInfo{};
     vkSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

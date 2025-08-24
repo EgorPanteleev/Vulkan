@@ -8,7 +8,8 @@
 
 GraphicsPipeline::GraphicsPipeline(GraphicsPipelineCreateInfo& createInfo):
                                    mContext(createInfo.context), mSwapChain(createInfo.swapChain),
-                                   mColorBuffer(new Image(mContext)), mDepthBuffer(new Image(mContext)){
+                                   mColorBuffer(new Image(mContext)), mDepthBuffer(new Image(mContext)),
+                                   mEnableMSAA(createInfo.enableMSAA){
     createColorBuffer();
     createDepthBuffer();
     createDescriptorSet(createInfo);
@@ -31,7 +32,7 @@ void GraphicsPipeline::createColorBuffer() {
     ImageAllocateInfo allocateInfo{
             .format = mSwapChain->format(),
             .extent = mSwapChain->extent(),
-            .numSamples =  Utils::getMaxUsableSampleCount(mContext->physicalDevice()),
+            .numSamples = getNumSamples(),
             .imageUsageFlags = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
             .aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT,
     };
@@ -47,7 +48,7 @@ void GraphicsPipeline::createDepthBuffer() {
     ImageAllocateInfo allocateInfo{
             .format = Utils::findDepthFormat(mContext),
             .extent = mSwapChain->extent(),
-            .numSamples = Utils::getMaxUsableSampleCount(mContext->physicalDevice()),
+            .numSamples = getNumSamples(),
             .imageUsageFlags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
             .aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT,
     };
@@ -208,7 +209,7 @@ void GraphicsPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configI
     };
     configInfo.rasterizationInfo = rasterizationInfo;
 
-    auto msaaSamples = Utils::getMaxUsableSampleCount(mContext->physicalDevice());
+    auto msaaSamples = getNumSamples();
     VkPipelineMultisampleStateCreateInfo multisampleInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
             .rasterizationSamples = msaaSamples,
@@ -256,6 +257,11 @@ void GraphicsPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configI
     configInfo.dynamicStateInfo = dynamicStateInfo;
 }
 
+VkSampleCountFlagBits GraphicsPipeline::getNumSamples() const {
+    return mEnableMSAA ? Utils::getMaxUsableSampleCount(mContext->physicalDevice())
+                       : VK_SAMPLE_COUNT_1_BIT;
+}
+
 void GraphicsPipeline::render(GraphicsPipelineRenderInfo& renderInfo) {
     TracyVkZone(mContext->tracyContext(), renderInfo.commandBuffer, "Graphics render");
     ImageTransitInfoCmd transitInfo{
@@ -271,15 +277,18 @@ void GraphicsPipeline::render(GraphicsPipelineRenderInfo& renderInfo) {
 
     VkRenderingAttachmentInfo colorAttachment = {
             .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-            .imageView = mColorBuffer->imageView(),
+            .imageView = renderInfo.presentImage->imageView(),
             .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            .resolveMode = VK_RESOLVE_MODE_AVERAGE_BIT,
-            .resolveImageView = renderInfo.presentImage->imageView(),
-            .resolveImageLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
             .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
             .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
             .clearValue = clearValues[0],
     };
+    if (mEnableMSAA) {
+        colorAttachment.imageView = mColorBuffer->imageView();
+        colorAttachment.resolveMode = VK_RESOLVE_MODE_AVERAGE_BIT;
+        colorAttachment.resolveImageView = renderInfo.presentImage->imageView();
+        colorAttachment.resolveImageLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
+    }
 
     VkRenderingAttachmentInfo depthAttachment = {
             .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,

@@ -14,7 +14,7 @@
 
 struct ContextCreateInfo {
     WindowCreateInfo windowCreateInfo{};
-    uint32_t maxFramesInFlight = 2;
+    uint32_t maxFramesInFlight = 3;
     std::vector<const char*> validationLayers;
     std::vector<const char*> deviceExtensions;
     bool enableValidationLayers = false;

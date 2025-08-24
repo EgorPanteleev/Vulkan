@@ -55,16 +55,7 @@ Renderer::Renderer(const std::string& modelPath, const CameraCreateInfo& cameraC
 
     loadShader(COMPILED_SHADERS_PATH"shader.vert.spv", mMainVertShaderModule);
     loadShader(COMPILED_SHADERS_PATH"shader.frag.spv", mFragShaderModule);
-    GraphicsPipelineCreateInfo graphicsPipelineCreateInfo{
-            .context = mContext.get(),
-            .swapChain = mSwapChain.get(),
-            .loader = mLoader.get(),
-            .shadowMap = mShadowPipeline->shadowMap(),
-            .uniformBuffers = *mUniformBuffers,
-            .vertShaderModule = mMainVertShaderModule,
-            .fragShaderModule = mFragShaderModule
-    };
-    mGraphicsPipeline = std::make_unique<GraphicsPipeline>(graphicsPipelineCreateInfo);
+    createGraphicsPipeline();
     mCommandManager = std::make_unique<CommandManager>(mContext.get());
     mVertexBuffer = std::make_unique<VertexBuffer>(mContext.get(), mLoader.get());
     mSyncObjects = std::make_unique<SyncObjects>(mContext.get(), mSwapChain.get());
@@ -122,16 +113,14 @@ void Renderer::mainLoop() {
 
 void Renderer::beginFrame() {
     ZoneScopedN("Begin frame");
-    auto acquireResult = mSwapChain->acquireNextImage(mSyncObjects->imageAvailableSemaphore(mCurrentFrame),
-                                                               mSyncObjects->inFlightFence(mCurrentFrame));
-
+    VkResult acquireResult = mSwapChain->acquireNextImage(mSyncObjects->imageAvailableSemaphore(mCurrentFrame),
+                                                          mSyncObjects->inFlightFence(mCurrentFrame));
     if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR ) {
         recreateSwapChain();
         return;
     } else if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR) {
         throw std::runtime_error("Failed to acquire swap chain image!");
     }
-
 }
 
 void Renderer::endFrame() {
@@ -204,13 +193,17 @@ void Renderer::render() {
         }
         ImGui::SameLine();
         ImGui::Text("Camera type");
-
+        ImGui::Separator();
+        if (ImGui::Checkbox("Enable MSAA", &uiState.enableMSAA)) {
+            createGraphicsPipeline();
+        }
         ImGui::End();
     }
     mVkImGui->endFrame();
 }
 
 void Renderer::recreateSwapChain() {
+    ZoneScopedN("Recreate swapchain");
     vkDeviceWaitIdle(mContext->device());
     mSwapChain->clear();
     mSwapChain->recreate();
@@ -237,4 +230,18 @@ void Renderer::updateCameras() {
     for (auto& uniformBuffer: *mUniformBuffers.get()) {
         uniformBuffer->setCamera(camera());
     }
+}
+
+void Renderer::createGraphicsPipeline() {
+    GraphicsPipelineCreateInfo graphicsPipelineCreateInfo {
+            .context = mContext.get(),
+            .swapChain = mSwapChain.get(),
+            .loader = mLoader.get(),
+            .shadowMap = mShadowPipeline->shadowMap(),
+            .uniformBuffers = *mUniformBuffers,
+            .vertShaderModule = mMainVertShaderModule,
+            .fragShaderModule = mFragShaderModule,
+            .enableMSAA = uiState.enableMSAA,
+    };
+    mGraphicsPipeline = std::make_unique<GraphicsPipeline>(graphicsPipelineCreateInfo);
 }

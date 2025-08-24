@@ -120,7 +120,7 @@ void SwapChain::createImages() {
     std::vector<VkImage> images;
     auto swapChainSupport =
             Utils::getSwapChainSupport(mContext->physicalDevice(), mContext->surface());
-    auto imageCount = Utils::getImageCount(swapChainSupport);
+    uint32_t imageCount = Utils::getImageCount(swapChainSupport);
     vkGetSwapchainImagesKHR(mContext->device(), mSwapChain,&imageCount, nullptr);
     images.resize(imageCount);
     vkGetSwapchainImagesKHR(mContext->device(), mSwapChain, &imageCount, images.data());
@@ -141,6 +141,7 @@ void SwapChain::createImages() {
 }
 
 VkResult SwapChain::acquireNextImage(VkSemaphore imageAvailableSemaphore, VkFence inFlightFence) {
+    ZoneScopedN("Acquire next image");
     vkWaitForFences(mContext->device(), 1, &inFlightFence, VK_TRUE, UINT64_MAX);
 
     VkResult result = vkAcquireNextImageKHR(mContext->device(), mSwapChain, UINT64_MAX,
