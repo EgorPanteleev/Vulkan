@@ -4,10 +4,16 @@ find_package(Vulkan REQUIRED)
 find_package(glm REQUIRED)
 
 #static Library
-file(GLOB SOURCES "./private/*.cpp" "./private/UniformBuffers/*.cpp" "./private/Image/*.cpp")
-file(GLOB HEADERS "./public/*.hpp"  "./public/UniformBuffers/*.hpp"  "./public/Image/*.hpp")
+file(GLOB_RECURSE SOURCES "./private/*.cpp")
+file(GLOB_RECURSE HEADERS "./public/*.hpp")
 add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
-target_include_directories(${PROJECT_NAME} PUBLIC ./public/ ./public/UniformBuffers/ ./public/Image/)
+
+set(INCLUDE_DIRS
+        ./public
+        ./public/UniformBuffers/
+        ./public/Image/
+        ./public/Pipelines/ )
+target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIRS})
 
 set(Libs ModelLoader Utils Camera Message)
 set(ThirdPartyLibs vma stbImage gli imgui Tracy::TracyClient)

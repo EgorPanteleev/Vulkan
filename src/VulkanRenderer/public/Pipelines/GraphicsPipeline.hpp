@@ -10,7 +10,6 @@
 #include "DescriptorSet.hpp"
 #include "Utils.hpp"
 
-
 struct GraphicsPipelineCreateInfo {
     Context* context;
     SwapChain* swapChain;

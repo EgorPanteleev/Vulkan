@@ -19,7 +19,7 @@ for SHADER_FILE in "$SHADER_DIR"/*.vert "$SHADER_DIR"/*.frag; do
         OUTPUT_FILE="$OUTPUT_DIR/$BASENAME.spv"
 
         # Compile the shader
-        echo "Compiling $SHADER_FILE to $OUTPUT_FILE..."
+        #echo "Compiling $SHADER_FILE to $OUTPUT_FILE..."
         if /usr/bin/glslc "$SHADER_FILE" -o "$OUTPUT_FILE"; then
           echo "Success: $SHADER_FILE compiled!"
         else
