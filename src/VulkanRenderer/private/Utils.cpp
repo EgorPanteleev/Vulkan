@@ -429,7 +429,7 @@ namespace Utils {
 
     void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, uint32_t mipLevels,
                                VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout,
-                               uint32_t level, uint32_t levelCount) {
+                               uint32_t level, uint32_t levelCount, uint32_t layer, uint32_t layerCount) {
         if (!levelCount) levelCount = mipLevels;
         VkAccessFlags srcAccessMask;
         VkPipelineStageFlags srcStage;
@@ -452,8 +452,8 @@ namespace Utils {
                         .aspectMask = determineAspectMask(newLayout, format),
                         .baseMipLevel = level,
                         .levelCount = levelCount,
-                        .baseArrayLayer = 0,
-                        .layerCount = 1
+                        .baseArrayLayer = layer,
+                        .layerCount = layerCount
                 }
         };
 
@@ -469,12 +469,12 @@ namespace Utils {
 
     void transitionImageLayout(Context* context, VkImage image, uint32_t mipLevels, VkFormat format,
                                VkImageLayout oldLayout, VkImageLayout newLayout,
-                               uint32_t level, uint32_t levelCount) {
+                               uint32_t level, uint32_t levelCount, uint32_t layer, uint32_t layerCount) {
         auto commandPool = Utils::createCommandPool(context, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
 
         VkCommandBuffer commandBuffer = beginSingleTimeCommands(context->device(), commandPool);
 
-        transitionImageLayout(commandBuffer, image, mipLevels, format, oldLayout, newLayout, level, levelCount);
+        transitionImageLayout(commandBuffer, image, mipLevels, format, oldLayout, newLayout, level, levelCount, layer, layerCount);
 
         endSingleTimeCommands(context, commandPool, commandBuffer);
         vkDestroyCommandPool(context->device(), commandPool, nullptr);

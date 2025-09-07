@@ -44,14 +44,16 @@ void Image::transit(ImageTransitInfoCmd& transitInfo) {
     Utils::transitionImageLayout(transitInfo.commandBuffer, mImage,
                                  1, mFormat,
                                  transitInfo.src, transitInfo.dst,
-                                 transitInfo.level, transitInfo.levelCount);
+                                 0, 1,
+                                 0, 1);
 }
 
 void Image::transit(ImageTransitInfo& transitInfo) {
     Utils::transitionImageLayout(mContext,mImage,
                                  1, mFormat,
                                  transitInfo.src, transitInfo.dst,
-                                 transitInfo.level, transitInfo.levelCount);
+                                 0, 1,
+                                 0, 1);
 }
 
 void Image::createImage(const ImageCreateInfo& createInfo) {

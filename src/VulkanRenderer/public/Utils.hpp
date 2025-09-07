@@ -93,10 +93,10 @@ namespace Utils {
     bool hasStencilComponent(VkFormat format);
     void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, uint32_t mipLevels,
                                VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout,
-                               uint32_t level = 0, uint32_t levelCount = 0);
+                               uint32_t level = 0, uint32_t levelCount = 0, uint32_t layer = 0, uint32_t layerCount = 1);
     void transitionImageLayout(Context* context, VkImage image, uint32_t mipLevels, VkFormat format,
                                VkImageLayout oldLayout, VkImageLayout newLayout,
-                               uint32_t level = 0, uint32_t levelCount = 0);
+                               uint32_t level = 0, uint32_t levelCount = 0, uint32_t layer = 0, uint32_t layerCount = 1);
     void copyBufferToImage(Context* context, VkBuffer buffer, VkImage image,
                            uint32_t width, uint32_t height, int mipLevel = 0 );
 

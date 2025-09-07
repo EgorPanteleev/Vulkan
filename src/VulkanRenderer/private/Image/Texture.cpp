@@ -79,7 +79,7 @@ bool Texture::loadCompressed(const std::string& path) {
 
 
 void Texture::load(void* data, VkExtent2D extent, int mipLevel) {
-    ImageTransitInfo transitInfo{
+    TextureTransitInfo transitInfo{
       .src = VK_IMAGE_LAYOUT_UNDEFINED,
       .dst = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
     };
@@ -168,18 +168,20 @@ VkFormat Texture::toVkFormat(gli::texture::format_type gliFormat) {
     return res;
 }
 
-void Texture::transit(ImageTransitInfoCmd& transitInfo) {
+void Texture::transit(TextureTransitInfoCmd& transitInfo) {
     Utils::transitionImageLayout(transitInfo.commandBuffer, mImage,
                                  mMipLevels, mFormat,
                                  transitInfo.src, transitInfo.dst,
-                                 transitInfo.level, transitInfo.levelCount);
+                                 transitInfo.level, transitInfo.levelCount,
+                                 0, 1);
 }
 
-void Texture::transit(ImageTransitInfo& transitInfo) {
+void Texture::transit(TextureTransitInfo& transitInfo) {
     Utils::transitionImageLayout(mContext,mImage,
                                  mMipLevels, mFormat,
                                  transitInfo.src, transitInfo.dst,
-                                 transitInfo.level, transitInfo.levelCount);
+                                 transitInfo.level, transitInfo.levelCount,
+                                 0, 1);
 }
 
 TextureAllocateInfo Texture::getAllocateInfo() const {
@@ -236,7 +238,7 @@ void Texture::generateMipMaps() {
     auto mipHeight = static_cast<int32_t>(mExtent.height);
 
     for (uint32_t i = 1; i < mMipLevels; ++i) {
-        ImageTransitInfoCmd transitInfo{
+        TextureTransitInfoCmd transitInfo{
                 .commandBuffer = commandBuffer,
                 .src = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                 .dst = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
@@ -281,7 +283,7 @@ void Texture::generateMipMaps() {
         if (mipHeight > 1) mipHeight /= 2;
     }
 
-    ImageTransitInfoCmd transitInfo{
+    TextureTransitInfoCmd transitInfo{
             .commandBuffer = commandBuffer,
             .src = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             .dst = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,

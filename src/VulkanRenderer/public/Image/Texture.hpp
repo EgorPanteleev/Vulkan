@@ -30,6 +30,21 @@ struct TextureLoadInfo{
     bool generateMipMap = false;
 };
 
+struct TextureTransitInfoCmd {
+    VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+    VkImageLayout src = VK_IMAGE_LAYOUT_UNDEFINED;
+    VkImageLayout dst = VK_IMAGE_LAYOUT_UNDEFINED;
+    uint32_t level = 0;
+    uint32_t levelCount = 0;
+};
+
+struct TextureTransitInfo {
+    VkImageLayout src = VK_IMAGE_LAYOUT_UNDEFINED;
+    VkImageLayout dst = VK_IMAGE_LAYOUT_UNDEFINED;
+    uint32_t level = 0;
+    uint32_t levelCount = 0;
+};
+
 class Texture: public SampledImage {
 public:
     Texture(Context* context);
@@ -42,8 +57,8 @@ public:
     static VkFormat toVkFormat(ModelTexture::Type modelTexType);
     static VkFormat toVkFormat(gli::texture::format_type gliFormat);
 
-    void transit(ImageTransitInfoCmd& transitInfo) override;
-    void transit(ImageTransitInfo& transitInfo) override;
+    void transit(TextureTransitInfoCmd& transitInfo);
+    void transit(TextureTransitInfo& transitInfo);
 protected:
     TextureAllocateInfo getAllocateInfo() const;
     TextureAllocateInfo getAllocateInfo(TextureLoadInfo& loadInfo) const;
