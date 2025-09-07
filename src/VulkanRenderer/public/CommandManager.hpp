@@ -12,6 +12,7 @@
 #include "VertexBuffer.hpp"
 #include "ShadowDescriptorSet.hpp"
 #include "ShadowPipeline.hpp"
+#include "CubeMapPipeline.hpp"
 
 #include <imgui.h>
 
@@ -21,8 +22,10 @@ struct CommandManagerRecordInfo{
     SwapChain* swapChain;
     GraphicsPipeline* graphicsPipeline;
     ShadowPipeline* shadowPipeline;
+    CubeMapPipeline* cubeMapPipeline;
     VkImGui* vkImGui;
-    VertexBuffer* vertexBuffer;
+    VertexBuffer<Vertex>* vertexBuffer;
+    VertexBuffer<glm::vec3>* skyBoxVertexBuffer;
     uint32_t imageIndex;
     uint32_t currentFrame;
 };

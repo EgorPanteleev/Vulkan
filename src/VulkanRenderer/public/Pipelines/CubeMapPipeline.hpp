@@ -43,8 +43,8 @@ struct CubeMapPipelineCreateInfo {
     SwapChain* swapChain;
     VulkanModelLoader* loader;
     const UniformBuffers& uniformBuffers;
-    VkShaderModule vertShaderModule;
-    VkShaderModule fragShaderModule;
+    std::string vertShaderPath;
+    std::string fragShaderPath;
 };
 
 struct CubeMapPipelineRenderInfo {
@@ -84,14 +84,16 @@ private:
     /**
      * Creating graphics pipeline
      */
-    void createGraphicsPipeline( VkShaderModule& vertShaderModule, VkShaderModule& fragShaderModule );
-    void getPipelineConfigInfo( Utils::PipelineConfigInfo& configInfo );
+    void createGraphicsPipeline(const std::string& vertPath, const std::string& fragPath);
+    void getPipelineConfigInfo(Utils::PipelineConfigInfo& configInfo);
 
     Context* mContext;
     SwapChain* mSwapChain;
     CubeMapDescriptorSet* mDescriptorSet;
     VkPipelineLayout mPipelineLayout;
     VkPipeline mPipeline;
+    VkShaderModule mVertShader;
+    VkShaderModule mFragShader;
 };
 
 #endif //VULKAN_CUBEMAPPIPELINE_HPP

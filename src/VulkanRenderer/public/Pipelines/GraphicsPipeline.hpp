@@ -16,8 +16,8 @@ struct GraphicsPipelineCreateInfo {
     VulkanModelLoader* loader;
     SampledImage* shadowMap;
     const UniformBuffers& uniformBuffers;
-    VkShaderModule vertShaderModule;
-    VkShaderModule fragShaderModule;
+    std::string vertShaderPath;
+    std::string fragShaderPath;
     bool enableMSAA = false;
 };
 
@@ -46,7 +46,7 @@ public:
     * Getters
     */
     VkPipelineLayout pipelineLayout() { return mPipelineLayout; }
-    VkPipeline graphicsPipeline() { return mGraphicsPipeline; }
+    VkPipeline graphicsPipeline() { return mPipeline; }
 
     DescriptorSet* descriptorSet() { return mDescriptorSet; }
 
@@ -71,8 +71,8 @@ private:
     /**
      * Creating graphics pipeline
      */
-    void createGraphicsPipeline( VkShaderModule& vertShaderModule, VkShaderModule& fragShaderModule );
-    void getPipelineConfigInfo( Utils::PipelineConfigInfo& configInfo );
+    void createGraphicsPipeline(const std::string& vertPath, const std::string& fragPath);
+    void getPipelineConfigInfo(Utils::PipelineConfigInfo& configInfo);
 
     VkSampleCountFlagBits getNumSamples() const;
 
@@ -82,7 +82,9 @@ private:
     Image* mColorBuffer;
     Image* mDepthBuffer;
     VkPipelineLayout mPipelineLayout;
-    VkPipeline mGraphicsPipeline;
+    VkPipeline mPipeline;
+    VkShaderModule mVertShader;
+    VkShaderModule mFragShader;
     VkPipelineCache mPipelineCache;
     bool mEnableMSAA;
 };

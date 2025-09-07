@@ -10,10 +10,11 @@ ShadowPipeline::ShadowPipeline(ShadowPipelineCreateInfo& createInfo):
     createShadowMap(createInfo);
     createDescriptorSet(createInfo);
     createPipelineLayout();
-    createGraphicsPipeline(createInfo.vertShaderModule);
+    createGraphicsPipeline(createInfo.vertShaderPath);
 }
 ShadowPipeline::~ShadowPipeline() {
-    vkDestroyPipeline(mContext->device(), mGraphicsPipeline, nullptr);
+    vkDestroyPipeline(mContext->device(), mPipeline, nullptr);
+    vkDestroyShaderModule( mContext->device(), mVertShader, nullptr );
     vkDestroyPipelineLayout(mContext->device(), mPipelineLayout, nullptr);
     delete mDescriptorSet;
     mShadowMap->destroy();
@@ -59,14 +60,15 @@ void ShadowPipeline::createPipelineLayout() {
     INFO << "Created pipeline layout!";
 }
 
-void ShadowPipeline::createGraphicsPipeline(VkShaderModule& vertShaderModule) {
+void ShadowPipeline::createGraphicsPipeline(const std::string& vertShaderPath) {
+    Utils::loadShader(mContext->device(), vertShaderPath, mVertShader);
     VkPipelineShaderStageCreateInfo shaderStages[1] = {
             {
                     .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
                     .pNext = nullptr,
                     .flags = 0,
                     .stage = VK_SHADER_STAGE_VERTEX_BIT,
-                    .module = vertShaderModule,
+                    .module = mVertShader,
                     .pName = "main",
                     .pSpecializationInfo = nullptr
             }
@@ -115,7 +117,7 @@ void ShadowPipeline::createGraphicsPipeline(VkShaderModule& vertShaderModule) {
             .basePipelineIndex = -1
     };
 
-    if (vkCreateGraphicsPipelines(mContext->device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &mGraphicsPipeline) != VK_SUCCESS) {
+    if (vkCreateGraphicsPipelines(mContext->device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &mPipeline) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create graphics pipeline!");
     }
     INFO << "Created graphics pipeline!";
@@ -234,7 +236,7 @@ void ShadowPipeline::render(ShadowPipelineRenderInfo& renderInfo) {
 
     vkCmdBeginRendering(renderInfo.commandBuffer, &renderingInfo);
 
-    vkCmdBindPipeline(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
+    vkCmdBindPipeline(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipeline);
 
     // Set viewport and scissor for shadow pipeline
     VkViewport viewport{

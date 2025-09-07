@@ -44,20 +44,44 @@ Renderer::Renderer(const std::string& modelPath, const CameraCreateInfo& cameraC
     mUniformBuffers->emplace_back(std::make_unique<DirectionalLightBuffer>(mContext.get(), camera(),
                                                                            mLoader->bbox(), glm::vec3(0.0f, -2.0f, -0.4f)));
 
-    loadShader(COMPILED_SHADERS_PATH"shadowShader.vert.spv", mShadowVertShaderModule);
     ShadowPipelineCreateInfo shadowPipelineCreateInfo {
             .context = mContext.get(),
             .uniformBuffers = *mUniformBuffers,
-            .vertShaderModule = mShadowVertShaderModule,
+            .vertShaderPath = COMPILED_SHADERS_PATH"shadowShader.vert.spv",
             .extent = {2048, 2048}
     };
     mShadowPipeline = std::make_unique<ShadowPipeline>(shadowPipelineCreateInfo);
 
-    loadShader(COMPILED_SHADERS_PATH"shader.vert.spv", mMainVertShaderModule);
-    loadShader(COMPILED_SHADERS_PATH"shader.frag.spv", mFragShaderModule);
     createGraphicsPipeline();
+    createCubeMapPipeline();
     mCommandManager = std::make_unique<CommandManager>(mContext.get());
-    mVertexBuffer = std::make_unique<VertexBuffer>(mContext.get(), mLoader.get());
+    mVertexBuffer = std::make_unique<VertexBuffer<Vertex>>(mContext.get(), mLoader->vulkanVertices(), mLoader->indices());
+    std::vector<glm::vec3> skyboxVertices = {
+            {-1.0f, -1.0f, -1.0f}, // 0
+            { 1.0f, -1.0f, -1.0f}, // 1
+            { 1.0f,  1.0f, -1.0f}, // 2
+            {-1.0f,  1.0f, -1.0f}, // 3
+            {-1.0f, -1.0f,  1.0f}, // 4
+            { 1.0f, -1.0f,  1.0f}, // 5
+            { 1.0f,  1.0f,  1.0f}, // 6
+            {-1.0f,  1.0f,  1.0f}  // 7
+    };
+    for (auto& vertex: skyboxVertices) { vertex += 0.5; }
+    std::vector<uint32_t> skyboxIndices = {
+            // back face
+            0, 1, 2, 2, 3, 0,
+            // front face
+            4, 5, 6, 6, 7, 4,
+            // left face
+            4, 0, 3, 3, 7, 4,
+            // right face
+            1, 5, 6, 6, 2, 1,
+            // bottom face
+            4, 5, 1, 1, 0, 4,
+            // top face
+            3, 2, 6, 6, 7, 3
+    };
+    mSkyBoxVertexBuffer = std::make_unique<VertexBuffer<glm::vec3>>(mContext.get(), skyboxVertices, skyboxIndices);
     mSyncObjects = std::make_unique<SyncObjects>(mContext.get(), mSwapChain.get());
 
     mVkImGui = std::make_unique<VkImGui>(mContext.get(), mSwapChain.get());
@@ -66,9 +90,6 @@ Renderer::Renderer(const std::string& modelPath, const CameraCreateInfo& cameraC
 }
 
 Renderer::~Renderer() {
-    vkDestroyShaderModule( mContext->device(), mShadowVertShaderModule, nullptr );
-    vkDestroyShaderModule( mContext->device(), mMainVertShaderModule, nullptr );
-    vkDestroyShaderModule( mContext->device(), mFragShaderModule, nullptr );
 }
 
 void Renderer::run() {
@@ -127,12 +148,14 @@ void Renderer::endFrame() {
     ZoneScopedN("End frame");
     VkImGui* gui = nullptr;
     if ( mImGuiUsage ) gui = mVkImGui.get();
-    CommandManagerRecordInfo commandManagerRecordInfo{
+    CommandManagerRecordInfo commandManagerRecordInfo {
             .swapChain = mSwapChain.get(),
             .graphicsPipeline = mGraphicsPipeline.get(),
             .shadowPipeline = mShadowPipeline.get(),
+            .cubeMapPipeline = mCubeMapPipeline.get(),
             .vkImGui = gui,
             .vertexBuffer = mVertexBuffer.get(),
+            .skyBoxVertexBuffer = mSkyBoxVertexBuffer.get(),
             .imageIndex = mSwapChain->imageIndex(),
             .currentFrame = mCurrentFrame
     };
@@ -214,11 +237,6 @@ void Renderer::recreateSwapChain() {
     INFO << "Swapchain recreated!";
 }
 
-void Renderer::loadShader(const std::string& shaderPath, VkShaderModule& module) {
-    auto shaderCode = Utils::readFile(shaderPath);
-    Utils::createShaderModule(mContext->device(), shaderCode, &module);
-}
-
 void Renderer::processKeyboard(double deltaTime) {
     if (mProcessKeyboard)
         mProcessKeyboard(mContext->glfwWindow(), camera(), deltaTime);
@@ -239,9 +257,21 @@ void Renderer::createGraphicsPipeline() {
             .loader = mLoader.get(),
             .shadowMap = mShadowPipeline->shadowMap(),
             .uniformBuffers = *mUniformBuffers,
-            .vertShaderModule = mMainVertShaderModule,
-            .fragShaderModule = mFragShaderModule,
+            .vertShaderPath = COMPILED_SHADERS_PATH"shader.vert.spv",
+            .fragShaderPath = COMPILED_SHADERS_PATH"shader.frag.spv",
             .enableMSAA = uiState.enableMSAA,
     };
     mGraphicsPipeline = std::make_unique<GraphicsPipeline>(graphicsPipelineCreateInfo);
+}
+
+void Renderer::createCubeMapPipeline() {
+    CubeMapPipelineCreateInfo cubeMapPipelineCreateInfo {
+        .context = mContext.get(),
+        .swapChain = mSwapChain.get(),
+        .loader = mLoader.get(),
+        .uniformBuffers = *mUniformBuffers,
+        .vertShaderPath = COMPILED_SHADERS_PATH"cubeMapShader.vert.spv",
+        .fragShaderPath = COMPILED_SHADERS_PATH"cubeMapShader.frag.spv",
+    };
+    mCubeMapPipeline = std::make_unique<CubeMapPipeline>(cubeMapPipelineCreateInfo);
 }

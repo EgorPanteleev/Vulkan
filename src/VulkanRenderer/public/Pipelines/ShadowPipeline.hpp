@@ -12,7 +12,7 @@
 struct ShadowPipelineCreateInfo {
     Context* context;
     const UniformBuffers& uniformBuffers;
-    VkShaderModule& vertShaderModule;
+    std::string vertShaderPath;
     VkExtent2D extent;
 };
 
@@ -32,7 +32,7 @@ public:
     ~ShadowPipeline();
 
     VkPipelineLayout pipelineLayout() { return mPipelineLayout; }
-    VkPipeline graphicsPipeline() { return mGraphicsPipeline; }
+    VkPipeline graphicsPipeline() { return mPipeline; }
     ShadowDescriptorSet* descriptorSet() { return mDescriptorSet; }
     SampledImage* shadowMap() { return mShadowMap; }
 
@@ -42,14 +42,15 @@ private:
     void createShadowMap(ShadowPipelineCreateInfo& createInfo);
     void createDescriptorSet(ShadowPipelineCreateInfo& createInfo);
     void createPipelineLayout();
-    void createGraphicsPipeline(VkShaderModule& vertShaderModule);
+    void createGraphicsPipeline(const std::string& vertShaderPath);
     void getPipelineConfigInfo(Utils::PipelineConfigInfo& configInfo);
 
     Context* mContext;
     ShadowDescriptorSet* mDescriptorSet;
     SampledImage* mShadowMap;
     VkPipelineLayout mPipelineLayout;
-    VkPipeline mGraphicsPipeline;
+    VkPipeline mPipeline;
+    VkShaderModule mVertShader;
 };
 
 #endif //VULKAN_SHADOWPIPELINE_H

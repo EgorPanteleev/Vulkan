@@ -9,11 +9,13 @@ CubeMapPipeline::CubeMapPipeline(CubeMapPipelineCreateInfo& createInfo):
         mContext(createInfo.context), mSwapChain(createInfo.swapChain) {
     createDescriptorSet(createInfo);
     createPipelineLayout();
-    createGraphicsPipeline( createInfo.vertShaderModule, createInfo.fragShaderModule );
+    createGraphicsPipeline( createInfo.vertShaderPath, createInfo.fragShaderPath );
 }
 
 CubeMapPipeline::~CubeMapPipeline() {
     vkDestroyPipeline(mContext->device(), mPipeline, nullptr);
+    vkDestroyShaderModule( mContext->device(), mVertShader, nullptr );
+    vkDestroyShaderModule( mContext->device(), mFragShader, nullptr );
     vkDestroyPipelineLayout(mContext->device(), mPipelineLayout, nullptr);
     delete mDescriptorSet;
 }
@@ -27,14 +29,16 @@ void CubeMapPipeline::createDescriptorSet(CubeMapPipelineCreateInfo& createInfo)
     mDescriptorSet = new CubeMapDescriptorSet(descriptorSetCreateInfo);
 }
 
-void CubeMapPipeline::createGraphicsPipeline(VkShaderModule& vertShaderModule, VkShaderModule& fragShaderModule) {
+void CubeMapPipeline::createGraphicsPipeline(const std::string& vertPath, const std::string& fragPath) {
+    Utils::loadShader(mContext->device(), vertPath, mVertShader);
+    Utils::loadShader(mContext->device(), fragPath, mFragShader);
     VkPipelineShaderStageCreateInfo shaderStages[2] = {
             { //0
                     .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
                     .pNext = nullptr,
                     .flags = 0,
                     .stage = VK_SHADER_STAGE_VERTEX_BIT,
-                    .module = vertShaderModule,
+                    .module = mVertShader,
                     .pName = "main",
                     .pSpecializationInfo = nullptr
             },
@@ -43,7 +47,7 @@ void CubeMapPipeline::createGraphicsPipeline(VkShaderModule& vertShaderModule, V
                     .pNext = nullptr,
                     .flags = 0,
                     .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-                    .module = fragShaderModule,
+                    .module = mFragShader,
                     .pName = "main",
                     .pSpecializationInfo = nullptr
             }
@@ -51,7 +55,7 @@ void CubeMapPipeline::createGraphicsPipeline(VkShaderModule& vertShaderModule, V
 
     VkPipelineDepthStencilStateCreateInfo depthStencil {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-            .depthTestEnable = VK_FALSE,
+            .depthTestEnable = VK_TRUE,
             .depthWriteEnable = VK_FALSE,
             .depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL,
             .depthBoundsTestEnable = VK_FALSE,
@@ -116,15 +120,25 @@ void CubeMapPipeline::createPipelineLayout() {
 }
 
 void CubeMapPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configInfo ) {
-    static auto bindingDescription = Vertex::getBindingDescription();
-    static auto attributeDescriptions = Vertex::getAttributeDescriptions();
+    static VkVertexInputBindingDescription bindingDescription{
+        .binding = 0,
+        .stride = sizeof(glm::vec3),
+        .inputRate = VK_VERTEX_INPUT_RATE_VERTEX,
+    };
+
+    static VkVertexInputAttributeDescription attributeDescription{
+            .location = 0,
+            .binding = 0,
+            .format = VK_FORMAT_R32G32B32_SFLOAT,
+            .offset = 0
+    };
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
             .vertexBindingDescriptionCount = 1,
             .pVertexBindingDescriptions = &bindingDescription,
-            .vertexAttributeDescriptionCount = (uint32_t) (attributeDescriptions.size()),
-            .pVertexAttributeDescriptions = attributeDescriptions.data()
+            .vertexAttributeDescriptionCount = 1,
+            .pVertexAttributeDescriptions = &attributeDescription
     };
     configInfo.vertexInputInfo = vertexInputInfo;
 
@@ -149,7 +163,7 @@ void CubeMapPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configIn
             .depthClampEnable = VK_FALSE,
             .rasterizerDiscardEnable = VK_FALSE,
             .polygonMode = VK_POLYGON_MODE_FILL,
-            .cullMode = VK_CULL_MODE_FRONT_BIT,
+            .cullMode = VK_CULL_MODE_NONE,
             .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
             .depthBiasEnable = VK_FALSE,
             .depthBiasConstantFactor = 0.0f,
@@ -161,6 +175,7 @@ void CubeMapPipeline::getPipelineConfigInfo( Utils::PipelineConfigInfo& configIn
 
     VkPipelineMultisampleStateCreateInfo multisampleInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+            .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
             .sampleShadingEnable = VK_FALSE,
             .minSampleShading = .2f,
             .pSampleMask = nullptr,
@@ -218,7 +233,7 @@ void CubeMapPipeline::render(CubeMapPipelineRenderInfo& renderInfo) {
             .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
             .imageView = renderInfo.presentImage->imageView(),
             .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+            .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
             .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
     };
 

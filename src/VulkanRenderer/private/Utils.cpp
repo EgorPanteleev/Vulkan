@@ -137,7 +137,7 @@ namespace Utils {
         return buffer;
     }
 
-    void createShaderModule( VkDevice device, const std::vector<char>& code, VkShaderModule* shaderModule ) {
+    void createShaderModule(VkDevice device, const std::vector<char>& code, VkShaderModule* shaderModule) {
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         createInfo.codeSize = code.size();
@@ -145,6 +145,11 @@ namespace Utils {
         if (vkCreateShaderModule(device, &createInfo, nullptr, shaderModule) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create shader module!");
         }
+    }
+
+    void loadShader(VkDevice device, const std::string& shaderPath, VkShaderModule& module) {
+        auto shaderCode = Utils::readFile(shaderPath);
+        Utils::createShaderModule(device, shaderCode, &module);
     }
 
     VkFramebuffer createFrameBuffer(VkDevice device, VkRenderPass renderPass,

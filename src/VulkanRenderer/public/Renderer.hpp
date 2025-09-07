@@ -48,11 +48,11 @@ private:
     void endFrame();
     void render();
     void recreateSwapChain();
-    void loadShader(const std::string& shaderPath, VkShaderModule& module);
     void processKeyboard(double deltaTime);
     void updateCurrentFrame() { mCurrentFrame = (mCurrentFrame + 1) % mContext->maxFramesInFlight(); }
     void updateCameras();
     void createGraphicsPipeline();
+    void createCubeMapPipeline();
 
     /// Render implementation
     UniquePtr<AbsCamera> mFlyCamera;
@@ -64,13 +64,12 @@ private:
     UniquePtr<ShadowDescriptorSet> mShadowDescriptorSet;
     UniquePtr<ShadowPipeline> mShadowPipeline;
     UniquePtr<GraphicsPipeline> mGraphicsPipeline;
+    UniquePtr<CubeMapPipeline> mCubeMapPipeline;
     UniquePtr<CommandManager> mCommandManager;
-    UniquePtr<VertexBuffer> mVertexBuffer;
+    UniquePtr<VertexBuffer<Vertex>> mVertexBuffer;
+    UniquePtr<VertexBuffer<glm::vec3>> mSkyBoxVertexBuffer;
     UniquePtr<SyncObjects> mSyncObjects;
     UniquePtr<VkImGui> mVkImGui;
-    VkShaderModule mShadowVertShaderModule;
-    VkShaderModule mMainVertShaderModule;
-    VkShaderModule mFragShaderModule;
 
     /// Temporary information
     bool mImGuiUsage;

@@ -14,11 +14,13 @@ GraphicsPipeline::GraphicsPipeline(GraphicsPipelineCreateInfo& createInfo):
     createDepthBuffer();
     createDescriptorSet(createInfo);
     createPipelineLayout();
-    createGraphicsPipeline( createInfo.vertShaderModule, createInfo.fragShaderModule );
+    createGraphicsPipeline( createInfo.vertShaderPath, createInfo.fragShaderPath );
 }
 
 GraphicsPipeline::~GraphicsPipeline(){
-    vkDestroyPipeline(mContext->device(), mGraphicsPipeline, nullptr);
+    vkDestroyPipeline(mContext->device(), mPipeline, nullptr);
+    vkDestroyShaderModule( mContext->device(), mVertShader, nullptr );
+    vkDestroyShaderModule( mContext->device(), mFragShader, nullptr );
     vkDestroyPipelineLayout(mContext->device(), mPipelineLayout, nullptr);
     vkDestroyPipelineCache(mContext->device(), mPipelineCache, nullptr);
     delete mDescriptorSet;
@@ -70,14 +72,16 @@ void GraphicsPipeline::createDescriptorSet(GraphicsPipelineCreateInfo& createInf
     mDescriptorSet = new DescriptorSet(descriptorSetCreateInfo);
 }
 
-void GraphicsPipeline::createGraphicsPipeline(VkShaderModule& vertShaderModule, VkShaderModule& fragShaderModule) {
+void GraphicsPipeline::createGraphicsPipeline(const std::string& vertPath, const std::string& fragPath) {
+    Utils::loadShader(mContext->device(), vertPath, mVertShader);
+    Utils::loadShader(mContext->device(), fragPath, mFragShader);
     VkPipelineShaderStageCreateInfo shaderStages[2] = {
             { //0
                     .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
                     .pNext = nullptr,
                     .flags = 0,
                     .stage = VK_SHADER_STAGE_VERTEX_BIT,
-                    .module = vertShaderModule,
+                    .module = mVertShader,
                     .pName = "main",
                     .pSpecializationInfo = nullptr
             },
@@ -86,7 +90,7 @@ void GraphicsPipeline::createGraphicsPipeline(VkShaderModule& vertShaderModule, 
                     .pNext = nullptr,
                     .flags = 0,
                     .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-                    .module = fragShaderModule,
+                    .module = mFragShader,
                     .pName = "main",
                     .pSpecializationInfo = nullptr
             }
@@ -144,7 +148,7 @@ void GraphicsPipeline::createGraphicsPipeline(VkShaderModule& vertShaderModule, 
     };
     vkCreatePipelineCache(mContext->device(), &cacheCreateInfo, nullptr, &mPipelineCache);
 
-    if (vkCreateGraphicsPipelines(mContext->device(), mPipelineCache, 1, &pipelineInfo, nullptr, &mGraphicsPipeline) != VK_SUCCESS) {
+    if (vkCreateGraphicsPipelines(mContext->device(), mPipelineCache, 1, &pipelineInfo, nullptr, &mPipeline) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create graphics pipeline!");
     }
     INFO << "Created graphics pipeline!";
@@ -279,7 +283,7 @@ void GraphicsPipeline::render(GraphicsPipelineRenderInfo& renderInfo) {
             .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
             .imageView = renderInfo.presentImage->imageView(),
             .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+            .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
             .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
             .clearValue = clearValues[0],
     };
@@ -313,7 +317,7 @@ void GraphicsPipeline::render(GraphicsPipelineRenderInfo& renderInfo) {
 
     vkCmdBeginRendering(renderInfo.commandBuffer, &renderingInfo);
 
-    vkCmdBindPipeline(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline );
+    vkCmdBindPipeline(renderInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipeline );
 
     VkViewport viewport{
             .x = 0.0f,

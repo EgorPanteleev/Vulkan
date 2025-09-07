@@ -62,8 +62,17 @@ void CommandManager::recordCommandBuffer(CommandManagerRecordInfo& recordInfo) {
         .initialLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
         .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
     };
-    recordInfo.shadowPipeline->render(shadowPipelineRenderInfo);
-
+    CubeMapPipelineRenderInfo cubeMapPipelineRenderInfo{
+            .commandBuffer = commandBuffer,
+            .vertexBuffer = recordInfo.skyBoxVertexBuffer->vertexBuffer(),
+            .indexBuffer = recordInfo.skyBoxVertexBuffer->indexBuffer(),
+            .indexCount = (uint32_t)recordInfo.skyBoxVertexBuffer->indices().size(),
+            .currentFrame = currentFrame,
+            .extent = recordInfo.swapChain->extent(),
+            .presentImage = recordInfo.swapChain->images()[recordInfo.swapChain->imageIndex()].get(),
+            .initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+    };
     GraphicsPipelineRenderInfo graphicsPipelineRenderInfo{
             .commandBuffer = commandBuffer,
             .vertexBuffer = recordInfo.vertexBuffer->vertexBuffer(),
@@ -75,9 +84,11 @@ void CommandManager::recordCommandBuffer(CommandManagerRecordInfo& recordInfo) {
             .colorLayoutAttachment = {VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                       VK_IMAGE_LAYOUT_PRESENT_SRC_KHR},
             .depthLayoutAttachment = {VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                                      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL},
+                                      VK_IMAGE_LAYOUT_PRESENT_SRC_KHR},
     };
 
+    recordInfo.shadowPipeline->render(shadowPipelineRenderInfo);
+    recordInfo.cubeMapPipeline->render(cubeMapPipelineRenderInfo);
     recordInfo.graphicsPipeline->render(graphicsPipelineRenderInfo);
 
     if ( recordInfo.vkImGui ) recordInfo.vkImGui->render(commandBuffer, recordInfo.imageIndex);

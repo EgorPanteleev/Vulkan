@@ -72,7 +72,8 @@ namespace Utils {
                                 VkFormat format, VkImageAspectFlags aspectFlags);
     uint32_t getImageCount(const SwapChainSupportDetails& swapChainSupport);
     std::vector<char> readFile(const std::string& filename);
-    void createShaderModule( VkDevice device, const std::vector<char>& code, VkShaderModule* shaderModule );
+    void createShaderModule(VkDevice device, const std::vector<char>& code, VkShaderModule* shaderModule);
+    void loadShader(VkDevice device, const std::string& shaderPath, VkShaderModule& module);
     VkFramebuffer createFrameBuffer(VkDevice device, VkRenderPass renderPass,
                                     std::vector<VkImageView> attachments, VkExtent2D extent);
     VkResult createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
