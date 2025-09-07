@@ -30,6 +30,52 @@ struct ImageTransitInfo {
     uint32_t levelCount = 0;
 };
 
+struct ImageCreateInfo {
+    VmaAllocator allocator;
+    VmaAllocation& imageAllocation;
+    VmaMemoryUsage allocUsage;
+    VkImage& image;
+    uint32_t mipLevels;
+    VkSampleCountFlagBits numSamples;
+    uint32_t width;
+    uint32_t height;
+    uint32_t arrayLayers;
+    VkFormat format;
+    VkImageTiling tiling;
+    VkImageUsageFlags imageUsage;
+};
+
+struct ImageViewCreateInfo{
+    VkDevice device;
+    VkImage image;
+    uint32_t mipLevels;
+    VkImageViewType viewType;
+    VkFormat format;
+    VkImageAspectFlags aspectFlags;
+};
+
+struct ImageAndViewCreateInfo{
+    Context* context;
+    VmaAllocation& imageAllocation;
+    VkImage& image;
+    VkImageView& imageView;
+    uint32_t mipLevels;
+    VkSampleCountFlagBits numSamples;
+    VkExtent2D extent;
+    uint32_t arrayLayers;
+    VkFormat format;
+    VkImageUsageFlags imageUsageFlags;
+    VkImageAspectFlags aspectFlags;
+};
+
+struct SamplerCreateInfo{
+    Context* context;
+    VkSampler& sampler;
+    uint32_t mipLevels;
+    VkSamplerAddressMode adressMode;
+    VkBorderColor borderColor;
+    VkBool32 compare;
+};
 class Image {
 public:
     Image(Context* context);
@@ -48,6 +94,11 @@ public:
     virtual void transit(ImageTransitInfo& transitInfo);
 
     void set(VkImage image, VkImageView imageView) {mImage = image; mImageView = imageView;};
+
+    static void createImage(const ImageCreateInfo& createInfo);
+    static VkImageView createImageView(const ImageViewCreateInfo& createInfo);
+    static void createImageAndView(const ImageAndViewCreateInfo& createInfo);
+    static void createSampler(const SamplerCreateInfo& createInfo);
 
 protected:
 

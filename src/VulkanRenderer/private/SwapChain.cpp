@@ -132,8 +132,15 @@ void SwapChain::createImages() {
 
     for (int i = 0; i < imageCount; ++i) {
         VkImageView imageView;
-        imageView = Utils::createImageView(mContext->device(), images[i], 1, VK_IMAGE_VIEW_TYPE_2D,
-                                                mFormat, VK_IMAGE_ASPECT_COLOR_BIT );
+        ImageViewCreateInfo imageViewCreateInfo{
+            .device = mContext->device(),
+            .image = images[i],
+            .mipLevels = 1,
+            .viewType = VK_IMAGE_VIEW_TYPE_2D,
+            .format = mFormat,
+            .aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT,
+        };
+        imageView = Image::createImageView(imageViewCreateInfo);
         mImages.push_back(std::make_unique<Image>(mContext));
         mImages.back()->set(images[i], imageView);
         mImages.back()->transit(transitInfo);

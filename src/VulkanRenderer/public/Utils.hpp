@@ -68,8 +68,6 @@ namespace Utils {
 
     QueueFamilyIndices getQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
     SwapChainSupportDetails getSwapChainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
-    VkImageView createImageView(VkDevice device, VkImage image, uint32_t mipLevels, VkImageViewType viewType,
-                                VkFormat format, VkImageAspectFlags aspectFlags);
     uint32_t getImageCount(const SwapChainSupportDetails& swapChainSupport);
     std::vector<char> readFile(const std::string& filename);
     void createShaderModule(VkDevice device, const std::vector<char>& code, VkShaderModule* shaderModule);
@@ -87,10 +85,6 @@ namespace Utils {
                       VkDeviceSize size, VkBufferUsageFlags usage, VkBuffer& buffer);
     void copyDataToBuffer(VmaAllocator allocator, VmaAllocation& allocation, void* data, VkDeviceSize bufferSize );
     void copyBuffer(Context* context, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-    void createImage(VmaAllocator allocator, VmaAllocation& imageAllocation, VmaMemoryUsage allocUsage,
-                     VkImage& image, uint32_t mipLevels, VkSampleCountFlagBits numSamples,
-                     uint32_t width, uint32_t height, VkFormat format,
-                     VkImageTiling tiling, VkImageUsageFlags imageUsage);
     VkCommandBuffer createCommandBuffer(VkDevice device, VkCommandPool commandPool);
 
     VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
@@ -112,14 +106,6 @@ namespace Utils {
     VkFormat findDepthFormat(Context* context);
 
     VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice);
-
-    void createSampler(Context* context, VkSampler& sampler, uint32_t mipLevels,
-                       VkSamplerAddressMode adressMode, VkBorderColor borderColor,
-                       VkBool32 compare);
-
-    void createFullImage(Context* context, VmaAllocation& imageAllocation, VkImage& image, VkImageView& imageView,
-                         uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkExtent2D extent, VkFormat format,
-                         VkImageUsageFlags imageUsageFlags, VkImageAspectFlags aspectFlags);
 }
 
 #endif //VULKAN_UTILS_H

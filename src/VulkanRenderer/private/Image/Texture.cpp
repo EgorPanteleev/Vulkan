@@ -104,10 +104,29 @@ void Texture::allocate(TextureAllocateInfo& allocateInfo){
     mExtent = allocateInfo.extent;
     mMipLevels = allocateInfo.mipLevels;
     mGenerateMipMap = allocateInfo.generateMipMaps;
-    Utils::createFullImage(mContext, mImageAllocation, mImage, mImageView, mMipLevels, allocateInfo.numSamples,
-                           mExtent, mFormat, allocateInfo.imageUsageFlags, allocateInfo.aspectFlags );
-    Utils::createSampler(mContext, mSampler, mMipLevels,
-                         VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_FALSE);
+    ImageAndViewCreateInfo imageAndViewCreateInfo{
+            .context = mContext,
+            .imageAllocation = mImageAllocation,
+            .image = mImage,
+            .imageView = mImageView,
+            .mipLevels = mMipLevels,
+            .numSamples = allocateInfo.numSamples,
+            .extent = mExtent,
+            .arrayLayers = 1,
+            .format = mFormat,
+            .imageUsageFlags = allocateInfo.imageUsageFlags,
+            .aspectFlags = allocateInfo.aspectFlags
+    };
+    createImageAndView(imageAndViewCreateInfo);
+    SamplerCreateInfo samplerCreateInfo{
+            .context = mContext,
+            .sampler = mSampler,
+            .mipLevels = mMipLevels,
+            .adressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+            .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK,
+            .compare = VK_FALSE,
+    };
+    createSampler(samplerCreateInfo);
 }
 
 

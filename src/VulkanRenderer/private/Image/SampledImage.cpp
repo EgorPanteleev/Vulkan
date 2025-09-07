@@ -16,7 +16,13 @@ void SampledImage::destroy() {
 
 void SampledImage::allocate(ImageAllocateInfo& allocateInfo) {
     Image::allocate(allocateInfo);
-    Utils::createSampler(mContext, mSampler, 1,
-                         VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_FALSE);
-
+    SamplerCreateInfo samplerCreateInfo{
+        .context = mContext,
+        .sampler = mSampler,
+        .mipLevels = 1,
+        .adressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK,
+        .compare = VK_FALSE,
+    };
+    createSampler(samplerCreateInfo);
 }
