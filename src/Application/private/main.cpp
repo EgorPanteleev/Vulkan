@@ -6,7 +6,7 @@
 #include "tracy/Tracy.hpp"
 
 #define MODEL_PATH PROJECT_PATH"assets/models/Sponza/glTF/Sponza.gltf"
-//#define MODEL_PATH PROJECT_PATH"models/Bistro/BistroExterior.fbx"
+//#define MODEL_PATH PROJECT_PATH"assets/models/Bistro/BistroExterior.fbx"
 #define SKYBOX_PATH PROJECT_PATH"assets/skyboxes/water_sky/"
 
 int main() {
