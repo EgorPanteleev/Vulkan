@@ -31,6 +31,7 @@ struct ImageCreateInfo {
     VmaAllocation& imageAllocation;
     VmaMemoryUsage allocUsage;
     VkImage& image;
+    VkImageCreateFlags flags;
     uint32_t mipLevels;
     VkSampleCountFlagBits numSamples;
     uint32_t width;
@@ -41,20 +42,23 @@ struct ImageCreateInfo {
     VkImageUsageFlags imageUsage;
 };
 
-struct ImageViewCreateInfo{
-    VkDevice device;
-    VkImage image;
-    uint32_t mipLevels;
-    VkImageViewType viewType;
-    VkFormat format;
-    VkImageAspectFlags aspectFlags;
+struct ImageViewCreateInfo {
+    VkDevice device = VK_NULL_HANDLE;
+    VkImage image = VK_NULL_HANDLE;
+    uint32_t layerCount = 1;
+    uint32_t mipLevels = 0;
+    VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_2D;
+    VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
+    VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_NONE;
 };
 
 struct ImageAndViewCreateInfo{
     Context* context;
     VmaAllocation& imageAllocation;
     VkImage& image;
+    VkImageCreateFlags flags;
     VkImageView& imageView;
+    VkImageViewType viewType;
     uint32_t mipLevels;
     VkSampleCountFlagBits numSamples;
     VkExtent2D extent;

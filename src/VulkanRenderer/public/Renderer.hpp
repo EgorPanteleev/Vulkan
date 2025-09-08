@@ -24,7 +24,8 @@ struct UiState {
 
 class Renderer {
 public:
-    Renderer(const std::string& modelPath, const CameraCreateInfo& cameraCreateInfo);
+    Renderer(const std::string& modelPath, const std::vector<std::string>& skyBoxPaths,
+             const CameraCreateInfo& cameraCreateInfo);
     ~Renderer();
 
     void run();

@@ -8,10 +8,10 @@ layout(binding = 0) uniform UniformBufferObject {
 
 layout(location = 0) in vec3 inPos;
 
-layout(location = 0) out vec3 dir;
+layout(location = 0) out vec3 v_dir;
 
 void main() {
-    mat4 rotView = mat4(mat3(ubo.view));
-    dir = (rotView * vec4(inPos, 0.0)).xyz;
-    gl_Position = ubo.proj * rotView * vec4(inPos, 1.0);
+    mat4 viewNoTrans = mat4(mat3(ubo.view));
+    gl_Position = ubo.proj * viewNoTrans * vec4(inPos, 1.0);
+    v_dir = inPos;
 }

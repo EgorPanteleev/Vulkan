@@ -94,9 +94,24 @@ static void processKeyboard(GLFWwindow* window, AbsCamera* camera, double deltaT
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
         camera->move(0, 0, -speed);
     }
+    float rotateSpeed = speed * 0.3f;
+
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+        camera->rotate(0, rotateSpeed, 0);
+    }
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+        camera->rotate(0, -rotateSpeed, 0);
+    }
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+        camera->rotate(rotateSpeed, 0, 0);
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+        camera->rotate(-rotateSpeed, 0, 0);
+    }
 }
 
-VulkanApp::VulkanApp(const std::string& modelPath, CameraCreateInfo& cameraCreateInfo): mRenderer(modelPath, cameraCreateInfo) {
+VulkanApp::VulkanApp(const std::string& modelPath, const std::vector<std::string>& skyBoxPaths,
+                     CameraCreateInfo& cameraCreateInfo): mRenderer(modelPath, skyBoxPaths, cameraCreateInfo) {
 }
 
 void VulkanApp::run() {

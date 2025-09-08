@@ -10,34 +10,6 @@
 #include "CubeMapDescriptorSet.hpp"
 #include "Utils.hpp"
 
-//struct GraphicsPipelineCreateInfo {
-//    Context* context;
-//    SwapChain* swapChain;
-//    VulkanModelLoader* loader;
-//    SampledImage* shadowMap;
-//    const UniformBuffers& uniformBuffers;
-//    VkShaderModule vertShaderModule;
-//    VkShaderModule fragShaderModule;
-//    bool enableMSAA = false;
-//};
-//
-//struct LayoutAttachment {
-//    VkImageLayout initialLayout;
-//    VkImageLayout finalLayout;
-//};
-//
-//struct GraphicsPipelineRenderInfo {
-//    VkCommandBuffer commandBuffer;
-//    VkBuffer vertexBuffer;
-//    VkBuffer indexBuffer;
-//    uint32_t indexCount;
-//    uint32_t currentFrame;
-//    VkExtent2D extent;
-//    Image* presentImage;
-//    LayoutAttachment colorLayoutAttachment;
-//    LayoutAttachment depthLayoutAttachment;
-//};
-
 struct CubeMapPipelineCreateInfo {
     Context* context;
     SwapChain* swapChain;

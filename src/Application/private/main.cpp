@@ -7,6 +7,7 @@
 
 #define MODEL_PATH PROJECT_PATH"assets/models/Sponza/glTF/Sponza.gltf"
 //#define MODEL_PATH PROJECT_PATH"models/Bistro/BistroExterior.fbx"
+#define SKYBOX_PATH PROJECT_PATH"assets/skyboxes/water_sky/"
 
 int main() {
     CameraCreateInfo cameraCreateInfo{
@@ -19,8 +20,16 @@ int main() {
         .nearPlane = 0.1f,
         .farPlane = 10000.f
     };
+    std::vector<std::string> skyBoxPaths = {
+            SKYBOX_PATH"left.jpg",
+            SKYBOX_PATH"right.jpg",
+            SKYBOX_PATH"top.jpg",
+            SKYBOX_PATH"bottom.jpg",
+            SKYBOX_PATH"back.jpg",
+            SKYBOX_PATH"front.jpg",
+    };
 
-    VulkanApp app(MODEL_PATH, cameraCreateInfo);
+    VulkanApp app(MODEL_PATH, skyBoxPaths, cameraCreateInfo);
     try {
         app.run();
     } catch (const std::exception& e) {

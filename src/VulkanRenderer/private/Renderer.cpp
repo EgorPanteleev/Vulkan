@@ -14,7 +14,8 @@
 
 static UiState uiState{};
 
-Renderer::Renderer(const std::string& modelPath, const CameraCreateInfo& cameraCreateInfo): mCurrentFrame(0) {
+Renderer::Renderer(const std::string& modelPath, const std::vector<std::string>& skyBoxPaths,
+                   const CameraCreateInfo& cameraCreateInfo): mCurrentFrame(0) {
     uiState.camType = cameraCreateInfo.type;
     CameraCreateInfo camCreateInfo = cameraCreateInfo;
     camCreateInfo.type = CameraType::FLY;
@@ -34,7 +35,7 @@ Renderer::Renderer(const std::string& modelPath, const CameraCreateInfo& cameraC
 #endif
     };
     mContext = std::make_unique<Context>(contextCreateInfo);
-    mLoader = std::make_unique<VulkanModelLoader>(mContext.get(), modelPath);
+    mLoader = std::make_unique<VulkanModelLoader>(mContext.get(), modelPath, skyBoxPaths);
     if (!mLoader->load()) exit(-1);
 
     mSwapChain = std::make_unique<SwapChain>(mContext.get());
@@ -66,7 +67,6 @@ Renderer::Renderer(const std::string& modelPath, const CameraCreateInfo& cameraC
             { 1.0f,  1.0f,  1.0f}, // 6
             {-1.0f,  1.0f,  1.0f}  // 7
     };
-    for (auto& vertex: skyboxVertices) { vertex += 0.5; }
     std::vector<uint32_t> skyboxIndices = {
             // back face
             0, 1, 2, 2, 3, 0,

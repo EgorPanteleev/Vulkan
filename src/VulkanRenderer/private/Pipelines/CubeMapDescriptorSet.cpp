@@ -27,8 +27,17 @@ void CubeMapDescriptorSet::createDescriptorSetLayout() {
             .pImmutableSamplers = nullptr
     };
 
+    VkDescriptorSetLayoutBinding skyBoxSamplerBinding{
+            .binding = 1,
+            .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            .descriptorCount = 1,
+            .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+            .pImmutableSamplers = nullptr
+    };
+
     std::vector<VkDescriptorSetLayoutBinding> bindings = {MVPBinding          ,
-                                                               };
+                                                          skyBoxSamplerBinding,
+                                                          };
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{
             .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
@@ -46,6 +55,7 @@ void CubeMapDescriptorSet::createDescriptorPool() {
     auto descriptorCount = (uint32_t)mContext->maxFramesInFlight();
     std::vector<VkDescriptorPoolSize> poolSizes{
             {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        , descriptorCount               },
+            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, descriptorCount               },
     };
 
     VkDescriptorPoolCreateInfo poolInfo{
@@ -85,6 +95,13 @@ void CubeMapDescriptorSet::updateDescriptorSets() {
                 .range = mUniformBuffers[0]->getSize()
         };
 
+        CubeMapImage* skyBox = mLoader->getSkyBox();
+        VkDescriptorImageInfo skyBoxInfo{
+                .sampler = skyBox->sampler(),
+                .imageView = skyBox->imageView(),
+                .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        };
+
         std::vector<VkWriteDescriptorSet> descriptorWrites{
                 {
                         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
@@ -96,6 +113,16 @@ void CubeMapDescriptorSet::updateDescriptorSets() {
                         .pImageInfo = nullptr,
                         .pBufferInfo = &MVPBufferInfo,
                         .pTexelBufferView = nullptr
+                },
+                {
+                        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                        .dstSet = mDescriptorSets[i],
+                        .dstBinding = 1,
+                        .dstArrayElement = 0,
+                        .descriptorCount = 1,
+                        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                        .pImageInfo = &skyBoxInfo
+
                 },
         };
 

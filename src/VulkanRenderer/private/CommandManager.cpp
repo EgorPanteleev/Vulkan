@@ -71,7 +71,7 @@ void CommandManager::recordCommandBuffer(CommandManagerRecordInfo& recordInfo) {
             .extent = recordInfo.swapChain->extent(),
             .presentImage = recordInfo.swapChain->images()[recordInfo.swapChain->imageIndex()].get(),
             .initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
     };
     GraphicsPipelineRenderInfo graphicsPipelineRenderInfo{
             .commandBuffer = commandBuffer,

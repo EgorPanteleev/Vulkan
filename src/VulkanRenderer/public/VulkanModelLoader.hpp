@@ -8,6 +8,7 @@
 #include "AssimpLoader.hpp"
 #include "Vertex.hpp"
 #include "Texture.hpp"
+#include "CubeMapImage.hpp"
 
 struct VulkanTextures {
     VulkanTextures(): mTextures() {}
@@ -18,10 +19,12 @@ struct VulkanTextures {
 
 class VulkanModelLoader: public AssimpLoader {
 public:
+    VulkanModelLoader(Context* context, std::string modelPath, const std::vector<std::string>& skyBoxPaths);
     VulkanModelLoader(Context* context, std::string modelPath);
     ~VulkanModelLoader();
     const std::vector<Vertex>& vulkanVertices() { return mVulkanVertices; }
     const std::vector<VulkanTextures>& vulkanTextures() { return mVulkanTextures; }
+    CubeMapImage* getSkyBox() { return mSkyBox.get(); }
     bool load() override;
 
     bool loadGeometry();
@@ -29,11 +32,10 @@ public:
 private:
     void* getEmptyData(ModelTexture::Type texType);
 
-
     Context* mContext;
-
     std::vector<Vertex> mVulkanVertices;
     std::vector<VulkanTextures> mVulkanTextures;
+    std::unique_ptr<CubeMapImage> mSkyBox;
 };
 
 

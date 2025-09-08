@@ -19,6 +19,7 @@ void Image::allocate(ImageAllocateInfo& allocateInfo) {
         .imageAllocation = mImageAllocation,
         .image = mImage,
         .imageView = mImageView,
+        .viewType = VK_IMAGE_VIEW_TYPE_2D,
         .mipLevels = 1,
         .numSamples = allocateInfo.numSamples,
         .extent = mExtent,
@@ -59,6 +60,7 @@ void Image::transit(ImageTransitInfo& transitInfo) {
 void Image::createImage(const ImageCreateInfo& createInfo) {
     VkImageCreateInfo imageInfo{
             .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+            .flags = createInfo.flags,
             .imageType = VK_IMAGE_TYPE_2D,
             .format = createInfo.format,
             .extent = {
@@ -107,7 +109,7 @@ VkImageView Image::createImageView(const ImageViewCreateInfo& createInfo) {
                     .baseMipLevel = 0,
                     .levelCount = createInfo.mipLevels,
                     .baseArrayLayer = 0,
-                    .layerCount = 1
+                    .layerCount = createInfo.layerCount,
             },
     };
     VK_CHECK(vkCreateImageView(createInfo.device, &imageViewInfo, nullptr, &imageView),
@@ -121,6 +123,7 @@ void Image::createImageAndView(const ImageAndViewCreateInfo& createInfo) {
             .imageAllocation = createInfo.imageAllocation,
             .allocUsage = VMA_MEMORY_USAGE_AUTO,
             .image = createInfo.image,
+            .flags = createInfo.flags,
             .mipLevels = createInfo.mipLevels,
             .numSamples = createInfo.numSamples,
             .width = createInfo.extent.width,
@@ -135,8 +138,9 @@ void Image::createImageAndView(const ImageAndViewCreateInfo& createInfo) {
     ImageViewCreateInfo imageViewCreateInfo{
         .device = createInfo.context->device(),
         .image = createInfo.image,
+        .layerCount = createInfo.arrayLayers,
         .mipLevels = createInfo.mipLevels,
-        .viewType = VK_IMAGE_VIEW_TYPE_2D,
+        .viewType = createInfo.viewType,
         .format = createInfo.format,
         .aspectFlags = createInfo.aspectFlags,
     };

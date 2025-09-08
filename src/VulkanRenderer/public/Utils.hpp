@@ -98,7 +98,7 @@ namespace Utils {
                                VkImageLayout oldLayout, VkImageLayout newLayout,
                                uint32_t level = 0, uint32_t levelCount = 0, uint32_t layer = 0, uint32_t layerCount = 1);
     void copyBufferToImage(Context* context, VkBuffer buffer, VkImage image,
-                           uint32_t width, uint32_t height, int mipLevel = 0 );
+                           uint32_t width, uint32_t height, int mipLevel = 0, int layer = 0);
 
     VkFormat findSupportedFormat(Context* context, const std::vector<VkFormat>& candidates, VkImageTiling tiling,
                                  VkFormatFeatureFlags features);

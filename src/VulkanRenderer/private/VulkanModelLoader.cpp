@@ -7,6 +7,18 @@
 
 #include <utility>
 
+VulkanModelLoader::VulkanModelLoader(Context* context, std::string modelPath, const std::vector<std::string>& skyBoxPaths):
+                                     AssimpLoader(std::move(modelPath)), mContext(context) {
+    mSkyBox = std::make_unique<CubeMapImage>(context);
+    mSkyBox->load({skyBoxPaths});
+    CubeMapTransitInfo transitInfo{
+        .src = VK_IMAGE_LAYOUT_UNDEFINED,
+        .dst = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        .layer = 0,
+        .layerCount = 6,
+    };
+    mSkyBox->transit(transitInfo);
+}
 VulkanModelLoader::VulkanModelLoader(Context* context, std::string modelPath): AssimpLoader(std::move(modelPath)),
                                                                                mContext(context) {
 }
@@ -19,6 +31,7 @@ VulkanModelLoader::~VulkanModelLoader() {
             mTexture = nullptr;
         }
     }
+    if (mSkyBox) mSkyBox->destroy();
 }
 
 bool VulkanModelLoader::load() {
@@ -62,7 +75,7 @@ bool VulkanModelLoader::loadMaterials() {
                 .height = static_cast<uint32_t>(texture.empty() ? 1 : texture.height),
                 .path = texture.path,
                 .texType = (ModelTexture::Type) tex,
-                .generateMipMap = texture.empty() ? false : true
+                .generateMipMap = !texture.empty()
             };
             vulkanTexture->load(loadInfo);
         }

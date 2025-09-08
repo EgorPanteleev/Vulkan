@@ -109,6 +109,7 @@ void Texture::allocate(TextureAllocateInfo& allocateInfo){
             .imageAllocation = mImageAllocation,
             .image = mImage,
             .imageView = mImageView,
+            .viewType = VK_IMAGE_VIEW_TYPE_2D,
             .mipLevels = mMipLevels,
             .numSamples = allocateInfo.numSamples,
             .extent = mExtent,
