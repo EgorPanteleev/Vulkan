@@ -64,6 +64,7 @@ bool Texture::loadCommon(const std::string& path) {
 }
 
 bool Texture::loadCompressed(const std::string& path) {
+    MESSAGE << "load compressed!";
     gli::texture tex = gli::load(path.c_str());
     if (tex.empty()) return false;
     TextureAllocateInfo allocateInfo = getAllocateInfo(tex);
@@ -131,16 +132,16 @@ void Texture::allocate(TextureAllocateInfo& allocateInfo){
 }
 
 
-VkFormat Texture::toVkFormat(ModelTexture::Type modelTexType) {
+VkFormat Texture::toVkFormat(cm::Texture::Type modelTexType) {
     VkFormat res;
     switch(modelTexType) {
-        case ModelTexture::Type::DIFFUSE:
-        case ModelTexture::Type::SPECULAR:
-        case ModelTexture::Type::SHININESS:
-        case ModelTexture::Type::AMBIENT:
+        case cm::Texture::Type::DIFFUSE:
+        case cm::Texture::Type::SPECULAR:
+        case cm::Texture::Type::SHININESS:
+        case cm::Texture::Type::AMBIENT:
             res = VK_FORMAT_R8G8B8A8_SRGB;
             break;
-        case ModelTexture::Type::NORMAL:
+        case cm::Texture::Type::NORMAL:
             res = VK_FORMAT_R8G8B8A8_UNORM;
             break;
         default:

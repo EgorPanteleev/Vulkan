@@ -6,10 +6,12 @@
 #define VULKAN_TEXTURE_H
 
 #include "Context.hpp"
-#include "ModelMaterial.hpp"
+#include "Material.hpp"
 #include "SampledImage.hpp"
 
 #include <gli/gli.hpp>
+
+namespace cm = crv::model;
 
 struct TextureAllocateInfo{
     VkFormat format = VK_FORMAT_UNDEFINED;
@@ -26,7 +28,7 @@ struct TextureLoadInfo{
     uint32_t width = 0;
     uint32_t height = 0;
     std::string path;
-    ModelTexture::Type texType = ModelTexture::Type::UNKNOWN;
+    cm::Texture::Type texType = cm::Texture::Type::UNKNOWN;
     bool generateMipMap = false;
 };
 
@@ -54,7 +56,7 @@ public:
 
     void allocate(TextureAllocateInfo& allocateInfo);
 
-    static VkFormat toVkFormat(ModelTexture::Type modelTexType);
+    static VkFormat toVkFormat(cm::Texture::Type modelTexType);
     static VkFormat toVkFormat(gli::texture::format_type gliFormat);
 
     void transit(TextureTransitInfoCmd& transitInfo);

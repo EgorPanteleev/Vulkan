@@ -5,7 +5,7 @@
 #ifndef VULKAN_VULKANMODELLOADER_H
 #define VULKAN_VULKANMODELLOADER_H
 
-#include "AssimpLoader.hpp"
+#include "Loader.hpp"
 #include "Vertex.hpp"
 #include "Texture.hpp"
 #include "CubeMapImage.hpp"
@@ -14,10 +14,10 @@ struct VulkanTextures {
     VulkanTextures(): mTextures() {}
 
     Texture*& operator[](int ind) { return mTextures[ind]; }
-    std::array<Texture*, ModelTexture::UNKNOWN> mTextures;
+    std::array<Texture*, cm::Texture::UNKNOWN> mTextures;
 };
 
-class VulkanModelLoader: public AssimpLoader {
+class VulkanModelLoader: public cm::Loader {
 public:
     VulkanModelLoader(Context* context, std::string modelPath, const std::vector<std::string>& skyBoxPaths);
     VulkanModelLoader(Context* context, std::string modelPath);
@@ -25,12 +25,12 @@ public:
     const std::vector<Vertex>& vulkanVertices() { return mVulkanVertices; }
     const std::vector<VulkanTextures>& vulkanTextures() { return mVulkanTextures; }
     CubeMapImage* getSkyBox() { return mSkyBox.get(); }
-    bool load() override;
+    bool load();
 
     bool loadGeometry();
     bool loadMaterials();
 private:
-    void* getEmptyData(ModelTexture::Type texType);
+    void* getEmptyData(cm::Texture::Type texType);
 
     Context* mContext;
     std::vector<Vertex> mVulkanVertices;

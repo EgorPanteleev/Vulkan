@@ -9,7 +9,7 @@ DescriptorSet::DescriptorSet(DescriptorSetCreateInfo& createInfo):
                              mContext(createInfo.context), mLoader(createInfo.loader),
                              mShadowMap(createInfo.shadowMap),
                              mUniformBuffers(createInfo.uniformBuffers) {
-    maxTextures = mLoader->vulkanTextures().size() * ModelTexture::UNKNOWN;
+    maxTextures = mLoader->vulkanTextures().size() * cm::Texture::UNKNOWN;
     createDescriptorSetLayout();
     createDescriptorPool();
     createDescriptorSets();
@@ -171,9 +171,9 @@ void DescriptorSet::updateDescriptorSets() {
 
         std::vector<VkDescriptorImageInfo> texturesInfo(maxTextures);
         for (size_t k = 0; k < mLoader->vulkanTextures().size(); ++k) {
-            for (size_t m = 0; m < ModelTexture::UNKNOWN; ++m) {
+            for (size_t m = 0; m < cm::Texture::UNKNOWN; ++m) {
                 Texture* texture = mLoader->vulkanTextures()[k].mTextures[m];
-                texturesInfo[k * ModelTexture::UNKNOWN + m] = {
+                texturesInfo[k * cm::Texture::UNKNOWN + m] = {
                         .sampler = texture->sampler(),
                         .imageView = texture->imageView(),
                         .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL

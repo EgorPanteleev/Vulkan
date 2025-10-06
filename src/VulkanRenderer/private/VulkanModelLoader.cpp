@@ -4,11 +4,12 @@
 
 #include "VulkanModelLoader.hpp"
 #include "Message.hpp"
+#include "AbsLoader.hpp"
 
 #include <utility>
 
 VulkanModelLoader::VulkanModelLoader(Context* context, std::string modelPath, const std::vector<std::string>& skyBoxPaths):
-                                     AssimpLoader(std::move(modelPath)), mContext(context) {
+                                     Loader(std::move(modelPath)), mContext(context) {
     mSkyBox = std::make_unique<CubeMapImage>(context);
     mSkyBox->load({skyBoxPaths});
     CubeMapTransitInfo transitInfo{
@@ -19,7 +20,7 @@ VulkanModelLoader::VulkanModelLoader(Context* context, std::string modelPath, co
     };
     mSkyBox->transit(transitInfo);
 }
-VulkanModelLoader::VulkanModelLoader(Context* context, std::string modelPath): AssimpLoader(std::move(modelPath)),
+VulkanModelLoader::VulkanModelLoader(Context* context, std::string modelPath): Loader(std::move(modelPath)),
                                                                                mContext(context) {
 }
 
@@ -35,24 +36,26 @@ VulkanModelLoader::~VulkanModelLoader() {
 }
 
 bool VulkanModelLoader::load() {
-    return AssimpLoader::load() &&
+    return Loader::load() &&
            loadGeometry()       &&
            loadMaterials();
 }
 
 bool VulkanModelLoader::loadGeometry() {
-    mVulkanVertices.reserve(mVertices.size());
-    for (size_t i = 0; i < mMeshes.size(); ++i) {
-        ModelMesh mesh = mMeshes[i];
+    const std::vector<cm::Mesh>& meshes = mLoader->meshes();
+    const std::vector<cm::Vertex>& vertices = mLoader->vertices();
+    mVulkanVertices.reserve(vertices.size());
+    for (size_t i = 0; i < meshes.size(); ++i) {
+        const cm::Mesh& mesh = meshes[i];
         for (size_t j = 0; j < mesh.numVertices; ++j) {
-            ModelVertex modelVertex = mVertices[mesh.baseVertex + j];
+            const cm::Vertex& modelVertex = vertices[mesh.baseVertex + j];
             Vertex vert{
                     .pos = modelVertex.pos,
                     .color = modelVertex.color,
                     .texCoord = modelVertex.texCoord0,
                     .normal = modelVertex.normal,
                     .tangent = modelVertex.tangent,
-                    .texIndex = (uint32_t) mesh.materialIndex * ModelTexture::UNKNOWN
+                    .texIndex = (uint32_t) mesh.materialIndex * cm::Texture::UNKNOWN
             };
             mVulkanVertices.push_back(vert);
         }
@@ -61,20 +64,21 @@ bool VulkanModelLoader::loadGeometry() {
 }
 
 bool VulkanModelLoader::loadMaterials() {
-    mVulkanTextures.resize(mMaterials.size());
-    for (size_t i = 0; i < mMaterials.size(); ++i) {
-        ModelMaterial material = mMaterials[i];
+    const std::vector<cm::Material>& materials = mLoader->materials();
+    mVulkanTextures.resize(materials.size());
+    for (size_t i = 0; i < materials.size(); ++i) {
+        const cm::Material& material = materials[i];
         VulkanTextures& vulkanTextures = mVulkanTextures[i];
-        for (int tex = 0; tex < (int) ModelTexture::UNKNOWN; ++tex) {
-            ModelTexture texture = material.mTextures[tex];
+        for (int tex = 0; tex < (int) cm::Texture::UNKNOWN; ++tex) {
+            const cm::Texture& texture = material.mTextures[tex];
             Texture*& vulkanTexture = vulkanTextures[tex];
             vulkanTexture = new Texture(mContext);
             TextureLoadInfo loadInfo{
-                .data = texture.empty() ? getEmptyData((ModelTexture::Type) tex) : texture.data,
+                .data = texture.empty() ? getEmptyData((cm::Texture::Type) tex) : texture.data,
                 .width = static_cast<uint32_t>(texture.empty() ? 1 : texture.width),
                 .height = static_cast<uint32_t>(texture.empty() ? 1 : texture.height),
                 .path = texture.path,
-                .texType = (ModelTexture::Type) tex,
+                .texType = (cm::Texture::Type) tex,
                 .generateMipMap = !texture.empty()
             };
             vulkanTexture->load(loadInfo);
@@ -83,15 +87,15 @@ bool VulkanModelLoader::loadMaterials() {
     return true;
 }
 
-static glm::vec3 toEmptyColor(ModelTexture::Type texType) {
+static glm::vec3 toEmptyColor(cm::Texture::Type texType) {
     switch(texType) {
-        case ModelTexture::Type::DIFFUSE:
+        case cm::Texture::Type::DIFFUSE:
             return {1, 0, 0};
-        case ModelTexture::Type::SPECULAR:
-        case ModelTexture::Type::SHININESS:
-        case ModelTexture::Type::AMBIENT:
+        case cm::Texture::Type::SPECULAR:
+        case cm::Texture::Type::SHININESS:
+        case cm::Texture::Type::AMBIENT:
             return glm::vec3(0);
-        case ModelTexture::Type::NORMAL:
+        case cm::Texture::Type::NORMAL:
             return {0, 1, 0};
         default:
             INFO << "ID: " << texType;
@@ -99,7 +103,7 @@ static glm::vec3 toEmptyColor(ModelTexture::Type texType) {
     }
 }
 
-void* VulkanModelLoader::getEmptyData(ModelTexture::Type texType) {
+void* VulkanModelLoader::getEmptyData(cm::Texture::Type texType) {
     gli::texture2d tex(gli::FORMAT_RGBA8_UNORM_PACK8, {1,1}, 1);
     tex.clear(gli::packUnorm4x8(glm::vec4(toEmptyColor(texType), 1)));
     return tex.data();

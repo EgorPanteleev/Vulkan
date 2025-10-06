@@ -10,30 +10,34 @@
 
 #include "AbsLoader.hpp"
 
-class AssimpLoader: public AbsLoader {
-public:
-    AssimpLoader(std::string modelPath);
+namespace crv::model {
 
-    bool load() override;
-private:
-    bool loadScene();
-    bool loadGeometry();
-    bool loadMaterials();
+    class AssimpLoader : public AbsLoader {
+    public:
+        AssimpLoader(std::string modelPath);
 
-    template<typename VertexType>
-    void loadMesh(std::vector<VertexType>& vertices, std::vector<uint32_t>& indices, uint meshIndex);
+        bool load() override;
+    private:
+        bool loadScene();
 
-    template<typename VertexType>
-    void optimizeMesh(std::vector<VertexType>& vertices, std::vector<uint32_t>& indices, uint meshIndex);
+        bool loadGeometry();
 
-    void loadTextures(uint materialIndex);
+        bool loadMaterials();
 
-    void loadTexture(ModelTexture::Type textureType, uint materialIndex);
+        template<typename VertexType>
+        void loadMesh(std::vector<VertexType> &vertices, std::vector<uint32_t> &indices, uint meshIndex);
 
-    void loadColors(uint materialIndex);
+        template<typename VertexType>
+        void optimizeMesh(std::vector<VertexType> &vertices, std::vector<uint32_t> &indices, uint meshIndex);
 
-    const aiScene* mScene;
-};
+        void loadTextures(uint materialIndex);
 
+        void loadTexture(Texture::Type textureType, uint materialIndex);
 
+        void loadColors(uint materialIndex);
+
+        const aiScene *mScene;
+    };
+
+}
 #endif //VULKAN_ASSIMPLOADER_H
