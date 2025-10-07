@@ -30,7 +30,6 @@ public:
     bool loadGeometry();
     bool loadMaterials();
 private:
-    void* getEmptyData(cm::Texture::Type texType);
 
     Context* mContext;
     std::vector<Vertex> mVulkanVertices;

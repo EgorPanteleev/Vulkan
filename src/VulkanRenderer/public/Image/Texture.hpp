@@ -23,12 +23,9 @@ struct TextureAllocateInfo{
     bool generateMipMaps = false;
 };
 
-struct TextureLoadInfo{
-    void* data = nullptr;
-    uint32_t width = 0;
-    uint32_t height = 0;
-    std::string path;
-    cm::Texture::Type texType = cm::Texture::Type::UNKNOWN;
+struct TextureLoadInfo {
+    std::vector<cm::Texture::LevelData> dataByLevel;
+    cm::Texture::Format texFormat = cm::Texture::Format::UNDEFINED;
     bool generateMipMap = false;
 };
 
@@ -56,21 +53,12 @@ public:
 
     void allocate(TextureAllocateInfo& allocateInfo);
 
-    static VkFormat toVkFormat(cm::Texture::Type modelTexType);
-    static VkFormat toVkFormat(gli::texture::format_type gliFormat);
-
     void transit(TextureTransitInfoCmd& transitInfo);
     void transit(TextureTransitInfo& transitInfo);
 protected:
     TextureAllocateInfo getAllocateInfo() const;
-    TextureAllocateInfo getAllocateInfo(TextureLoadInfo& loadInfo) const;
-    TextureAllocateInfo getAllocateInfo(const gli::texture& tex) const;
 
-    void loadByData(TextureLoadInfo& loadInfo);
-    void loadByPath(TextureLoadInfo& loadInfo);
     void load(void* data, VkExtent2D extent, int mipLevel);
-    bool loadCommon(const std::string& path);
-    bool loadCompressed(const std::string& path);
     void generateMipMaps();
 // deleted
     void allocate(ImageAllocateInfo& allocateInfo);

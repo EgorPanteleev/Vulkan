@@ -74,37 +74,12 @@ bool VulkanModelLoader::loadMaterials() {
             Texture*& vulkanTexture = vulkanTextures[tex];
             vulkanTexture = new Texture(mContext);
             TextureLoadInfo loadInfo{
-                .data = texture.empty() ? getEmptyData((cm::Texture::Type) tex) : texture.data,
-                .width = static_cast<uint32_t>(texture.empty() ? 1 : texture.width),
-                .height = static_cast<uint32_t>(texture.empty() ? 1 : texture.height),
-                .path = texture.path,
-                .texType = (cm::Texture::Type) tex,
-                .generateMipMap = !texture.empty()
+                .dataByLevel = texture.mDataByLevel,
+                .texFormat = texture.mFormat,
+                .generateMipMap = true
             };
             vulkanTexture->load(loadInfo);
         }
     }
     return true;
-}
-
-static glm::vec3 toEmptyColor(cm::Texture::Type texType) {
-    switch(texType) {
-        case cm::Texture::Type::DIFFUSE:
-            return {1, 0, 0};
-        case cm::Texture::Type::SPECULAR:
-        case cm::Texture::Type::SHININESS:
-        case cm::Texture::Type::AMBIENT:
-            return glm::vec3(0);
-        case cm::Texture::Type::NORMAL:
-            return {0, 1, 0};
-        default:
-            INFO << "ID: " << texType;
-            throw std::runtime_error("Unsupported model texture type!");
-    }
-}
-
-void* VulkanModelLoader::getEmptyData(cm::Texture::Type texType) {
-    gli::texture2d tex(gli::FORMAT_RGBA8_UNORM_PACK8, {1,1}, 1);
-    tex.clear(gli::packUnorm4x8(glm::vec4(toEmptyColor(texType), 1)));
-    return tex.data();
 }

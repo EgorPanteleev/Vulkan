@@ -7,6 +7,7 @@
 
 #include <string>
 #include <array>
+#include <vector>
 #include <map>
 #include <assimp/material.h>
 #include <glm/glm.hpp>
@@ -22,17 +23,28 @@ namespace crv::model {
             UNKNOWN = 5
         };
 
-        Texture() : path(), data(nullptr), width(0), height(0), embedded(false) {}
+        enum Format {
+            R8G8B8A8_SRGB = 0,
+            R8G8B8A8_UNORM = 1,
+            BC1_UNORM = 2,
+            BC3_UNORM = 3,
+            BC5_UNORM = 4,
+            UNDEFINED = 5,
+        };
 
-        bool empty() const { return path.empty() && !data; }
+        Texture() : mDataByLevel() {}
+
+        bool empty() const { return mDataByLevel.empty(); }
 
         static aiTextureType toAssimpType(Type type);
 
-        std::string path;
-        void* data;
-        int width;
-        int height;
-        bool embedded;
+        struct LevelData {
+            void* data;
+            uint32_t width;
+            uint32_t height;
+        };
+        std::vector<LevelData> mDataByLevel;
+        Format mFormat;
     };
 
     static std::map<Texture::Type, aiTextureType> toAssimpTypeMap{

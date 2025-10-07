@@ -36,6 +36,8 @@ namespace crv::model {
 
         void loadColors(uint materialIndex);
 
+        static void* getEmptyData(Texture::Type texType);
+
         const aiScene *mScene;
     };
 

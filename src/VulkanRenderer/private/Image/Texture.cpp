@@ -8,31 +8,45 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-Texture::Texture(Context* context): SampledImage(context) {
+Texture::Texture(Context* context): SampledImage(context), mTexChannels(4), mMipLevels(1), mGenerateMipMap(false) {
 }
 
 Texture::~Texture() {
 }
 
+static VkFormat toVkFormat( cm::Texture::Format format ) {
+    switch(format) {
+        case cm::Texture::R8G8B8A8_SRGB:
+            return VK_FORMAT_R8G8B8A8_SRGB;
+        case cm::Texture::R8G8B8A8_UNORM:
+            return VK_FORMAT_R8G8B8A8_UNORM;
+        case cm::Texture::BC1_UNORM:
+            return VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
+        case cm::Texture::BC3_UNORM:
+            return VK_FORMAT_BC3_UNORM_BLOCK;
+        case cm::Texture::BC5_UNORM:
+            return VK_FORMAT_BC5_UNORM_BLOCK;
+        default:
+            throw std::runtime_error("Unsupported texture format!");
+    }
+}
+
 void Texture::load(TextureLoadInfo& loadInfo) {
-    if (loadInfo.data) loadByData(loadInfo);
-    else if (!loadInfo.path.empty()) loadByPath(loadInfo);
-    else throw std::runtime_error("Can't load texture with given load info!");
-}
-
-void Texture::loadByData(TextureLoadInfo& loadInfo) {
-    TextureAllocateInfo allocateInfo = getAllocateInfo(loadInfo);
+    if ( loadInfo.dataByLevel.empty() ) return;
+    if ( loadInfo.dataByLevel.size() > 1 ) {
+        mGenerateMipMap = false;
+        mMipLevels = loadInfo.dataByLevel.size();
+    }
+    else mGenerateMipMap = loadInfo.generateMipMap;
+    mFormat = toVkFormat(loadInfo.texFormat);
+    mExtent = {  loadInfo.dataByLevel[0].width, loadInfo.dataByLevel[0].height };
+    if (mGenerateMipMap) mMipLevels = calcMipLevels(mExtent.width, mExtent.height);
+    TextureAllocateInfo allocateInfo = getAllocateInfo();
     allocate(allocateInfo);
-    mGenerateMipMap = loadInfo.generateMipMap;
-    load(loadInfo.data, mExtent, 0);
-}
-
-void Texture::loadByPath(TextureLoadInfo& loadInfo) {
-    mFormat = toVkFormat(loadInfo.texType);
-    mGenerateMipMap = loadInfo.generateMipMap;
-    bool status = loadCommon(loadInfo.path);
-    if (!status) status = loadCompressed(loadInfo.path);
-    if (!status) throw std::runtime_error("Failed to load texture!");
+    for ( int level = 0; level < loadInfo.dataByLevel.size(); ++level ) {
+        cm::Texture::LevelData levelData = loadInfo.dataByLevel[level];
+        load(levelData.data, { levelData.width, levelData.height }, level);
+    }
 }
 
 static int formatToSize(VkFormat format, VkExtent2D extent) {
@@ -50,34 +64,6 @@ static int formatToSize(VkFormat format, VkExtent2D extent) {
     }
     return res;
 }
-
-
-bool Texture::loadCommon(const std::string& path) {
-    void* pixels = stbi_load(path.c_str(), (int*)&mExtent.width,(int*)&mExtent.height,
-                             (int*)&mTexChannels, STBI_rgb_alpha);
-    if (!pixels) return false;
-    if (mGenerateMipMap) mMipLevels = calcMipLevels(mExtent.width, mExtent.height);
-    TextureAllocateInfo allocateInfo = getAllocateInfo();
-    allocate(allocateInfo);
-    load(pixels, mExtent, 0);
-    return true;
-}
-
-bool Texture::loadCompressed(const std::string& path) {
-    MESSAGE << "load compressed!";
-    gli::texture tex = gli::load(path.c_str());
-    if (tex.empty()) return false;
-    TextureAllocateInfo allocateInfo = getAllocateInfo(tex);
-    allocate(allocateInfo);
-    int layer = 0; int face = 0;
-    for (int level = 0; level < tex.levels(); ++level) {
-        void* pixels = tex.data(layer, face, level);
-        VkExtent2D extent = { (uint32_t)tex.extent(level).x, (uint32_t)tex.extent(level).y };
-        load(pixels, extent, level);
-    }
-    return true;
-}
-
 
 void Texture::load(void* data, VkExtent2D extent, int mipLevel) {
     TextureTransitInfo transitInfo{
@@ -131,45 +117,6 @@ void Texture::allocate(TextureAllocateInfo& allocateInfo){
     createSampler(samplerCreateInfo);
 }
 
-
-VkFormat Texture::toVkFormat(cm::Texture::Type modelTexType) {
-    VkFormat res;
-    switch(modelTexType) {
-        case cm::Texture::Type::DIFFUSE:
-        case cm::Texture::Type::SPECULAR:
-        case cm::Texture::Type::SHININESS:
-        case cm::Texture::Type::AMBIENT:
-            res = VK_FORMAT_R8G8B8A8_SRGB;
-            break;
-        case cm::Texture::Type::NORMAL:
-            res = VK_FORMAT_R8G8B8A8_UNORM;
-            break;
-        default:
-            INFO << "ID: " << modelTexType;
-            throw std::runtime_error("Unsupported model texture format!");
-    }
-    return res;
-}
-
-VkFormat Texture::toVkFormat(gli::texture::format_type gliFormat) {
-    VkFormat res;
-    switch(gliFormat) {
-        case gli::FORMAT_RGBA_DXT1_UNORM_BLOCK8:
-            res = VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
-            break;
-        case gli::FORMAT_RGBA_DXT5_UNORM_BLOCK16:
-            res = VK_FORMAT_BC3_UNORM_BLOCK;
-            break;
-        case gli::FORMAT_RG_ATI2N_UNORM_BLOCK16:
-            res = VK_FORMAT_BC5_UNORM_BLOCK;
-            break;
-        default:
-            INFO << "ID: " << gliFormat;
-            throw std::runtime_error("Unsupported gli format!");
-    }
-    return res;
-}
-
 void Texture::transit(TextureTransitInfoCmd& transitInfo) {
     Utils::transitionImageLayout(transitInfo.commandBuffer, mImage,
                                  mMipLevels, mFormat,
@@ -195,32 +142,6 @@ TextureAllocateInfo Texture::getAllocateInfo() const {
             .aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT,
             .mipLevels = mMipLevels,
             .generateMipMaps = mGenerateMipMap
-    };
-    return allocateInfo;
-}
-
-TextureAllocateInfo Texture::getAllocateInfo(TextureLoadInfo& loadInfo) const {
-    TextureAllocateInfo allocateInfo {
-            .format = toVkFormat(loadInfo.texType),
-            .extent = {loadInfo.width, loadInfo.height},
-            .numSamples = VK_SAMPLE_COUNT_1_BIT,
-            .imageUsageFlags = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-            .aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT,
-            .mipLevels = calcMipLevels(loadInfo.width, loadInfo.height),
-            .generateMipMaps = loadInfo.generateMipMap
-    };
-    return allocateInfo;
-}
-
-TextureAllocateInfo Texture::getAllocateInfo(const gli::texture& tex) const {
-    TextureAllocateInfo allocateInfo {
-            .format = toVkFormat(tex.format()),
-            .extent = {static_cast<uint32_t>(tex.extent().x), static_cast<uint32_t>(tex.extent().y)},
-            .numSamples = VK_SAMPLE_COUNT_1_BIT,
-            .imageUsageFlags = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-            .aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT,
-            .mipLevels = static_cast<uint32_t>(tex.levels()),
-            .generateMipMaps = false // Compressed images doesnt support generating mipMaps
     };
     return allocateInfo;
 }
