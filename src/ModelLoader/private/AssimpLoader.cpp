@@ -280,19 +280,15 @@ namespace crv::model {
         std::string path = aiPath.C_Str();
         std::replace(path.begin(), path.end(), '\\', '/');
         const aiTexture *aiTex = mScene->GetEmbeddedTexture(path.c_str());
-        MESSAGE << "Here";
         if (aiTex) {
             texture.mDataByLevel.emplace_back(aiTex->pcData, aiTex->mWidth, aiTex->mHeight);
-            MESSAGE << "Load1";
         } else {
             fs::path modelPath(mModelPath);
             std::string dirPath = modelPath.parent_path();
             path = dirPath + "/" + path;
             int width, height, channels;
-            MESSAGE << path;
             void* pixels = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
             if ( pixels ) {
-                MESSAGE << "Load2";
                 texture.mDataByLevel.emplace_back(pixels, width, height);
             } else {
                 gli::texture tex = gli::load(path.c_str());
