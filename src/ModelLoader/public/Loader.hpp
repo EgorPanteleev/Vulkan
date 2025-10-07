@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "BBox.hpp"
 #include "Mesh.hpp"
@@ -19,21 +20,19 @@ namespace crv::model {
     class Loader {
     public:
         Loader(std::string modelPath);
-        ~Loader();
+        virtual ~Loader() = default;
 
-        bool load();
+        virtual bool load();
 
         [[nodiscard]] BBox bbox() const;
         [[nodiscard]] const std::vector<Mesh>& meshes() const;
         [[nodiscard]] const std::vector<Material>& materials() const;
         [[nodiscard]] const std::vector<Vertex>& vertices() const;
         [[nodiscard]] const std::vector<uint32_t>& indices() const;
-
-        void clear();
     protected:
-        static AbsLoader* getLoader(std::string path);
+        static std::unique_ptr<AbsLoader> getLoader(std::string path);
 
-        AbsLoader* mLoader;
+        std::unique_ptr<AbsLoader> mLoader;
     };
 
 }

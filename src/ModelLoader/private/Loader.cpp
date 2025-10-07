@@ -11,10 +11,6 @@ namespace crv::model {
     Loader::Loader(std::string modelPath): mLoader(getLoader(std::move(modelPath))) {
     }
 
-    Loader::~Loader() {
-        clear();
-    }
-
     bool Loader::load() {
         return mLoader->load();
     }
@@ -25,12 +21,8 @@ namespace crv::model {
     [[nodiscard]] const std::vector<Vertex>& Loader::vertices() const { return mLoader->vertices(); }
     [[nodiscard]] const std::vector<uint32_t>& Loader::indices() const { return mLoader->indices(); }
 
-    void Loader::clear() {
-        delete mLoader;
-    }
-
-    AbsLoader* Loader::getLoader(std::string path) {
+    std::unique_ptr<AbsLoader> Loader::getLoader(std::string path) {
          /// now only use assimp, in future can be other loaders, like tiny gltf or my own for some file types
-         return new AssimpLoader(std::move(path));
+         return std::make_unique<AssimpLoader>(std::move(path));
     }
 }

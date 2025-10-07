@@ -25,7 +25,7 @@ public:
     const std::vector<Vertex>& vulkanVertices() { return mVulkanVertices; }
     const std::vector<VulkanTextures>& vulkanTextures() { return mVulkanTextures; }
     CubeMapImage* getSkyBox() { return mSkyBox.get(); }
-    bool load();
+    bool load() override;
 
     bool loadGeometry();
     bool loadMaterials();
