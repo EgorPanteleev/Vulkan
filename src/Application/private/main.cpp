@@ -10,8 +10,8 @@
 #define SKYBOX_PATH PROJECT_PATH"assets/skyboxes/water_sky/"
 
 int main() {
-    CameraCreateInfo cameraCreateInfo{
-        .type = CameraType::FLY,
+    cs::CameraCreateInfo cameraCreateInfo{
+        .type = cs::CameraType::FLY,
         .pos = glm::vec3(0),
         .target = glm::vec3(-100, 0, 0),
         .up = glm::vec3(0, 1, 0),

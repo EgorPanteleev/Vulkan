@@ -11,22 +11,24 @@
 #include "Context.hpp"
 #include "Camera.hpp"
 
+namespace cs = crv::scene;
+
 class UniformBuffer {
 public:
-    UniformBuffer(Context* context, AbsCamera* camera);
+    UniformBuffer(Context* context, cs::AbsCamera* camera);
     virtual ~UniformBuffer();
     virtual void updateUniformBuffer(uint32_t currentImage, VkExtent2D extent) = 0;
 
     std::vector<VkBuffer>& uniformBuffers() { return mUniformBuffers; }
 
-    void setCamera(AbsCamera* camera) { mCamera = camera; }
+    void setCamera(cs::AbsCamera* camera) { mCamera = camera; }
 
     virtual VkDeviceSize getSize() const = 0;
 protected:
     void createUniformBuffers();
 
     Context* mContext;
-    AbsCamera* mCamera;
+    cs::AbsCamera* mCamera;
     std::vector<VkBuffer> mUniformBuffers;
     std::vector<VmaAllocation> mBuffersAllocation;
     std::vector<void*> mUniformBuffersMapped;

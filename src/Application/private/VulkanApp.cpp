@@ -14,7 +14,7 @@ static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
     //if (ImGui::GetIO().WantCaptureMouse) return;
 
     auto renderer = reinterpret_cast<Renderer*>(glfwGetWindowUserPointer(window));
-    AbsCamera* camera = renderer->camera();
+    cs::AbsCamera* camera = renderer->camera();
     float speed = 10.0f;
     camera->zoom(yoffset * speed);
 }
@@ -54,7 +54,7 @@ static void mouseMoveCallback(GLFWwindow* window, double xpos, double ypos) {
     //if (ImGui::GetIO().WantCaptureMouse) return;
 
     auto renderer = reinterpret_cast<Renderer*>(glfwGetWindowUserPointer(window));
-    AbsCamera* camera = renderer->camera();
+    cs::AbsCamera* camera = renderer->camera();
 
     if (!rightMouseButtonPressed || !camera) return;
 
@@ -73,7 +73,7 @@ static void frameBufferResizeCallback(GLFWwindow* glfwWindow, int width, int hei
     window->setResized(true);
 }
 
-static void processKeyboard(GLFWwindow* window, AbsCamera* camera, double deltaTime) {
+static void processKeyboard(GLFWwindow* window, cs::AbsCamera* camera, double deltaTime) {
     auto speed = (float) deltaTime;
     if (speed < 0) return;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
@@ -111,7 +111,7 @@ static void processKeyboard(GLFWwindow* window, AbsCamera* camera, double deltaT
 }
 
 VulkanApp::VulkanApp(const std::string& modelPath, const std::vector<std::string>& skyBoxPaths,
-                     CameraCreateInfo& cameraCreateInfo): mRenderer(modelPath, skyBoxPaths, cameraCreateInfo) {
+                     cs::CameraCreateInfo& cameraCreateInfo): mRenderer(modelPath, skyBoxPaths, cameraCreateInfo) {
 }
 
 void VulkanApp::run() {

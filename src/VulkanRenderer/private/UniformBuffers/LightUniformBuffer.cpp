@@ -6,7 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <cstring>
 
-LightUniformBuffer::LightUniformBuffer(Context* context, AbsCamera* camera):
+LightUniformBuffer::LightUniformBuffer(Context* context, cs::AbsCamera* camera):
                                        UniformBuffer(context, camera), mViewPos(camera->position()){
     createUniformBuffers();
 }

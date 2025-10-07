@@ -11,8 +11,10 @@
 #include "FlyCamera.hpp"
 #include "OrbitalCamera.hpp"
 
-AbsCamera* makeCamera(const CameraCreateInfo& createInfo);
-std::unique_ptr<AbsCamera> makeCameraUnique(const CameraCreateInfo& createInfo);
-std::shared_ptr<AbsCamera> makeCameraShared(const CameraCreateInfo& createInfo);
+namespace crv::scene {
+    AbsCamera* makeCamera(const CameraCreateInfo& createInfo);
+    std::unique_ptr<AbsCamera> makeCameraUnique(const CameraCreateInfo& createInfo);
+    std::shared_ptr<AbsCamera> makeCameraShared(const CameraCreateInfo& createInfo);
+}
 
 #endif //VULKAN_CAMERA_HPP

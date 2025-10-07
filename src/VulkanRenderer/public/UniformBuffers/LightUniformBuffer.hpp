@@ -18,7 +18,7 @@ struct alignas(16) Light {
 
 class LightUniformBuffer: public UniformBuffer {
 public:
-    LightUniformBuffer(Context* context, AbsCamera* camera);
+    LightUniformBuffer(Context* context, cs::AbsCamera* camera);
     virtual ~LightUniformBuffer() {};
 
     void updateUniformBuffer(uint32_t currentImage, VkExtent2D extent) override;

@@ -15,12 +15,12 @@
 static UiState uiState{};
 
 Renderer::Renderer(const std::string& modelPath, const std::vector<std::string>& skyBoxPaths,
-                   const CameraCreateInfo& cameraCreateInfo): mCurrentFrame(0) {
+                   const cs::CameraCreateInfo& cameraCreateInfo): mCurrentFrame(0) {
     uiState.camType = cameraCreateInfo.type;
-    CameraCreateInfo camCreateInfo = cameraCreateInfo;
-    camCreateInfo.type = CameraType::FLY;
+    cs::CameraCreateInfo camCreateInfo = cameraCreateInfo;
+    camCreateInfo.type = cs::CameraType::FLY;
     mFlyCamera = makeCameraUnique(camCreateInfo);
-    camCreateInfo.type = CameraType::ORBITAL;
+    camCreateInfo.type = cs::CameraType::ORBITAL;
     mOrbitalCamera = makeCameraUnique(camCreateInfo);
 
     ContextCreateInfo contextCreateInfo {
@@ -100,17 +100,14 @@ void Renderer::quit() {
     glfwSetWindowShouldClose(mContext->glfwWindow(), GLFW_TRUE);
 }
 
-AbsCamera* Renderer::camera() {
+cs::AbsCamera* Renderer::camera() {
     switch (uiState.camType) {
-        case CameraType::FLY: {
+        case cs::CameraType::FLY:
             return mFlyCamera.get();
-        }
-        case CameraType::ORBITAL: {
+        case cs::CameraType::ORBITAL:
             return mOrbitalCamera.get();
-        }
-        default: {
+        default:
             throw std::runtime_error("Unsupported camera type!");
-        }
     }
 }
 
@@ -194,7 +191,7 @@ void Renderer::render() {
     ImGui::SetNextWindowSize(ImVec2(500, 115), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowBgAlpha(0.4);
     if ( mImGuiUsage ) {
-        bool isFlyCamera = uiState.camType == CameraType::FLY;
+        bool isFlyCamera = uiState.camType == cs::CameraType::FLY;
 
         ImGui::Begin("Settings");
         ImVec2 mousePos = ImGui::GetMousePos();
@@ -206,12 +203,12 @@ void Renderer::render() {
 
         ImGui::Separator();
         if (VkImGui::selectableButton("Fly", isFlyCamera)) {
-            uiState.camType = CameraType::FLY;
+            uiState.camType = cs::CameraType::FLY;
             updateCameras();
         }
         ImGui::SameLine(0.0f, 5.0f);
         if (VkImGui::selectableButton("Orbital", !isFlyCamera)) {
-            uiState.camType = CameraType::ORBITAL;
+            uiState.camType = cs::CameraType::ORBITAL;
             updateCameras();
         }
         ImGui::SameLine();

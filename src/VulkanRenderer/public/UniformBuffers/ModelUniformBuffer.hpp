@@ -15,7 +15,7 @@ struct alignas(16) UniformBufferObject {
 
 class ModelUniformBuffer: public UniformBuffer {
 public:
-    ModelUniformBuffer(Context* context, AbsCamera* camera);
+    ModelUniformBuffer(Context* context, cs::AbsCamera* camera);
     virtual ~ModelUniformBuffer() {};
 
     void updateUniformBuffer(uint32_t currentImage, VkExtent2D extent) override;

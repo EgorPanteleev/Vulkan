@@ -18,27 +18,27 @@
 
 struct UiState {
     glm::vec3 lightDir = {0.0f, -1.0f, -0.2f};
-    CameraType camType = CameraType::FLY;
+    cs::CameraType camType = cs::CameraType::FLY;
     bool enableMSAA = false;
 };
 
 class Renderer {
 public:
     Renderer(const std::string& modelPath, const std::vector<std::string>& skyBoxPaths,
-             const CameraCreateInfo& cameraCreateInfo);
+             const cs::CameraCreateInfo& cameraCreateInfo);
     ~Renderer();
 
     void run();
     void quit();
 
     Context* context() { return mContext.get(); }
-    AbsCamera* camera();
+    cs::AbsCamera* camera();
     Window* window() { return &mContext->window(); }
 
     void setImGuiUsage(bool use) { mImGuiUsage = use; }
     bool imGuiUsage() const { return mImGuiUsage; }
 
-    void setKeyboardCallBack(void (*processKeyboard)(GLFWwindow* window, AbsCamera* camera, double deltaTime)) { mProcessKeyboard = processKeyboard; }
+    void setKeyboardCallBack(void (*processKeyboard)(GLFWwindow* window, cs::AbsCamera* camera, double deltaTime)) { mProcessKeyboard = processKeyboard; }
 private:
     using UniformBuffers = std::vector<std::unique_ptr<UniformBuffer>>;
     template <typename Type>
@@ -56,8 +56,8 @@ private:
     void createCubeMapPipeline();
 
     /// Render implementation
-    UniquePtr<AbsCamera> mFlyCamera;
-    UniquePtr<AbsCamera> mOrbitalCamera;
+    UniquePtr<cs::AbsCamera> mFlyCamera;
+    UniquePtr<cs::AbsCamera> mOrbitalCamera;
     UniquePtr<Context> mContext;
     UniquePtr<VulkanModelLoader> mLoader;
     UniquePtr<SwapChain> mSwapChain;
@@ -77,7 +77,7 @@ private:
     uint32_t mCurrentFrame;
 
     /// CallBacks
-    void (*mProcessKeyboard)(GLFWwindow* window, AbsCamera* camera, double deltaTime);
+    void (*mProcessKeyboard)(GLFWwindow* window, cs::AbsCamera* camera, double deltaTime);
 };
 
 

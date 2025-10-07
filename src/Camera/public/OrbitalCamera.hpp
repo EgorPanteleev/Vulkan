@@ -7,19 +7,22 @@
 
 #include "AbsCamera.hpp"
 #include <iostream>
-class OrbitalCamera: public AbsCamera {
-public:
-    OrbitalCamera(const CameraCreateInfo& createInfo);
 
-    glm::vec3 target() const override { return mTarget; }
+namespace crv::scene {
+    class OrbitalCamera: public AbsCamera {
+    public:
+        OrbitalCamera(const CameraCreateInfo& createInfo);
 
-    void move(float forward_, float right_, float up_) override {};
-    void rotate(float pitch, float yaw, float roll) override;
-    void zoom(float delta) override;
-protected:
+        glm::vec3 target() const override { return mTarget; }
 
-    glm::vec3 mTarget;
-    float mRadius;
-};
+        void move(float forward_, float right_, float up_) override {};
+        void rotate(float pitch, float yaw, float roll) override;
+        void zoom(float delta) override;
+    protected:
+
+        glm::vec3 mTarget;
+        float mRadius;
+    };
+}
 
 #endif //VULKAN_ORBITALCAMERA_HPP

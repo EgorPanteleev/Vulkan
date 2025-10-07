@@ -8,7 +8,7 @@
 
 #include "Message.hpp"
 
-DirectionalLightBuffer::DirectionalLightBuffer(Context* context, AbsCamera* camera, const BBox& sceneBBox, const glm::vec3& dir):
+DirectionalLightBuffer::DirectionalLightBuffer(Context* context, cs::AbsCamera* camera, const BBox& sceneBBox, const glm::vec3& dir):
         UniformBuffer(context, camera), mSceneBBox(sceneBBox), mDirection(dir){
     createUniformBuffers();
 }

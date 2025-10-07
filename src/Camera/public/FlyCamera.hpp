@@ -9,16 +9,17 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include "AbsCamera.hpp"
+namespace crv::scene {
+    class FlyCamera: public AbsCamera {
+    public:
+        FlyCamera(const CameraCreateInfo& createInfo);
 
-class FlyCamera: public AbsCamera {
-public:
-    FlyCamera(const CameraCreateInfo& createInfo);
-
-    void move(float forward_, float right_, float up_) override;
-    void rotate(float pitch, float yaw, float roll) override;
-    void zoom(float delta) override;
-protected:
-};
+        void move(float forward_, float right_, float up_) override;
+        void rotate(float pitch, float yaw, float roll) override;
+        void zoom(float delta) override;
+    protected:
+    };
+}
 
 
 #endif //VULKAN_CAMERA_H
