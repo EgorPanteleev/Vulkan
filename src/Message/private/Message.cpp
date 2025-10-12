@@ -4,10 +4,15 @@
 
 #include "Message.hpp"
 
-Message::Message(std::ostream& os, const std::string& color, bool autoEndOfLine ):
-                             mOs(os), mColor(color), mAutoEndOfLine(autoEndOfLine) {
+namespace crv::message {
+    Message::Message(std::ostream& os, const std::string& color, bool autoEndOfLine ):
+            mOs(os), mColor(color), mAutoEndOfLine(autoEndOfLine) {
+    }
+
+    Message::~Message() {
+        if (mAutoEndOfLine) std::cout << std::endl;
+    }
 }
 
-Message::~Message() {
-    if (mAutoEndOfLine) std::cout << std::endl;
-}
+
+
