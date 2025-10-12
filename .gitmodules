@@ -1,9 +1,6 @@
 [submodule "thirdparty/VulkanMemoryAllocator"]
 	path = thirdparty/VulkanMemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-[submodule "thirdparty/gli"]
-	path = thirdparty/gli
-	url = https://github.com/g-truc/gli.git
 [submodule "thirdparty/tracy"]
 	path = thirdparty/tracy
 	url = https://github.com/wolfpld/tracy.git
