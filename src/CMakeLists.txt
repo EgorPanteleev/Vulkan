@@ -5,6 +5,5 @@ add_compile_definitions(GLM_FORCE_DEPTH_ZERO_TO_ONE)
 #add_compile_definitions(GLM_FORCE_RIGHT_HANDED)
 add_compile_definitions(GLM_FORCE_RADIANS)
 
-add_subdirectory(Utils)
 add_subdirectory(VulkanRenderer)
 add_subdirectory(Application)
