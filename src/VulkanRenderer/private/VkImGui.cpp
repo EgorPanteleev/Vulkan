@@ -32,10 +32,12 @@ VkImGui::VkImGui(Context* context, SwapChain* swapChain):
             .QueueFamily = mContext->familyIndices().graphicsFamily.value(),
             .Queue = mContext->graphicsQueue(),
             .DescriptorPool = mDescriptorPool,
-            .RenderPass = mRenderPass,
             .MinImageCount = (uint32_t)mSwapChain->images().size(),
             .ImageCount = (uint32_t)mSwapChain->images().size(),
-            .PipelineCache = VK_NULL_HANDLE
+            .PipelineCache = VK_NULL_HANDLE,
+            .PipelineInfoMain = {
+                    .RenderPass = mRenderPass
+            }
     };
 
     ImGui_ImplVulkan_Init(&init_info);
