@@ -1,18 +1,12 @@
 [submodule "thirdparty/VulkanMemoryAllocator"]
 	path = thirdparty/VulkanMemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-[submodule "thirdparty/imgui"]
-	path = thirdparty/imgui
-	url = https://github.com/ocornut/imgui.git
-[submodule "thirdparty/meshoptimizer"]
-	path = thirdparty/meshoptimizer
-	url = https://github.com/zeux/meshoptimizer.git
 [submodule "thirdparty/gli"]
 	path = thirdparty/gli
 	url = https://github.com/g-truc/gli.git
 [submodule "thirdparty/tracy"]
 	path = thirdparty/tracy
 	url = https://github.com/wolfpld/tracy.git
-[submodule "thirdparty/assimp"]
-	path = thirdparty/assimp
-	url = https://github.com/assimp/assimp.git
+[submodule "thirdparty/Collection"]
+	path = thirdparty/Collection
+	url = https://github.com/EgorPanteleev/Collection.git
